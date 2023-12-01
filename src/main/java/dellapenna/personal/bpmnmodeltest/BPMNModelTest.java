@@ -32,72 +32,6 @@ import org.camunda.feel.impl.SpiServiceLoader;
  */
 public class BPMNModelTest {
 
-    private static void dump(FlowNode s, int indent) {
-        System.out.println("[" + s.getElementType().getTypeName() + "] " + s.getName());
-        if (s instanceof BusinessRuleTask dt) {
-            System.out.println(dt);
-        }
-
-        Collection<SequenceFlow> outgoing = s.getOutgoing();
-        for (SequenceFlow sf : outgoing) {
-            //ConditionExpression co = s.getModelInstance().newInstance(ConditionExpression.class);
-            //co.setTextContent("condizione");
-            //sf.setConditionExpression(co);
-
-            System.out.print(" ".repeat(indent + 1) + "-> ");
-            System.out.print("<" + (sf.getName() != null ? sf.getName() : "") + (sf.getConditionExpression() != null ? sf.getConditionExpression().getTextContent() : "") + ">");
-            System.out.print(" ");
-            FlowNode t = sf.getTarget();
-
-            dump(t, indent + 3);
-        }
-    }
-
-    private static void dump(DecisionTable t, int indent) {
-        System.out.println("[" + t.getElementType().getTypeName() + "] " + t.getAttributeValue("name"));
-        System.out.println("* Inputs:");
-        List<Input> inputs = new ArrayList(t.getInputs());
-        for (Input i : inputs) {
-            System.out.println("** [" + i.getInputExpression().getAttributeValue("typeRef") + "] " + i.getInputExpression().getText().getTextContent());
-        }
-        System.out.println("* Outputs:");
-        List<Output> outputs = new ArrayList(t.getOutputs());
-        for (Output o : outputs) {
-            System.out.println("** [" + o.getAttributeValue("typeRef") + "] " + o.getAttributeValue("name"));
-        }
-        System.out.println("* Rules:");
-        Collection<Rule> rules = t.getRules();
-        int rule_counter = 0;
-        for (Rule r : rules) {
-            System.out.println("** " + (++rule_counter) + " [" + r.getDescription().getTextContent() + "]");
-            int sub_counter = 0;
-            Collection<InputEntry> inputEntries = r.getInputEntries();
-            System.out.print("*** WHEN ");
-            for (InputEntry i : inputEntries) {
-                System.out.print((sub_counter > 0 ? " AND " : "") + "(" + (i.getExpressionLanguage() != null ? "[" + i.getExpressionLanguage() + "] " : "")
-                        + inputs.get(sub_counter++).getInputExpression().getText().getTextContent() + " "
-                        + i.getTextContent() + ")");
-            }
-            System.out.println();
-            sub_counter = 0;
-            System.out.print("*** THEN ");
-            Collection<OutputEntry> outputEntries = r.getOutputEntries();
-            for (OutputEntry o : outputEntries) {
-                System.out.print((sub_counter > 0 ? ", " : "") + (o.getExpressionLanguage() != null ? "[" + o.getExpressionLanguage() + "] " : "")
-                        + outputs.get(sub_counter++).getAttributeValue("name") + " = "
-                        + o.getTextContent());
-            }
-            System.out.println();
-        }
-    }
-
-    private static void dump(DmnModelInstance dmn) {
-        Collection<DecisionTable> tables = dmn.getModelElementsByType(DecisionTable.class);
-        for (DecisionTable t : tables) {
-            dump(t, 0);
-        }
-    }
-
     public static void testFeel(String expression) throws FeelTranslatorException {
         FeelTranslator t = new ToJavaFeelTranslator();
 
@@ -127,22 +61,22 @@ public class BPMNModelTest {
 
     public static void main(String[] args) throws FeelTranslatorException {
         FeelTranslator ft = new ToJavaFeelTranslator();
-        //System.out.println(ft.translate("abs(x)>1 and (a=\"w\" or b in [1..4])"));
-        //System.out.println(ft.translate("[1..4]"));
-        //System.exit(0);
+        System.out.println(ft.translate("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
+        //System.out.println(ft.translate("[1..4]"));        
 
-//        BpmnModelInstance modelInstance = Bpmn.readModelFromFile(new File("C:\\Users\\giuse\\Desktop\\diagram_1.bpmn"));
-//        Collection<StartEvent> start = modelInstance.getModelElementsByType(StartEvent.class);
-//        for (StartEvent s : start) {
-//            dump(s, 0);
-//        }
         DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("C:\\Users\\giuse\\Desktop\\diagram_1.dmn"));
         DMNTranslator dt = new ToJavaDMNTranslator();
-        dump(dmnInstance);
-        Map<String, String> dtt = dt.translateDecisionTables(dmnInstance);
+        ((AbstractDMNTranslator) dt).dump(dmnInstance);
+        Map<String, String> dtt = dt.translate(dmnInstance);
         for (String dtn : dtt.keySet()) {
             System.out.println(dtt.get(dtn));
         }
+        
+                BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("C:\\Users\\giuse\\Desktop\\diagram_1.bpmn"));
+        BPMNTranslator bt = new AbstractBPMNTranslator<String>();
+        ((AbstractBPMNTranslator) bt).dump(bpmnInstance);
+
+        
 //Bpmn.writeModelToFile(new File("test.bpmn"), modelInstance);
     }
 }

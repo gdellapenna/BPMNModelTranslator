@@ -15,8 +15,8 @@ import org.camunda.bpm.model.dmn.instance.DecisionTable;
  */
 public interface DMNTranslator<T> {
 
-    Map<String, T> translateDecisionTables(DmnModelInstance dmn) throws FeelTranslatorException;
+    Map<String, T> translate(DmnModelInstance dmn) throws FeelTranslatorException;
 
-    T translateDecisionTable(DecisionTable t) throws FeelTranslatorException;
+    T translate(DecisionTable t) throws FeelTranslatorException;
 
 }

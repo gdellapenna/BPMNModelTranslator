@@ -52,47 +52,45 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
         T result;
         switch (e) {
             case org.camunda.feel.syntaxtree.GreaterThan t -> {
-                result = translateGreaterThan(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateGreaterThan(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputGreaterThan t -> {
-                result = translateGreaterThan(translateExp(null,input), translateExp(input,t.x()));
+                result = translateGreaterThan(translateExp(null, input), translateExp(input, t.x()));
             }
             case org.camunda.feel.syntaxtree.LessThan t -> {
-                result = translateLessThan(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateLessThan(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputLessThan t -> {
-                result = translateLessThan(translateExp(null,input), translateExp(input,t.x()));
+                result = translateLessThan(translateExp(null, input), translateExp(input, t.x()));
             }
             case org.camunda.feel.syntaxtree.GreaterOrEqual t -> {
-                result = translateGreaterOrEqual(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateGreaterOrEqual(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputGreaterOrEqual t -> {
-                result = translateGreaterOrEqual(translateExp(null,input), translateExp(input,t.x()));
+                result = translateGreaterOrEqual(translateExp(null, input), translateExp(input, t.x()));
             }
             case org.camunda.feel.syntaxtree.LessOrEqual t -> {
-                result = translateLessOrEqual(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateLessOrEqual(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputLessOrEqual t -> {
-                result = translateLessOrEqual(translateExp(null,input), translateExp(input,t.x()));
+                result = translateLessOrEqual(translateExp(null, input), translateExp(input, t.x()));
             }
             case org.camunda.feel.syntaxtree.Equal t -> {
-                result = translateEqual(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateEqual(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputEqualTo t -> {
-                result = translateEqual(translateExp(null,input), translateExp(input,t.x()));
+                result = translateEqual(translateExp(null, input), translateExp(input, t.x()));
             }
-            case org.camunda.feel.syntaxtree.InputInRange t -> {
-                result = translateInTest(translateExp(null,input), translateExp(input,t.range()));
-            }
+
             case org.camunda.feel.syntaxtree.Not t -> {
-                result = translateNot(translateExp(input,t.x()));
+                result = translateNot(translateExp(input, t.x()));
             }
 
             case org.camunda.feel.syntaxtree.Conjunction t -> {
-                result = translateAnd(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateAnd(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.Disjunction t -> {
-                result = translateOr(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateOr(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.ConstNumber t -> {
                 result = translateNumber(t.value().bigDecimal());
@@ -104,31 +102,39 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
                 result = translateString(t.value());
             }
             case org.camunda.feel.syntaxtree.ConstRange t -> {
-                result = translateConstRange(translateExp(input,t.start().value()), translateExp(input,t.end().value()));
+                result = translateConstRange(translateExp(input, t.start().value()), translateExp(input, t.end().value()));
             }
             case org.camunda.feel.syntaxtree.Ref t -> {
                 result = translateVariableReference(scala.collection.JavaConverters.asJava(t.names()));
             }
             case org.camunda.feel.syntaxtree.Addition t -> {
-                result = translateAddition(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateAddition(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.Division t -> {
-                result = translateDivision(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateDivision(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.Multiplication t -> {
-                result = translateMultiplication(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateMultiplication(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.Subtraction t -> {
-                result = translateSubtraction(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateSubtraction(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.ArithmeticNegation t -> {
-                result = translateNegation(translateExp(input,t.x()));
+                result = translateNegation(translateExp(input, t.x()));
             }
             case org.camunda.feel.syntaxtree.Exponentiation t -> {
-                result = translateExponentiation(translateExp(input,t.x()), translateExp(input,t.y()));
+                result = translateExponentiation(translateExp(input, t.x()), translateExp(input, t.y()));
             }
             case org.camunda.feel.syntaxtree.In t -> {
-                result = translateInTest(translateExp(input,t.x()), translateExp(input,t.test()));
+                result = translateInTest(translateExp(input, t.x()), translateExp(input, t.test()));
+            }
+            case org.camunda.feel.syntaxtree.InputInRange t -> {
+                if (input != null) {
+                    result = translateInTest(translateExp(null, input), translateExp(input, t.range()));
+                } else {
+                    //ranges sometimes get parsed as inputinranges...
+                    result = translateExp(input, t.range());
+                }
             }
             case org.camunda.feel.syntaxtree.FunctionInvocation t -> {
                 result = translateFunctionCall(t.function(), translateFunctionParameters(t.params()));
