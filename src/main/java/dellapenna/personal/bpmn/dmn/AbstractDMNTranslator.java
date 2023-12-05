@@ -1,5 +1,6 @@
-package dellapenna.personal.bpmnmodeltest;
+package dellapenna.personal.bpmn.dmn;
 
+import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,29 +36,29 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
 //            System.out.println("** [" + o.getAttributeValue("typeRef") + "] " + o.getAttributeValue("name"));
 //        }
 //        //
-        List<DecisionRule<T>> decoded_rules = new ArrayList<>();
+        List<DMNDecisionRule<T>> decoded_rules = new ArrayList<>();
         Collection<Rule> rules = t.getRules();
         for (Rule r : rules) {
             String rule_comment = r.getDescription().getTextContent();
             int ref_counter = 0;
-            List<Condition<T>> rule_conditions = new ArrayList<>();
+            List<DMNCondition<T>> rule_conditions = new ArrayList<>();
             Collection<InputEntry> inputEntries = r.getInputEntries();
             for (InputEntry i : inputEntries) {
-                rule_conditions.add(new Condition<>(
+                rule_conditions.add(new DMNCondition<>(
                         translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent()),
                         translateExpression(inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent())
                 ));
             }
             ref_counter = 0;
-            List<Assignment<T>> rule_assignments = new ArrayList<>();
+            List<DMNAssignment<T>> rule_assignments = new ArrayList<>();
             Collection<OutputEntry> outputEntries = r.getOutputEntries();
             for (OutputEntry o : outputEntries) {
-                rule_assignments.add(new Assignment<>(
+                rule_assignments.add(new DMNAssignment<>(
                         outputs.get(ref_counter++).getAttributeValue("name"),
                         translateExpression(null, o.getTextContent())
                 ));
             }
-            decoded_rules.add(new DecisionRule<>(rule_conditions, rule_assignments, rule_comment));
+            decoded_rules.add(new DMNDecisionRule<>(rule_conditions, rule_assignments, rule_comment));
         }
         return translateRules(decoded_rules);
     }
@@ -74,7 +75,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
 
     protected abstract T translateExpression(String input, String exp) throws FeelTranslatorException;
 
-    protected abstract T translateRules(List<DecisionRule<T>> decoded_rules);
+    protected abstract T translateRules(List<DMNDecisionRule<T>> decoded_rules);
 
     //////////////
     

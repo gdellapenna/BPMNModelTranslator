@@ -1,5 +1,7 @@
-package dellapenna.personal.bpmnmodeltest;
+package dellapenna.personal.bpmn.bpmn;
 
+import dellapenna.personal.bpmn.feel.FeelTranslatorException;
+import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,11 +20,31 @@ import org.camunda.bpm.model.bpmn.instance.UserTask;
 
 public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
-    private Map<String, FuctionDefinition> functions = new HashMap<>();
+    private final Map<String, BPMNNamedFlow<String>> codeBlocks = new HashMap<>();
     private static final ToJavaFeelTranslator feel = new ToJavaFeelTranslator();
+
+    @Override
+    protected void reset() {
+        codeBlocks.clear();
+    }
 
     private String sanitizeName(String n) {
         return n.replaceAll("[^A-Za-z0-9_]", "_");
+    }
+
+    @Override
+    protected String translateNamedFlow(BPMNNamedFlow<String> flow) {
+        return "public void " + flow.name() + "() {\n"
+                + flow.code()
+                + "\n}";
+    }
+
+    @Override
+    protected String translateFlowCollection(List<String> flows) {
+        return Stream.concat(
+                flows.stream(),
+                codeBlocks.values().stream().map(fd -> translateNamedFlow(fd)))
+                .collect(Collectors.joining("\n\n"));
     }
 
     @Override
@@ -67,12 +89,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     protected String translateEndEvent(EndEvent t) {
-        return "System.exit(0)";
+        return "//" + t.getName() + "\n" + "System.exit(0)";
     }
 
     @Override
     protected String translateStartEvent(StartEvent t) {
-        return "//start";
+        return "//start: " + t.getName(); //inserire una condizione??
     }
 
     @Override
@@ -81,82 +103,62 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     }
 
     @Override
-    protected String translateParallelJoiningGateway(Pair<String, String> joinedflow) throws FeelTranslatorException {
+    protected String translateParallelJoiningGateway(BPMNNamedFlow<String> joinedflow) throws FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    protected String translateEventJoiningGateway(Pair<String, String> joinedflow) throws FeelTranslatorException {
+    protected String translateEventJoiningGateway(BPMNNamedFlow<String> joinedflow) throws FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    protected String translateInclusiveJoiningGateway(Pair<String, String> joinedflow) throws FeelTranslatorException {
-        functions.put(joinedflow.first(), new FuctionDefinition(joinedflow.first(), joinedflow.second(), null, null));
-        return joinedflow.first() + "()";
+    protected String translateInclusiveJoiningGateway(BPMNNamedFlow<String> joinedflow) throws FeelTranslatorException {
+        codeBlocks.put(joinedflow.name(), joinedflow);
+        return joinedflow.name() + "()";
     }
 
     @Override
-    protected String translateExclusiveJoiningGateway(Pair<String, String> joinedflow) throws FeelTranslatorException {
-        functions.put(joinedflow.first(), new FuctionDefinition(joinedflow.first(), joinedflow.second(), null, null));
-        return joinedflow.first() + "()";
+    protected String translateExclusiveJoiningGateway(BPMNNamedFlow<String> joinedflow) throws FeelTranslatorException {
+        codeBlocks.put(joinedflow.name(), joinedflow);
+        return joinedflow.name() + "()";
     }
 
     @Override
-    protected String translateParallelGateway(List<Pair<String, String>> splitFlows) throws FeelTranslatorException {
+    protected String translateParallelGateway(List<BPMNConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    protected String translateEventGateway(List<Pair<String, String>> splitFlows) throws FeelTranslatorException {
+    protected String translateEventGateway(List<BPMNConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
-    protected String translateInclusiveGateway(List<Pair<String, String>> splitFlows) throws FeelTranslatorException {
+    protected String translateInclusiveGateway(List<BPMNConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
         String result = "";
         for (int o = 0; o < splitFlows.size(); ++o) {
             result += "if "
-                    + "(" + feel.translate(splitFlows.get(o).first()) + ")" + "{"
-                    + splitFlows.get(o).second()
-                    + "\n}\n";
+                    + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")" + "{\n" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
+                    + splitFlows.get(o).code()
+                    + "\n}";
         }
         return result;
     }
 
     @Override
-    protected String translateExclusiveGateway(List<Pair<String, String>> splitFlows) throws FeelTranslatorException {
+    protected String translateExclusiveGateway(List<BPMNConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
         String result = "";
         for (int o = 0; o < splitFlows.size(); ++o) {
             if (o > 0) {
                 result += " else ";
             }
             result += "if "
-                    + "(" + feel.translate(splitFlows.get(o).first().substring(1)) + ")" + "{" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                    + splitFlows.get(o).second()
-                    + "\n}\n";
+                    + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")" + "{\n" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
+                    + splitFlows.get(o).code()
+                    + "\n}";
         }
         return result;
-    }
-
-    @Override
-    protected void reset() {
-        functions.clear();
-    }
-
-    @Override
-    protected String translateNamedFlow(String flowid, String flow) {
-        return "public void " + flowid + "() {"
-                + flow
-                + "}\n\n";
-    }
-
-    @Override
-    protected String translateFlowCollection(List<String> flows) {
-        return Stream.concat(
-                flows.stream(),
-                functions.values().stream().map(fd -> translateNamedFlow(fd.name(), fd.body())))
-                .collect(Collectors.joining("\n\n\n"));
     }
 
 }

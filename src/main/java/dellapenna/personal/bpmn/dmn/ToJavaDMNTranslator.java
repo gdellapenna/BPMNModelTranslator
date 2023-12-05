@@ -1,5 +1,7 @@
-package dellapenna.personal.bpmnmodeltest;
+package dellapenna.personal.bpmn.dmn;
 
+import dellapenna.personal.bpmn.feel.FeelTranslatorException;
+import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +15,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
     }
 
     @Override
-    public String translateRules(List<DecisionRule<String>> decoded_rules) {
+    public String translateRules(List<DMNDecisionRule<String>> decoded_rules) {
         return decoded_rules.stream().map(r
                 -> ("if ("
                 + r.conditions().stream().map(c -> (c.testExpression())).collect(Collectors.joining(" && "))

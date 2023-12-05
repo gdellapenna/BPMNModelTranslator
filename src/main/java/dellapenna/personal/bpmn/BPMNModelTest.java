@@ -1,11 +1,15 @@
-package dellapenna.personal.bpmnmodeltest;
+package dellapenna.personal.bpmn;
 
+import dellapenna.personal.bpmn.bpmn.AbstractBPMNTranslator;
+import dellapenna.personal.bpmn.bpmn.BPMNTranslator;
+import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
+import dellapenna.personal.bpmn.feel.FeelTranslatorException;
+import dellapenna.personal.bpmn.feel.FeelTranslator;
+import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.io.File;
 import java.util.Map;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
-import org.camunda.bpm.model.dmn.Dmn;
-import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.camunda.feel.FeelEngine;
 import org.camunda.feel.api.EvaluationResult;
 import org.camunda.feel.api.FeelEngineApi;

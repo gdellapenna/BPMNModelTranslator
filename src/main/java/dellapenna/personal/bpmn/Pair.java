@@ -1,4 +1,4 @@
-package dellapenna.personal.bpmnmodeltest;
+package dellapenna.personal.bpmn;
 
 /**
  *

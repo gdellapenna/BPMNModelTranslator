@@ -1,4 +1,4 @@
-package dellapenna.personal.bpmnmodeltest;
+package dellapenna.personal.bpmn.feel;
 
 import java.util.ArrayList;
 import java.util.List;
