@@ -17,8 +17,12 @@ import org.camunda.bpm.model.bpmn.instance.ServiceTask;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.Task;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
+import org.camunda.bpm.model.xml.instance.ModelElementInstance;
+import org.camunda.bpm.model.xml.type.ModelElementType;
 
 public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
+
+    private final static String ZEEBENS = "http://camunda.org/schema/zeebe/1.0";
 
     private final Map<String, BPMNNamedFlow<String>> codeBlocks = new HashMap<>();
     private static final ToJavaFeelTranslator feel = new ToJavaFeelTranslator();
@@ -84,7 +88,17 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     protected String translateBusinessRuleTask(BusinessRuleTask t) {
-        return t.getCamundaDecisionRefBinding() + "=" + sanitizeName("dmn_table_" + t.getCamundaDecisionRef());
+        ModelElementInstance ioMapping = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping");
+        ModelElementInstance calledDecision = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "calledDecision");
+        return (t.getName() != null ? "//" + t.getName() + "\n" : "")
+                + "var " + calledDecision.getAttributeValue("resultVariable")
+                + "=" + sanitizeName("dmn_" + calledDecision.getAttributeValue("decisionId"))
+                + "("
+                + "{" + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
+                        .map(e -> e.getAttribute("target") + ":" + feel.translateChecked(e.getAttribute("source").substring(1))).collect(Collectors.joining(",")) + "}"
+                + ");\n"
+                + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
+                        .map(e -> "var " + e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1))).collect(Collectors.joining(";\n"));
     }
 
     @Override

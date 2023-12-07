@@ -81,11 +81,9 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
             case org.camunda.feel.syntaxtree.InputEqualTo t -> {
                 result = translateEqual(translateExp(null, input), translateExp(input, t.x()));
             }
-
             case org.camunda.feel.syntaxtree.Not t -> {
                 result = translateNot(translateExp(input, t.x()));
             }
-
             case org.camunda.feel.syntaxtree.Conjunction t -> {
                 result = translateAnd(translateExp(input, t.x()), translateExp(input, t.y()));
             }
@@ -142,6 +140,9 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
             case org.camunda.feel.syntaxtree.ConstList t -> {
                 result = translateConstList(scala.collection.JavaConverters.asJava(t.items()).stream().map(ee -> translateExpChecked(ee)).toList());
             }
+            case org.camunda.feel.syntaxtree.PathExpression t -> {
+                result = translatePath(t.key(),translateExp(t.path()));
+            }
             default -> {
                 throw new FeelTranslatorException("Cannot translate expression node of type " + e.getClass().getName());
             }
@@ -175,8 +176,23 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
         }
     }
 
+    @Override
+    public T translateChecked(String input, String expression) {
+        try {
+            return translate(input, expression);
+        } catch (FeelTranslatorException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
     public T translate(String expression) throws FeelTranslatorException {
         return translate(null, expression);
+    }
+
+    @Override
+    public T translateChecked(String expression) {
+        return translateChecked(null, expression);
     }
 
     protected abstract T translateGreaterThan(T arg1, T arg2);
@@ -222,5 +238,7 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
     protected abstract T translateVariableReference(List<String> names);
 
     protected abstract T translateConstList(List<T> list);
+    
+    protected abstract T translatePath(String key, T path);
 
 }

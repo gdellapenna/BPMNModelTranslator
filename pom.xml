@@ -39,7 +39,7 @@
             <groupId>org.camunda.bpm.model</groupId>
             <artifactId>camunda-xml-model</artifactId>
             <version>7.20.0</version>
-        </dependency>
+        </dependency>        
         <!--
         <dependency>
             <groupId>org.camunda.bpm.extension.dmn.scala</groupId>

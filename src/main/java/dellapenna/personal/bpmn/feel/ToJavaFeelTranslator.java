@@ -117,12 +117,17 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateVariableReference(List<String> names) {
-        return names.get(0); //???
+        return names.stream().collect(Collectors.joining("."));
     }
 
     @Override
     protected String translateConstList(List<String> list) {
         return list.stream().collect(Collectors.joining(",")); //!!!!
+    }
+
+    @Override
+    protected String translatePath(String key, String path) {
+        return key + "." + path;
     }
 
 }
