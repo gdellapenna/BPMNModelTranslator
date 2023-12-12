@@ -10,6 +10,6 @@ import java.util.Map;
  *
  * @author giuse
  */
-public record FuctionDefinition(String name, String body, Class returnType, Map<String,Class> parameters) {
+public record FunctionDefinition(String name, String body, Class returnType, Map<String,Class> parameters) {
     
 }

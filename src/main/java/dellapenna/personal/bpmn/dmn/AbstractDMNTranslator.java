@@ -60,26 +60,28 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
             }
             decoded_rules.add(new DMNDecisionRule<>(rule_conditions, rule_assignments, rule_comment));
         }
-        return translateRules(decoded_rules);
+        return translateDecisionTable(t.getId(), inputs, outputs, translateRules(decoded_rules));
     }
 
     @Override
-    public Map<String, T> translate(DmnModelInstance dmn) throws FeelTranslatorException {
-        Map<String, T> result = new HashMap<>();
+    public T translate(DmnModelInstance dmn) throws FeelTranslatorException {
+        Map<String, T> decoded_table = new HashMap<>();
         Collection<DecisionTable> tables = dmn.getModelElementsByType(DecisionTable.class);
         for (DecisionTable t : tables) {
-            result.put(t.getId(), translate(t));
+            decoded_table.put(t.getId(), translate(t));
         }
-        return result;
+        return translateDecisionModel(decoded_table);
     }
 
     protected abstract T translateExpression(String input, String exp) throws FeelTranslatorException;
 
     protected abstract T translateRules(List<DMNDecisionRule<T>> decoded_rules);
 
+    protected abstract T translateDecisionTable(String id, List<Input> inputs, List<Output> outputs, T translated_rules);
+
+    protected abstract T translateDecisionModel(Map<String, T> decoded_tables);
+
     //////////////
-    
-    
     public void dump(DecisionTable t) {
         System.out.println("[" + t.getElementType().getTypeName() + "] " + t.getAttributeValue("name"));
         System.out.println("* Inputs:");

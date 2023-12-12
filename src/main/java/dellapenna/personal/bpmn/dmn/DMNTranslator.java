@@ -5,7 +5,6 @@
 package dellapenna.personal.bpmn.dmn;
 
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
-import java.util.Map;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.camunda.bpm.model.dmn.instance.DecisionTable;
 
@@ -16,7 +15,7 @@ import org.camunda.bpm.model.dmn.instance.DecisionTable;
  */
 public interface DMNTranslator<T> {
 
-    Map<String, T> translate(DmnModelInstance dmn) throws FeelTranslatorException;
+    T translate(DmnModelInstance dmn) throws FeelTranslatorException;
 
     T translate(DecisionTable t) throws FeelTranslatorException;
 

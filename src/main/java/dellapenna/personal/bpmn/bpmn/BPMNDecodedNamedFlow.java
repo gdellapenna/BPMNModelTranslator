@@ -1,9 +1,10 @@
+
 package dellapenna.personal.bpmn.bpmn;
 
 /**
  *
  * @author giuse
  */
-public record BPMNConditionalFlow<T>(String condition, T code) {
+public record BPMNDecodedNamedFlow<T>(String name, T code) {
 
 }

@@ -53,17 +53,15 @@ public class BPMNModelTest {
     }
 
     public static void main(String[] args) throws FeelTranslatorException {
-        FeelTranslator ft = new ToJavaFeelTranslator();
+        //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.translate("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
-        System.out.println(ft.translate("a.b=c"));        
+        //System.out.println(ft.translate("a.b=c"));        
 //
         DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("C:\\Users\\giuse\\Desktop\\diagram_1.dmn"));
         DMNTranslator dt = new ToJavaDMNTranslator();
         //((AbstractDMNTranslator) dt).dump(dmnInstance);
-        Map<String, String> dtt = dt.translate(dmnInstance);
-        for (String dtn : dtt.keySet()) {
-            System.out.println(dtt.get(dtn));
-        }
+        System.out.println(dt.translate(dmnInstance));
+
 //
         BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("C:\\Users\\giuse\\Desktop\\diagram_1.bpmn"));
         BPMNTranslator bt = new ToJavaBPMNTranslator();
