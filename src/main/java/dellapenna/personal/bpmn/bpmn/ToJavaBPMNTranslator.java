@@ -113,19 +113,23 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     protected String translateBusinessRuleTask(BusinessRuleTask t) {
+
         ModelElementInstance ioMapping = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping");
         ModelElementInstance calledDecision = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "calledDecision");
-        return (t.getName() != null ? "//" + t.getName() : "")
-                + "\n\tMap<String,Object> params = new HashMap<>();\n"
-                + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
-                        .map(e -> "\tparams.put(\"" + e.getAttribute("target") + "\"," + feel.translateChecked(e.getAttribute("source").substring(1)) + ");").collect(Collectors.joining("\n"))
-                + "\n\tMap<String,Object> " + calledDecision.getAttributeValue("resultVariable")
-                + "=" + sanitizeName("dmn_" + calledDecision.getAttributeValue("decisionId"))
-                + "(params);\n"
+
+        String procName = sanitizeName("dmn_" + calledDecision.getAttributeValue("decisionId"));
+        String output_record_name = procName + "_result";
+
+        return (t.getName() != null ? "//" + t.getName() : "")                                 
+                + "\n\t" + output_record_name + " " + calledDecision.getAttributeValue("resultVariable")
+                + "=" + procName
+                + "("+ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
+                        .map(e -> "/*" + e.getAttribute("target") + "*/" + feel.translateChecked(e.getAttribute("source").substring(1))).collect(Collectors.joining(", "))
+                +");\n"
                 //da sostituire modificando nell'espressione ogni riferimento a var.campo in result.get("campo")
                 + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
                         .map(e -> "\tvar " + e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
-                        .map(s -> s.replaceAll(calledDecision.getAttributeValue("resultVariable") + ".([a-z0-9_]+)", calledDecision.getAttributeValue("resultVariable") + ".get(\"$1\")"))
+                        //.map(s -> s.replaceAll(calledDecision.getAttributeValue("resultVariable") + ".([a-z0-9_]+)", calledDecision.getAttributeValue("resultVariable") + ".get(\"$1\")"))
                         .collect(Collectors.joining(";\n"));
     }
 
@@ -202,6 +206,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     + splitFlows.get(o).code()
                     + "\n}";
         }
+        result+=" else { return null; }";
         return result;
     }
 

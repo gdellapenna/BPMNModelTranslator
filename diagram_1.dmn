@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" id="Definitions_1tbi1g5" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.17.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.3.0">
+  <decision id="TestDecisionID" name="TestDecision">
+    <knowledgeRequirement id="KnowledgeRequirement_1gy186b">
+      <requiredKnowledge href="#BusinessKnowledgeModel_03nkod0" />
+    </knowledgeRequirement>
+    <authorityRequirement id="AuthorityRequirement_0fm3sb6">
+      <requiredAuthority href="#KnowledgeSource_0bnuipr" />
+    </authorityRequirement>
+    <decisionTable id="DecisionTable_0wip7uc" hitPolicy="RULE ORDER">
+      <input id="Input_1">
+        <inputExpression id="InputExpression_1" typeRef="number">
+          <text>abs(a)</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0queout">
+        <inputExpression id="LiteralExpression_1dpc2bt" typeRef="string">
+          <text>s</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="done" typeRef="boolean" />
+      <output id="OutputClause_1bsbb08" name="message" typeRef="string" />
+      <rule id="DecisionRule_0v3fvlm">
+        <description>Caso1</description>
+        <inputEntry id="UnaryTests_0jg781z">
+          <text>[3..5]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ngujo6">
+          <text>not("1","2")</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1n7rj85">
+          <text>true</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0od425g">
+          <text>"ok"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1dzcv5f">
+        <description>Caso2</description>
+        <inputEntry id="UnaryTests_1w0ew1e">
+          <text>&gt;10</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1925dkd">
+          <text>["a","b"]</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1565cee">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_087knuy">
+          <text>"no"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1odb7bt">
+        <description>Caso3</description>
+        <inputEntry id="UnaryTests_0s2kram">
+          <text>&gt;1 </text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1egbwng">
+          <text>"c"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1xgq32t">
+          <text>false</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_0775hpe">
+          <text>"ko"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <businessKnowledgeModel id="BusinessKnowledgeModel_03nkod0" name="Dati" />
+  <knowledgeSource id="KnowledgeSource_0bnuipr" name="Ridati" />
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="TestDecisionID">
+        <dc:Bounds height="80" width="180" x="160" y="80" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_0ju6d7o" dmnElementRef="BusinessKnowledgeModel_03nkod0">
+        <dc:Bounds height="46" width="135" x="182" y="317" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_0ww8l3d" dmnElementRef="KnowledgeRequirement_1gy186b">
+        <di:waypoint x="250" y="317" />
+        <di:waypoint x="250" y="160" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_1tasu23" dmnElementRef="KnowledgeSource_0bnuipr">
+        <dc:Bounds height="63" width="100" x="440" y="308" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_0ms4asz" dmnElementRef="AuthorityRequirement_0fm3sb6">
+        <di:waypoint x="455" y="308" />
+        <di:waypoint x="294" y="160" />
+      </dmndi:DMNEdge>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

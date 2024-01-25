@@ -60,7 +60,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
             }
             decoded_rules.add(new DMNDecisionRule<>(rule_conditions, rule_assignments, rule_comment));
         }
-        return translateDecisionTable(t.getId(), inputs, outputs, translateRules(decoded_rules));
+        return translateDecisionTable(t.getId(), inputs, outputs, decoded_rules);
     }
 
     @Override
@@ -75,9 +75,9 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
 
     protected abstract T translateExpression(String input, String exp) throws FeelTranslatorException;
 
-    protected abstract T translateRules(List<DMNDecisionRule<T>> decoded_rules);
+    protected abstract T translateRules(List<DMNDecisionRule<T>> decoded_rules, String output_record_name);
 
-    protected abstract T translateDecisionTable(String id, List<Input> inputs, List<Output> outputs, T translated_rules);
+    protected abstract T translateDecisionTable(String id, List<Input> inputs, List<Output> outputs, List<DMNDecisionRule<T>> decoded_rules);
 
     protected abstract T translateDecisionModel(Map<String, T> decoded_tables);
 

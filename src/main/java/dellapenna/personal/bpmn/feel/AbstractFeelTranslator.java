@@ -6,8 +6,6 @@ import org.camunda.feel.syntaxtree.Exp;
 import org.camunda.feel.syntaxtree.FunctionParameters;
 import scala.collection.Iterator;
 import java.math.BigDecimal;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.camunda.feel.FeelEngine;
 import org.camunda.feel.api.FeelEngineApi;
 import org.camunda.feel.api.ParseResult;
@@ -50,57 +48,61 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
     @Override
     public T translateExp(Exp input, Exp e) throws FeelTranslatorException {
         T result;
+
         switch (e) {
+            case null -> {
+                result=null;
+            }
             case org.camunda.feel.syntaxtree.GreaterThan t -> {
-                result = translateGreaterThan(translateExp(input, t.x()), translateExp(input, t.y()));
+                result = translateGreaterThan(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputGreaterThan t -> {
-                result = translateGreaterThan(translateExp(null, input), translateExp(input, t.x()));
+                result = translateGreaterThan(translateExp(null, input), translateExp(null, t.x()));
             }
             case org.camunda.feel.syntaxtree.LessThan t -> {
-                result = translateLessThan(translateExp(input, t.x()), translateExp(input, t.y()));
+                result = translateLessThan(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputLessThan t -> {
-                result = translateLessThan(translateExp(null, input), translateExp(input, t.x()));
+                result = translateLessThan(translateExp(null, input), translateExp(null, t.x()));
             }
             case org.camunda.feel.syntaxtree.GreaterOrEqual t -> {
-                result = translateGreaterOrEqual(translateExp(input, t.x()), translateExp(input, t.y()));
+                result = translateGreaterOrEqual(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputGreaterOrEqual t -> {
-                result = translateGreaterOrEqual(translateExp(null, input), translateExp(input, t.x()));
+                result = translateGreaterOrEqual(translateExp(null, input), translateExp(null, t.x()));
             }
             case org.camunda.feel.syntaxtree.LessOrEqual t -> {
-                result = translateLessOrEqual(translateExp(input, t.x()), translateExp(input, t.y()));
+                result = translateLessOrEqual(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputLessOrEqual t -> {
-                result = translateLessOrEqual(translateExp(null, input), translateExp(input, t.x()));
+                result = translateLessOrEqual(translateExp(null, input), translateExp(null, t.x()));
             }
             case org.camunda.feel.syntaxtree.Equal t -> {
-                result = translateEqual(translateExp(input, t.x()), translateExp(input, t.y()));
+                result = translateEqual(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.InputEqualTo t -> {
-                result = translateEqual(translateExp(null, input), translateExp(input, t.x()));
+                result = translateEqual(translateExp(null, input), translateExp(null, t.x()));
             }
             case org.camunda.feel.syntaxtree.Not t -> {
                 result = translateNot(translateExp(input, t.x()));
             }
             case org.camunda.feel.syntaxtree.Conjunction t -> {
-                result = translateAnd(translateExp(input, t.x()), translateExp(input, t.y()));
+                result = translateAnd(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.Disjunction t -> {
-                result = translateOr(translateExp(input, t.x()), translateExp(input, t.y()));
+                result = translateOr(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.ConstNumber t -> {
-                result = translateNumber(t.value().bigDecimal());
+                result = translateNumber(translateExp(null, input),t.value().bigDecimal());
             }
             case org.camunda.feel.syntaxtree.ConstBool t -> {
-                result = translateBoolean(t.value());
+                result = translateBoolean(translateExp(null, input),t.value());
             }
             case org.camunda.feel.syntaxtree.ConstString t -> {
-                result = translateString(t.value());
+                result = translateString(translateExp(null, input),t.value());
             }
             case org.camunda.feel.syntaxtree.ConstRange t -> {
-                result = translateConstRange(translateExp(input, t.start().value()), translateExp(input, t.end().value()));
+                result = translateConstRange(translateExp(null, t.start().value()), translateExp(null, t.end().value()));
             }
             case org.camunda.feel.syntaxtree.Ref t -> {
                 result = translateVariableReference(scala.collection.JavaConverters.asJava(t.names()));
@@ -138,7 +140,7 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
                 result = translateFunctionCall(t.function(), translateFunctionParameters(t.params()));
             }
             case org.camunda.feel.syntaxtree.ConstList t -> {
-                result = translateConstList(scala.collection.JavaConverters.asJava(t.items()).stream().map(ee -> translateExpChecked(ee)).toList());
+                result = translateConstList(translateExp(null,input),scala.collection.JavaConverters.asJava(t.items()).stream().map(ee -> translateExpChecked(ee)).toList());
             }
             case org.camunda.feel.syntaxtree.PathExpression t -> {
                 result = translatePath(t.key(),translateExp(t.path()));
@@ -211,13 +213,13 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
 
     protected abstract T translateOr(T arg1, T arg2);
 
-    protected abstract T translateNumber(BigDecimal value);
+    protected abstract T translateNumber(T context, BigDecimal value);
 
-    protected abstract T translateBoolean(boolean value);
+    protected abstract T translateBoolean(T context, boolean value);
 
-    protected abstract T translateString(String value);
+    protected abstract T translateString(T context, String value);
 
-    protected abstract T translateConstRange(T arg1, T arg2);
+    protected abstract T translateConstRange(T context, T arg2);
 
     protected abstract T translateAddition(T arg1, T arg2);
 
@@ -237,7 +239,7 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
 
     protected abstract T translateVariableReference(List<String> names);
 
-    protected abstract T translateConstList(List<T> list);
+    protected abstract T translateConstList(T context, List<T> list);
     
     protected abstract T translatePath(String key, T path);
 

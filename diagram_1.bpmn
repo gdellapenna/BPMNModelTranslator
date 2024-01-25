@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0fgq32b" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.17.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.3.0">
+  <bpmn:process id="Process_02s2w3u" isExecutable="true">
+    <bpmn:extensionElements>
+      <zeebe:properties>
+        <zeebe:property name="preferenza" value="primo" />
+      </zeebe:properties>
+    </bpmn:extensionElements>
+    <bpmn:startEvent id="StartEvent_1" name="Hai fame">
+      <bpmn:extensionElements />
+      <bpmn:outgoing>Flow_0eeheir</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Activity_1vwe1f0" name="Bisogna Mangiare">
+      <bpmn:incoming>Flow_0eeheir</bpmn:incoming>
+      <bpmn:outgoing>Flow_1hgh9me</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0eeheir" sourceRef="StartEvent_1" targetRef="Activity_1vwe1f0" />
+    <bpmn:exclusiveGateway id="Gateway_0ijtc3u" name="Che cibo preferisci?">
+      <bpmn:incoming>Flow_1hgh9me</bpmn:incoming>
+      <bpmn:outgoing>Flow_1b3ql3x</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0lncar1</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1hgh9me" sourceRef="Activity_1vwe1f0" targetRef="Gateway_0ijtc3u" />
+    <bpmn:task id="Activity_0dyrwmq" name="Prepara una carbonara">
+      <bpmn:incoming>Flow_1b3ql3x</bpmn:incoming>
+      <bpmn:outgoing>Flow_1rsh6vl</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1b3ql3x" name="Primo" sourceRef="Gateway_0ijtc3u" targetRef="Activity_0dyrwmq">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=preferenza="primo"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0lncar1" name="Secondo" sourceRef="Gateway_0ijtc3u" targetRef="Activity_1lic7xl">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=preferenza="secondo"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:task id="Activity_01p6jwz" name="Mangia">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0emo7jo</bpmn:incoming>
+      <bpmn:incoming>Flow_1rsh6vl</bpmn:incoming>
+      <bpmn:outgoing>Flow_1x21q4w</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0emo7jo" sourceRef="Activity_1lic7xl" targetRef="Activity_01p6jwz" />
+    <bpmn:sequenceFlow id="Flow_1rsh6vl" sourceRef="Activity_0dyrwmq" targetRef="Activity_01p6jwz" />
+    <bpmn:businessRuleTask id="Activity_0xh2r9a" name="Prendi una decisione">
+      <bpmn:extensionElements>
+        <zeebe:calledDecision decisionId="DecisionTable_0wip7uc" resultVariable="dresult" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=&#34;a&#34;" target="a" />
+          <zeebe:input source="=&#34;ciao&#34;" target="s" />
+          <zeebe:output source="=dresult.message" target="message" />
+          <zeebe:output source="=dresult.done" target="done" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1x21q4w</bpmn:incoming>
+      <bpmn:outgoing>Flow_053v7vp</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:sequenceFlow id="Flow_1x21q4w" sourceRef="Activity_01p6jwz" targetRef="Activity_0xh2r9a" />
+    <bpmn:endEvent id="Event_13ehcbx" name="Sei sazio">
+      <bpmn:incoming>Flow_053v7vp</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_053v7vp" sourceRef="Activity_0xh2r9a" targetRef="Event_13ehcbx" />
+    <bpmn:userTask id="Activity_1lic7xl" name="Prepara una Bistecca">
+      <bpmn:incoming>Flow_0lncar1</bpmn:incoming>
+      <bpmn:outgoing>Flow_0emo7jo</bpmn:outgoing>
+    </bpmn:userTask>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_02s2w3u">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="159" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="175" y="202" width="45" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vwe1f0_di" bpmnElement="Activity_1vwe1f0">
+        <dc:Bounds x="270" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0ijtc3u_di" bpmnElement="Gateway_0ijtc3u" isMarkerVisible="true">
+        <dc:Bounds x="425" y="152" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="425" y="122" width="51" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0dyrwmq_di" bpmnElement="Activity_0dyrwmq">
+        <dc:Bounds x="530" y="137" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_01p6jwz_di" bpmnElement="Activity_01p6jwz">
+        <dc:Bounds x="740" y="260" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_13ehcbx_di" bpmnElement="Event_13ehcbx">
+        <dc:Bounds x="1222" y="262" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1218" y="305" width="45" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0xh2r9a_di" bpmnElement="Activity_0xh2r9a">
+        <dc:Bounds x="1010" y="250" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1lic7xl_di" bpmnElement="Activity_1lic7xl">
+        <dc:Bounds x="520" y="320" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0eeheir_di" bpmnElement="Flow_0eeheir">
+        <di:waypoint x="215" y="177" />
+        <di:waypoint x="270" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hgh9me_di" bpmnElement="Flow_1hgh9me">
+        <di:waypoint x="370" y="177" />
+        <di:waypoint x="425" y="177" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1b3ql3x_di" bpmnElement="Flow_1b3ql3x">
+        <di:waypoint x="475" y="177" />
+        <di:waypoint x="530" y="177" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="488" y="159" width="29" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0lncar1_di" bpmnElement="Flow_0lncar1">
+        <di:waypoint x="450" y="202" />
+        <di:waypoint x="450" y="380" />
+        <di:waypoint x="520" y="380" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="443" y="292" width="44" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0emo7jo_di" bpmnElement="Flow_0emo7jo">
+        <di:waypoint x="570" y="320" />
+        <di:waypoint x="570" y="300" />
+        <di:waypoint x="740" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rsh6vl_di" bpmnElement="Flow_1rsh6vl">
+        <di:waypoint x="630" y="177" />
+        <di:waypoint x="660" y="177" />
+        <di:waypoint x="660" y="300" />
+        <di:waypoint x="740" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1x21q4w_di" bpmnElement="Flow_1x21q4w">
+        <di:waypoint x="840" y="300" />
+        <di:waypoint x="925" y="300" />
+        <di:waypoint x="925" y="290" />
+        <di:waypoint x="1010" y="290" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_053v7vp_di" bpmnElement="Flow_053v7vp">
+        <di:waypoint x="1110" y="290" />
+        <di:waypoint x="1166" y="290" />
+        <di:waypoint x="1166" y="280" />
+        <di:waypoint x="1222" y="280" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

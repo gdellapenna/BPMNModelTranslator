@@ -51,18 +51,32 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     }
 
     @Override
-    public String translateNumber(BigDecimal value) {
-        return value.toString();
+    public String translateNumber(String context, BigDecimal value) {
+              if (context != null) {
+            return context + " == " + value.toString();
+        } else {
+            return value.toString();
+        }
+
     }
 
     @Override
-    public String translateBoolean(boolean value) {
-        return value ? "true" : "false";
+    public String translateBoolean(String context, boolean value) {
+                if (context != null) {
+            return context + " == " + (value ? "true" : "false");
+        } else {
+            return value ? "true" : "false";
+        }
+
     }
 
     @Override
-    public String translateString(String value) {
-        return "\"" + value + "\"";
+    public String translateString(String context, String value) {
+        if (context != null) {
+            return context + " == " + "\"" + value + "\"";
+        } else {
+            return "\"" + value + "\"";
+        }
 
     }
 
@@ -121,8 +135,13 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     }
 
     @Override
-    protected String translateConstList(List<String> list) {
-        return list.stream().collect(Collectors.joining(",")); //!!!!
+    protected String translateConstList(String context, List<String> list) {
+        if (context != null) {
+            return "inList(" + context + "," + list.stream().collect(Collectors.joining(",")) + ")";
+        } else {
+            return list.stream().collect(Collectors.joining(","));
+        }
+
     }
 
     @Override

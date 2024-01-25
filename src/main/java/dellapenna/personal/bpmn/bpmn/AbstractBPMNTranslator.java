@@ -49,7 +49,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     private BPMNDecodedStep<T> translateNode(FlowNode n) throws FeelTranslatorException {
         BPMNDecodedStep<T> result;
 
-        //HYP: i nodi hanno tutto un incoming e un outgoing TRANNE i gateway       
+        //HYP: i nodi hanno tutti un incoming e un outgoing TRANNE i gateway       
         if (n.getOutgoing().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
             //se un nodo ha più n.getOutgoing(), posporre un inclusive virtuale
             InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
