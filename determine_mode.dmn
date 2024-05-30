@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="DetermineModeDRD" name="DetermineModeDRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.22.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+  <decision id="DetermineModeDT" name="DetermineModeDT">
+    <decisionTable id="DecisionTable_0gitgtn">
+      <input id="Input_1">
+        <inputExpression id="InputExpression_1" typeRef="number">
+          <text>Length</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0xqk9nz">
+        <inputExpression id="LiteralExpression_1uvheil" typeRef="number">
+          <text>Weight</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="Mode" typeRef="string" />
+      <rule id="DecisionRule_0piuulw">
+        <inputEntry id="UnaryTests_0kov2pv">
+          <text>]0..1]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0mg2vvb">
+          <text>]0..5]</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0h4kqu6">
+          <text>"car"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1h8vsfj">
+        <inputEntry id="UnaryTests_0pl3dw2">
+          <text>]1..2]</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_13l6hqo">
+          <text>]0..5]</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ezcck4">
+          <text>"truck"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0beka7s">
+        <inputEntry id="UnaryTests_18dvxpn">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1abbjtc">
+          <text>]5..10]</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1b62boh">
+          <text>"truck"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1bm3xss">
+        <inputEntry id="UnaryTests_07r3qce">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0b06qbt">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1xenw6v">
+          <text>"undef"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="DetermineModeDT">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
