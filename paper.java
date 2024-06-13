@@ -1,52 +1,52 @@
 
 class prova {
 
-    public static record dmn_DecisionTable_1w1qw51_result(number Length) {
+    public static record dmn_GetLengthDT_result(Double Length) {
 
     }
 
-    public dmn_DecisionTable_1w1qw51_result dmn_DecisionTable_1w1qw51(string Type) {
+    public dmn_GetLengthDT_result dmn_GetLengthDT(String Type) {
 
-        if (Type == "std") {
-            return new dmn_DecisionTable_1w1qw51_result(/*Length*/0.5);
-        } else if (Type == "large") {
-            return new dmn_DecisionTable_1w1qw51_result(/*Length*/1);
-        } else if (Type == "xl") {
-            return new dmn_DecisionTable_1w1qw51_result(/*Length*/2);
-        } else if (true) {
-            return new dmn_DecisionTable_1w1qw51_result(/*Length*/-(1));
+        if (Type.equals("std")) {
+            return new dmn_GetLengthDT_result(/*Length*/0.5);
+        } else if (Type.equals("large")) {
+            return new dmn_GetLengthDT_result(/*Length*/1.0);
+        } else if (Type.equals("xl")) {
+            return new dmn_GetLengthDT_result(/*Length*/2.0);
+        } else {
+            return new dmn_GetLengthDT_result(/*Length*/-(1.0));
         }
     }
 
-    public static record dmn_DecisionTable_0gitgtn_result(string Mode) {
+    public static record dmn_DetermineModeDT_result(String Mode) {
 
     }
 
-    public dmn_DecisionTable_0gitgtn_result dmn_DecisionTable_0gitgtn(number Length, number Weight) {
+    public dmn_DetermineModeDT_result dmn_DetermineModeDT(Double Length, Double Weight) {
 
-        if (contains(Length, constRange(0, 1)) && contains(Weight, constRange(0, 5))) {
-            return new dmn_DecisionTable_0gitgtn_result(/*Mode*/"car");
-        } else if (contains(Length, constRange(1, 2)) && contains(Weight, constRange(0, 5))) {
-            return new dmn_DecisionTable_0gitgtn_result(/*Mode*/"truck");
-        } else if (true && contains(Length, constRange(5, 10))) {
-            return new dmn_DecisionTable_0gitgtn_result(/*Mode*/"truck");
-        } else if (true && true) {
-            return new dmn_DecisionTable_0gitgtn_result(/*Mode*/"undef");
+        if ((Length > 0.0 && Length <= 1.0) && (Weight > 0.0 && Weight <= 5.0)) {
+            return new dmn_DetermineModeDT_result(/*Mode*/"car");
+        } else if ((Length > 1.0 && Length <= 2.0) && (Weight > 0.0 && Weight <= 5.0)) {
+            return new dmn_DetermineModeDT_result(/*Mode*/"truck");
+        } else if ((Length > 5.0 && Length <= 10.0)) {
+            return new dmn_DetermineModeDT_result(/*Mode*/"truck");
+        } else {
+            return new dmn_DetermineModeDT_result(/*Mode*/"undef");
         }
     }
 
-    public static record dmn_DecisionTable_0lsdblf_result(string Consent) {
+    public static record dmn_ChooseConsentDT_result(String Consent) {
 
     }
 
-    public dmn_DecisionTable_0lsdblf_result dmn_DecisionTable_0lsdblf(string Mode, number Weight) {
+    public dmn_ChooseConsentDT_result dmn_ChooseConsentDT(String Mode, Double Weight) {
 
-        if (Mode == "car" && Weight > 6) {
-            return new dmn_DecisionTable_0lsdblf_result(/*Consent*/"owner");
-        } else if (Mode == "truck" && Weight > 8) {
-            return new dmn_DecisionTable_0lsdblf_result(/*Consent*/"com");
-        } else if (true && true) {
-            return new dmn_DecisionTable_0lsdblf_result(/*Consent*/"none");
+        if (Mode.equals("car") && Weight > 6.0) {
+            return new dmn_ChooseConsentDT_result(/*Consent*/"owner");
+        } else if (Mode.equals("truck") && Weight > 8.0) {
+            return new dmn_ChooseConsentDT_result(/*Consent*/"com");
+        } else {
+            return new dmn_ChooseConsentDT_result(/*Consent*/"none");
         }
     }
 
@@ -55,52 +55,52 @@ class prova {
         return null;
     }
 
+    
     public java.lang.Void f_StartEvent_1() {
-//start: package received;
+//start: package received
+        var pType = "std";
 //get length
-        dmn_GetLengthDT_result Length = dmn_GetLengthDT(/*Type*/pType);
-        var pLength = Length;
-        if (true) {
+        dmn_GetLengthDT_result getLengthResult = dmn_GetLengthDT(/*Type*/pType);
+        var pLength = getLengthResult.Length;
+        if (pLength.equals(-(1.0))) {
+//end: undefined length
+            System.err.println("undefined Length");
+            System.exit(0);
+            return null;
+        } else {
             t_u_measure_weight();
-            if (pWeight > 10) {
+            var pWeight = 4.0;
+            if (pWeight > 10.0) {
 //end: unsuppoted weight
+                System.err.println("Unsupported Weight");
                 System.exit(0);
                 return null;
-            } else if (true) {
+            } else {
 //determine mode
-                dmn_DetemineModeDT_result Mode = dmn_DetemineModeDT(/*Length*/pLength, /*Weight*/ pWeight);
-                var sMode = Mode;
-                if (sMode == "undef") {
+                dmn_DetermineModeDT_result determineModeResult = dmn_DetermineModeDT(/*Length*/pLength, /*Weight*/ pWeight);
+                var sMode = determineModeResult.Mode;
+                if (sMode.equals("undef")) {
 //end: no shipment
+                    System.err.println("No Shipment");
                     System.exit(0);
                     return null;
-                } else if (true) {
+                } else {
 //choose consent
-                    dmn_ChooseConsentDT_result Consent = dmn_ChooseConsentDT(/*Mode*/sMode, /*Weight*/ pWeight);
-                    var consent = Consent;
-                    if (consent == "com") {
+                    dmn_ChooseConsentDT_result chooseConsentResult = dmn_ChooseConsentDT(/*Mode*/sMode, /*Weight*/ pWeight);
+                    var consent = chooseConsentResult.Consent;
+                    if (consent.equals("com")) {
                         t_g_sign_declaration();
                         return f_Event_1pjc4df();
-                    } else if (consent == "owner") {
+                    } else if (consent.equals("owner")) {
                         t_g_fetch_declaration();
                         return f_Event_1pjc4df();
-                    } else if (consent == "none") {
+                    } else if (consent.equals("none")) {
                         return f_Event_1pjc4df();
                     } else {
                         return null;
                     }
-                } else {
-                    return null;
                 }
-            } else {
-                return null;
             }
-        } else if (pLength == -(1)) {
-//end: undefined length
-            System.exit(0);
-            return null;
-        } else {
-            return null;
         }
     }
 

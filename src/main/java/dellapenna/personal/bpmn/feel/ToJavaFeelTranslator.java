@@ -32,7 +32,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateEqual(String arg1, String arg2) {
-        return ((arg1 != null ? arg1 : "") + " == " + arg2);
+        return ((arg1 != null ? arg1 : "") + ".equals(" + arg2 + ")");
     }
 
     @Override
@@ -52,18 +52,18 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateNumber(String context, BigDecimal value) {
-              if (context != null) {
-            return context + " == " + value.toString();
+        if (context != null) {
+            return context + ".equals(" + String.valueOf(value.doubleValue()) + ")";
         } else {
-            return value.toString();
+            return String.valueOf(value.doubleValue());
         }
 
     }
 
     @Override
     public String translateBoolean(String context, boolean value) {
-                if (context != null) {
-            return context + " == " + (value ? "true" : "false");
+        if (context != null) {
+            return context + ".equals(" + (value ? "true" : "false")+")";
         } else {
             return value ? "true" : "false";
         }
@@ -73,7 +73,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     @Override
     public String translateString(String context, String value) {
         if (context != null) {
-            return context + " == " + "\"" + value + "\"";
+            return context + ".equals(" + "\"" + value + "\")";
         } else {
             return "\"" + value + "\"";
         }
@@ -122,6 +122,11 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
         } else {
             return "contains(" + arg2 + ")"; //!!!!
         }
+    }
+
+    @Override
+    protected String translateInTest(String arg1, boolean startOpen, String start, boolean endOpen, String end) {
+        return "(" + arg1 + (startOpen ? ">" : ">=") + start + " && " + arg1 + (endOpen ? "<" : "<=") + end + ")";
     }
 
     @Override

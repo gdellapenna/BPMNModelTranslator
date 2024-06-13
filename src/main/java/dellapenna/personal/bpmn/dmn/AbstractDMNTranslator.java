@@ -52,7 +52,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
                 } else {
                     rule_conditions.add(new DMNCondition<>(
                             translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent()),
-                            getTrueExpression()));
+                            null));
                 }
             }
             ref_counter = 0;
@@ -66,20 +66,22 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
             }
             decoded_rules.add(new DMNDecisionRule<>(rule_conditions, rule_assignments, rule_comment));
         }
-        return translateDecisionTable(t.getId(), inputs, outputs, decoded_rules);
+        return translateDecisionTable(t.getParentElement().getAttributeValue("id"), inputs, outputs, decoded_rules);
     }
 
     @Override
     public T translate(DmnModelInstance dmn) throws FeelTranslatorException {
-        Map<String, T> decoded_table = new HashMap<>();
+        Map<String, T> decoded_tables = new HashMap<>();
         Collection<DecisionTable> tables = dmn.getModelElementsByType(DecisionTable.class);
         for (DecisionTable t : tables) {
-            decoded_table.put(t.getId(), translate(t));
+            decoded_tables.put(t.getParentElement().getAttributeValue("id"), translate(t));
         }
-        return translateDecisionModel(decoded_table);
+        return translateDecisionModel(decoded_tables);
     }
 
-    protected abstract T getTrueExpression();
+    protected abstract T mapType(String typeRef);
+    
+    //protected abstract T getTrueExpression();
 
     protected abstract T translateExpression(String input, String exp) throws FeelTranslatorException;
 

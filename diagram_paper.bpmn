@@ -1,30 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0y8uzca" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
   <bpmn:process id="Process_1nns705" isExecutable="true">
-    <bpmn:exclusiveGateway id="Gateway_0i2yujj">
+    <bpmn:exclusiveGateway id="Gateway_0i2yujj" default="Flow_1sswihv">
       <bpmn:incoming>Flow_0ox9gg8</bpmn:incoming>
       <bpmn:outgoing>Flow_1sswihv</bpmn:outgoing>
       <bpmn:outgoing>Flow_0kjsbwd</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:endEvent id="Event_06urgzi" name="undefined length">
-      <bpmn:incoming>Flow_0kjsbwd</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:exclusiveGateway id="Gateway_1tgxmu2">
+    <bpmn:exclusiveGateway id="Gateway_1tgxmu2" default="Flow_091bsv3">
       <bpmn:incoming>Flow_176xpbe</bpmn:incoming>
       <bpmn:outgoing>Flow_1lul471</bpmn:outgoing>
       <bpmn:outgoing>Flow_091bsv3</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:endEvent id="Event_0wjo1ye" name="unsuppoted weight">
-      <bpmn:incoming>Flow_1lul471</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:exclusiveGateway id="Gateway_1ocbjca">
+    <bpmn:exclusiveGateway id="Gateway_1ocbjca" default="Flow_0oq8hzy">
       <bpmn:incoming>Flow_0dc0zmh</bpmn:incoming>
       <bpmn:outgoing>Flow_14zz1ue</bpmn:outgoing>
       <bpmn:outgoing>Flow_0oq8hzy</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:endEvent id="Event_19ylwnc" name="no shipment">
-      <bpmn:incoming>Flow_14zz1ue</bpmn:incoming>
-    </bpmn:endEvent>
     <bpmn:exclusiveGateway id="Gateway_0u50uj6">
       <bpmn:incoming>Flow_0flj13s</bpmn:incoming>
       <bpmn:outgoing>Flow_12fyaou</bpmn:outgoing>
@@ -92,10 +83,10 @@
     </bpmn:startEvent>
     <bpmn:businessRuleTask id="Activity_0h04jo2" name="get length">
       <bpmn:extensionElements>
-        <zeebe:calledDecision decisionId="GetLengthDT" resultVariable="Length" />
+        <zeebe:calledDecision decisionId="GetLengthDT" resultVariable="getLengthResult" />
         <zeebe:ioMapping>
           <zeebe:input source="=pType" target="Type" />
-          <zeebe:output source="=Length" target="pLength" />
+          <zeebe:output source="=getLengthResult.Length" target="pLength" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1asd4kl</bpmn:incoming>
@@ -111,11 +102,11 @@
     </bpmn:businessRuleTask>
     <bpmn:businessRuleTask id="Activity_1ol43bw" name="determine mode">
       <bpmn:extensionElements>
-        <zeebe:calledDecision decisionId="DetemineModeDT" resultVariable="Mode" />
+        <zeebe:calledDecision decisionId="DetermineModeDT" resultVariable="determineModeResult" />
         <zeebe:ioMapping>
           <zeebe:input source="=pLength" target="Length" />
           <zeebe:input source="=pWeight" target="Weight" />
-          <zeebe:output source="=Mode" target="sMode" />
+          <zeebe:output source="=determineModeResult.Mode" target="sMode" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_091bsv3</bpmn:incoming>
@@ -158,11 +149,11 @@
     </bpmn:userTask>
     <bpmn:businessRuleTask id="Activity_1cbdv9z" name="choose consent">
       <bpmn:extensionElements>
-        <zeebe:calledDecision decisionId="ChooseConsentDT" resultVariable="Consent" />
+        <zeebe:calledDecision decisionId="ChooseConsentDT" resultVariable="chooseConsentResult" />
         <zeebe:ioMapping>
           <zeebe:input source="=sMode" target="Mode" />
           <zeebe:input source="=pWeight" target="Weight" />
-          <zeebe:output source="=Consent" target="consent" />
+          <zeebe:output source="=chooseConsentResult.Consent" target="consent" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0oq8hzy</bpmn:incoming>
@@ -180,36 +171,33 @@
         <bpmn:targetRef>DataObjectReference_11qlomu</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
     </bpmn:businessRuleTask>
+    <bpmn:endEvent id="Event_06urgzi" name="undefined length">
+      <bpmn:incoming>Flow_0kjsbwd</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_01vu59q" errorRef="Error_1em81pn" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_0wjo1ye" name="unsuppoted weight">
+      <bpmn:incoming>Flow_1lul471</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_1gpc2i9" errorRef="Error_013qit0" />
+    </bpmn:endEvent>
+    <bpmn:endEvent id="Event_19ylwnc" name="no shipment">
+      <bpmn:incoming>Flow_14zz1ue</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_03f767l" errorRef="Error_0fiisbg" />
+    </bpmn:endEvent>
   </bpmn:process>
   <bpmn:message id="Message_0vsrmcv" name="Message_Request" />
+  <bpmn:error id="Error_1em81pn" name="Undefined Length" errorCode="1" />
+  <bpmn:error id="Error_013qit0" name="Unsupported Weight" errorCode="2" />
+  <bpmn:error id="Error_0fiisbg" name="No Shipment" errorCode="3" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1nns705">
       <bpmndi:BPMNShape id="Gateway_0i2yujj_di" bpmnElement="Gateway_0i2yujj" isMarkerVisible="true">
         <dc:Bounds x="505" y="175" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_06urgzi_di" bpmnElement="Event_06urgzi">
-        <dc:Bounds x="672" y="182" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="649" y="225" width="82" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1tgxmu2_di" bpmnElement="Gateway_1tgxmu2" isMarkerVisible="true">
         <dc:Bounds x="505" y="285" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0wjo1ye_di" bpmnElement="Event_0wjo1ye">
-        <dc:Bounds x="672" y="292" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="661" y="335" width="58" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1ocbjca_di" bpmnElement="Gateway_1ocbjca" isMarkerVisible="true">
         <dc:Bounds x="505" y="395" width="50" height="50" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_19ylwnc_di" bpmnElement="Event_19ylwnc">
-        <dc:Bounds x="672" y="402" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="660" y="445" width="61" height="14" />
-        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0u50uj6_di" bpmnElement="Gateway_0u50uj6" isMarkerVisible="true">
         <dc:Bounds x="365" y="635" width="50" height="50" />
@@ -279,18 +267,24 @@
       <bpmndi:BPMNShape id="Activity_1q6vg1w_di" bpmnElement="Activity_1cbdv9z">
         <dc:Bounds x="340" y="490" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="DataInputAssociation_11cvfp6_di" bpmnElement="DataInputAssociation_11cvfp6">
-        <di:waypoint x="208" y="486" />
-        <di:waypoint x="340" y="519" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DataInputAssociation_082lwpj_di" bpmnElement="DataInputAssociation_082lwpj">
-        <di:waypoint x="208" y="400" />
-        <di:waypoint x="323" y="530" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DataOutputAssociation_14t4yim_di" bpmnElement="DataOutputAssociation_14t4yim">
-        <di:waypoint x="340" y="540" />
-        <di:waypoint x="208" y="566" />
-      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0kemhy4_di" bpmnElement="Event_06urgzi">
+        <dc:Bounds x="672" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="649" y="225" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1u0aare_di" bpmnElement="Event_0wjo1ye">
+        <dc:Bounds x="672" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="661" y="335" width="58" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0pl00wf_di" bpmnElement="Event_19ylwnc">
+        <dc:Bounds x="672" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="660" y="445" width="61" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1asd4kl_di" bpmnElement="Flow_1asd4kl">
         <di:waypoint x="258" y="120" />
         <di:waypoint x="390" y="120" />
@@ -410,6 +404,18 @@
       <bpmndi:BPMNEdge id="DataOutputAssociation_17mc681_di" bpmnElement="DataOutputAssociation_17mc681">
         <di:waypoint x="340" y="329" />
         <di:waypoint x="208" y="379" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_11cvfp6_di" bpmnElement="DataInputAssociation_11cvfp6">
+        <di:waypoint x="208" y="486" />
+        <di:waypoint x="340" y="519" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataInputAssociation_082lwpj_di" bpmnElement="DataInputAssociation_082lwpj">
+        <di:waypoint x="208" y="400" />
+        <di:waypoint x="323" y="530" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_14t4yim_di" bpmnElement="DataOutputAssociation_14t4yim">
+        <di:waypoint x="340" y="540" />
+        <di:waypoint x="208" y="566" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

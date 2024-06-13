@@ -107,7 +107,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
 
     private BPMNDecodedStep<T> translateGatewayNode(Gateway n) throws FeelTranslatorException {
         T result;
-
+        String defaultFlow = n.getAttributeValue("default");
         boolean splitting = (n.getOutgoing().size() > 1);
         if (splitting) {
             List<BPMNDecodedConditionalFlow<T>> conditionalFlows = new ArrayList<>();
@@ -115,6 +115,8 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
                 T subFlow = translateFromNode(o.getTarget());
                 if (o.getConditionExpression() != null) {
                     conditionalFlows.add(new BPMNDecodedConditionalFlow<>(o.getConditionExpression().getTextContent(), subFlow));
+                } else if (o.getId().equals(defaultFlow)) {
+                    conditionalFlows.add(new BPMNDecodedConditionalFlow<>(null, subFlow));
                 } else {
                     conditionalFlows.add(new BPMNDecodedConditionalFlow<>("=true", subFlow)); //default
                 }

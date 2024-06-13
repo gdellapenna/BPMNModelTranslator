@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import org.camunda.feel.FeelEngine;
 import org.camunda.feel.api.FeelEngineApi;
 import org.camunda.feel.api.ParseResult;
+import org.camunda.feel.syntaxtree.OpenConstRangeBoundary;
 
 /**
  *
@@ -51,7 +52,7 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
 
         switch (e) {
             case null -> {
-                result=null;
+                result = null;
             }
             case org.camunda.feel.syntaxtree.GreaterThan t -> {
                 result = translateGreaterThan(translateExp(input, t.x()), translateExp(null, t.y()));
@@ -93,13 +94,13 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
                 result = translateOr(translateExp(input, t.x()), translateExp(null, t.y()));
             }
             case org.camunda.feel.syntaxtree.ConstNumber t -> {
-                result = translateNumber(translateExp(null, input),t.value().bigDecimal());
+                result = translateNumber(translateExp(null, input), t.value().bigDecimal());
             }
             case org.camunda.feel.syntaxtree.ConstBool t -> {
-                result = translateBoolean(translateExp(null, input),t.value());
+                result = translateBoolean(translateExp(null, input), t.value());
             }
             case org.camunda.feel.syntaxtree.ConstString t -> {
-                result = translateString(translateExp(null, input),t.value());
+                result = translateString(translateExp(null, input), t.value());
             }
             case org.camunda.feel.syntaxtree.ConstRange t -> {
                 result = translateConstRange(translateExp(null, t.start().value()), translateExp(null, t.end().value()));
@@ -130,7 +131,11 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
             }
             case org.camunda.feel.syntaxtree.InputInRange t -> {
                 if (input != null) {
-                    result = translateInTest(translateExp(null, input), translateExp(input, t.range()));
+                    result = translateInTest(translateExp(null, input),
+                            (t.range().start() instanceof OpenConstRangeBoundary),
+                            translateExp(null, t.range().start().value()),
+                            (t.range().end() instanceof OpenConstRangeBoundary),
+                            translateExp(null, t.range().end().value()));
                 } else {
                     //ranges sometimes get parsed as inputinranges...
                     result = translateExp(input, t.range());
@@ -140,10 +145,10 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
                 result = translateFunctionCall(t.function(), translateFunctionParameters(t.params()));
             }
             case org.camunda.feel.syntaxtree.ConstList t -> {
-                result = translateConstList(translateExp(null,input),scala.collection.JavaConverters.asJava(t.items()).stream().map(ee -> translateExpChecked(ee)).toList());
+                result = translateConstList(translateExp(null, input), scala.collection.JavaConverters.asJava(t.items()).stream().map(ee -> translateExpChecked(ee)).toList());
             }
             case org.camunda.feel.syntaxtree.PathExpression t -> {
-                result = translatePath(t.key(),translateExp(t.path()));
+                result = translatePath(t.key(), translateExp(t.path()));
             }
             default -> {
                 throw new FeelTranslatorException("Cannot translate expression node of type " + e.getClass().getName());
@@ -233,14 +238,16 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
 
     protected abstract T translateExponentiation(T arg1, T arg2);
 
-    protected abstract T translateInTest(T arg1, T arg2);
+    protected abstract T translateInTest(T expression, T range);
+
+    protected abstract T translateInTest(T arg1, boolean startOpen, T start, boolean endOpen, T end);
 
     protected abstract T translateFunctionCall(String function, List<T> arguments);
 
     protected abstract T translateVariableReference(List<String> names);
 
     protected abstract T translateConstList(T context, List<T> list);
-    
+
     protected abstract T translatePath(String key, T path);
 
 }

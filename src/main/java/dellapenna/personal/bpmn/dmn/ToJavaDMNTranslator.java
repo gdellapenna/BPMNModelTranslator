@@ -23,14 +23,19 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
     @Override
     public String translateRules(List<DMNDecisionRule<String>> decoded_rules, String output_record_name) {
-        return decoded_rules.stream().map(r
-                -> ("if ("
-                + r.conditions().stream().map(c -> (c.testExpression())).collect(Collectors.joining(" && "))
-                + ") { return new " + output_record_name + "("
-                //+ r.assignments().stream().map(a -> (a.outputName() + " = " + a.outputExpression())).collect(Collectors.joining("; "))
-                + r.assignments().stream().map(a -> ("/*" + a.outputName() + "*/" + a.outputExpression())).collect(Collectors.joining(", "))
-                + ");}")
-        ).collect(Collectors.joining(" else "));
+        return decoded_rules.stream().map(r -> {
+            String cond = r.conditions().stream().map(c -> (c.testExpression())).filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(" && "));
+            String rs = "";
+            if (!cond.isBlank()) {
+                rs += "if (" + cond + ")";
+            }
+            rs += " { return new " + output_record_name + "("
+                    //+ r.assignments().stream().map(a -> (a.outputName() + " = " + a.outputExpression())).collect(Collectors.joining("; "))
+                    + r.assignments().stream().map(a -> ("/*" + a.outputName() + "*/" + a.outputExpression())).collect(Collectors.joining(", "))
+                    + ");}";
+
+            return rs;
+        }).collect(Collectors.joining(" else "));
     }
 
     @Override
@@ -40,13 +45,13 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
         return "public static record " + output_record_name + "("
                 + outputs.stream()
-                        .map(o -> o.getTypeRef() + " " + o.getName())
+                        .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
                         .collect(Collectors.joining(", "))
                 + "){}"
                 + "\n\n"
                 + "public " + output_record_name + " " + procName + "("
                 + inputs.stream()
-                        .map(i -> i.getInputExpression().getTypeRef() + " " + sanitizeName(i.getInputExpression().getTextContent()))
+                        .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent()))
                         .collect(Collectors.joining(", "))
                 + ") {\n\n" + translateRules(decoded_rules, output_record_name)
                 + "\n}";
@@ -71,7 +76,16 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
     }
 
     @Override
-    protected String getTrueExpression() {
-        return "true";
+    public String mapType(String typeRef) {
+        return switch (typeRef.toLowerCase()) {
+            case "number" ->
+                "Double";
+            case "string" ->
+                "String";
+            case "boolean" ->
+                "Boolean";
+            default ->
+                "Object";
+        };
     }
 }
