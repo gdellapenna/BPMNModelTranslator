@@ -39,15 +39,21 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         List<DMNDecisionRule<T>> decoded_rules = new ArrayList<>();
         Collection<Rule> rules = t.getRules();
         for (Rule r : rules) {
-            String rule_comment = r.getDescription().getTextContent();
+            String rule_comment = r.getDescription() != null ? r.getDescription().getTextContent() : "";
             int ref_counter = 0;
             List<DMNCondition<T>> rule_conditions = new ArrayList<>();
             Collection<InputEntry> inputEntries = r.getInputEntries();
             for (InputEntry i : inputEntries) {
-                rule_conditions.add(new DMNCondition<>(
-                        translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent()),
-                        translateExpression(inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent())
-                ));
+                if (!i.getTextContent().isBlank()) { //blank significa "don't care"
+                    rule_conditions.add(new DMNCondition<>(
+                            translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent()),
+                            translateExpression(inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent())
+                    ));
+                } else {
+                    rule_conditions.add(new DMNCondition<>(
+                            translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent()),
+                            getTrueExpression()));
+                }
             }
             ref_counter = 0;
             List<DMNAssignment<T>> rule_assignments = new ArrayList<>();
@@ -72,6 +78,8 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         }
         return translateDecisionModel(decoded_table);
     }
+
+    protected abstract T getTrueExpression();
 
     protected abstract T translateExpression(String input, String exp) throws FeelTranslatorException;
 

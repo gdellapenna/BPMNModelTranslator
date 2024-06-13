@@ -54,7 +54,7 @@ public class BPMNModelTest {
             System.err.println("parsing error: " + parsing.failure().message());
         }
     }
-    
+
     public static String pre_code() {
         return """
                              
@@ -62,22 +62,53 @@ public class BPMNModelTest {
                class prova {
                """;
     }
-    
+
     public static String post_code() {
         return """
                }
                """;
     }
 
+    public static void paperTranslation() throws IOException, FeelTranslatorException {
+        try (BufferedWriter out = new BufferedWriter(new FileWriter("paper.java"))) {
+
+            out.write(pre_code());
+            out.newLine();
+
+            DMNTranslator<String> dt = new ToJavaDMNTranslator();
+            BPMNTranslator<String> bt = new ToJavaBPMNTranslator();
+
+            DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("get_length.dmn"));
+            out.write(dt.translate(dmnInstance));
+            dmnInstance = Dmn.readModelFromFile(new File("determine_mode.dmn"));
+            out.write(dt.translate(dmnInstance));
+            dmnInstance = Dmn.readModelFromFile(new File("choose_consent.dmn"));
+            out.write(dt.translate(dmnInstance));
+
+            out.newLine();
+            out.newLine();
+
+            BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_paper.bpmn"));
+            out.write(bt.translate(bpmnInstance));
+
+            out.newLine();
+            out.write(post_code());
+
+        }
+
+    }
 
     public static void main(String[] args) throws FeelTranslatorException, IOException {
-        BufferedWriter out = new BufferedWriter(new FileWriter("output.java"));
+        paperTranslation();
+        System.exit(0);
         
+        
+        BufferedWriter out = new BufferedWriter(new FileWriter("output.java"));
+
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.translate("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
         //System.out.println(ft.translate("a.b=c"));        
 //
-
         out.write(pre_code());
         out.newLine();
 
@@ -93,7 +124,7 @@ public class BPMNModelTest {
         BPMNTranslator<String> bt = new ToJavaBPMNTranslator();
         //((AbstractBPMNTranslator) bt).dump(bpmnInstance);
         out.write(bt.translate(bpmnInstance));
-        
+
         out.newLine();
         out.write(post_code());
 //        

@@ -113,7 +113,11 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             List<BPMNDecodedConditionalFlow<T>> conditionalFlows = new ArrayList<>();
             for (SequenceFlow o : n.getOutgoing()) {
                 T subFlow = translateFromNode(o.getTarget());
-                conditionalFlows.add(new BPMNDecodedConditionalFlow<>(o.getConditionExpression().getTextContent(), subFlow));
+                if (o.getConditionExpression() != null) {
+                    conditionalFlows.add(new BPMNDecodedConditionalFlow<>(o.getConditionExpression().getTextContent(), subFlow));
+                } else {
+                    conditionalFlows.add(new BPMNDecodedConditionalFlow<>("=true", subFlow)); //default
+                }
             }
 
             switch (n) {
@@ -214,7 +218,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
         //ci possono essere più start su nodi comuni???
         for (StartEvent s : start) {
             BPMNDecodedNamedFlow<T> flow = translateFlow(s);
-            translateNamedFlow(flow.name(),flow.code());
+            translateNamedFlow(flow.name(), flow.code());
         }
         return finalizeTranslation();
     }

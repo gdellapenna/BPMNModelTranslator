@@ -69,4 +69,9 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
     protected String translateDecisionModel(Map<String, String> decoded_tables) {
         return decoded_tables.values().stream().collect(Collectors.joining("\n\n"));
     }
+
+    @Override
+    protected String getTrueExpression() {
+        return "true";
+    }
 }

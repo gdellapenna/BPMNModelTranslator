@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="ChooseConsentDT" name="ChooseConsentDT" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+  <decision id="Decision_0ly7or9" name="ChooseConsentDT">
+    <decisionTable id="DecisionTable_0lsdblf">
+      <input id="Input_1" label="Mode">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text>Mode</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1288rcq" label="Weight">
+        <inputExpression id="LiteralExpression_0th0qer" typeRef="number">
+          <text>Weight</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" label="Consent" name="Consent" typeRef="string" />
+      <rule id="DecisionRule_1cku0jv">
+        <inputEntry id="UnaryTests_0i3dj2h">
+          <text>"car"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1ey4h3p">
+          <text>&gt; 6</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0nj4fqn">
+          <text>"owner"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0u3zf2x">
+        <inputEntry id="UnaryTests_0sl8y3x">
+          <text>"truck"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ro7388">
+          <text>&gt; 8</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ed3oap">
+          <text>"com"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0uili6z">
+        <inputEntry id="UnaryTests_120owuo">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_197h8rm">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1oiwdrg">
+          <text>"none"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="Decision_0ly7or9">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
