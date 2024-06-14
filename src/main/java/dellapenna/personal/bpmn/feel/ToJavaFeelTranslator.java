@@ -10,24 +10,36 @@ import java.util.stream.Collectors;
  */
 public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
+    private String castToNumber(String a) {
+        return "TypeUtils.tonumber(" + a + ")";
+    }
+
+    private String castToString(String a) {
+        return "TypeUtils.tostring(" + a + ")";
+    }
+
+    private String castToBoolean(String a) {
+        return "TypeUtils.toboolean(" + a + ")";
+    }
+
     @Override
     public String translateGreaterThan(String arg1, String arg2) {
-        return ((arg1 != null ? arg1 : "") + " > " + arg2);
+        return ((arg1 != null ? castToNumber(arg1) : "") + " > " + castToNumber(arg2));
     }
 
     @Override
     public String translateLessThan(String arg1, String arg2) {
-        return ((arg1 != null ? arg1 : "") + " < " + arg2);
+        return ((arg1 != null ? castToNumber(arg1) : "") + " < " + castToNumber(arg2));
     }
 
     @Override
     public String translateGreaterOrEqual(String arg1, String arg2) {
-        return ((arg1 != null ? arg1 : "") + " >= " + arg2);
+        return ((arg1 != null ? castToNumber(arg1) : "") + " >= " + castToNumber(arg2));
     }
 
     @Override
     public String translateLessOrEqual(String arg1, String arg2) {
-        return ((arg1 != null ? arg1 : "") + " <= " + arg2);
+        return ((arg1 != null ? castToNumber(arg1) : "") + " <= " + castToNumber(arg2));
     }
 
     @Override
@@ -37,23 +49,23 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateNot(String arg1) {
-        return ("!(" + arg1 + ")");
+        return ("!(" + castToBoolean(arg1) + ")");
     }
 
     @Override
     public String translateAnd(String arg1, String arg2) {
-        return (arg1 + " && " + arg2);
+        return (castToBoolean(arg1) + " && " + castToBoolean(arg2));
     }
 
     @Override
     public String translateOr(String arg1, String arg2) {
-        return ("(" + arg1 + " || " + arg2 + ")");
+        return ("(" + castToBoolean(arg1) + " || " + castToBoolean(arg2) + ")");
     }
 
     @Override
     public String translateNumber(String context, BigDecimal value) {
         if (context != null) {
-            return context + ".equals(" + String.valueOf(value.doubleValue()) + ")";
+            return castToNumber(context) + ".equals(" + String.valueOf(value.doubleValue()) + ")";
         } else {
             return String.valueOf(value.doubleValue());
         }
@@ -63,7 +75,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     @Override
     public String translateBoolean(String context, boolean value) {
         if (context != null) {
-            return context + ".equals(" + (value ? "true" : "false")+")";
+            return castToBoolean(context) + ".equals(" + (value ? "true" : "false") + ")";
         } else {
             return value ? "true" : "false";
         }
@@ -73,7 +85,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     @Override
     public String translateString(String context, String value) {
         if (context != null) {
-            return context + ".equals(" + "\"" + value + "\")";
+            return castToString(context) + ".equals(" + "\"" + value + "\")";
         } else {
             return "\"" + value + "\"";
         }
@@ -82,32 +94,32 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateAddition(String arg1, String arg2) {
-        return ("(" + arg1 + " + " + arg2 + ")");
+        return ("(" + castToNumber(arg1) + " + " + castToNumber(arg2) + ")");
     }
 
     @Override
     public String translateSubtraction(String arg1, String arg2) {
-        return ("(" + arg1 + " - " + arg2 + ")");
+        return ("(" + castToNumber(arg1) + " - " + castToNumber(arg2) + ")");
     }
 
     @Override
     public String translateDivision(String arg1, String arg2) {
-        return (arg1 + " / " + arg2);
+        return (castToNumber(arg1) + " / " + castToNumber(arg2));
     }
 
     @Override
     public String translateMultiplication(String arg1, String arg2) {
-        return (arg1 + " * " + arg2);
+        return (castToNumber(arg1) + " * " + castToNumber(arg2));
     }
 
     @Override
     public String translateNegation(String arg1) {
-        return ("-(" + arg1 + ")");
+        return ("-(" + castToNumber(arg1) + ")");
     }
 
     @Override
     public String translateExponentiation(String arg1, String arg2) {
-        return ("Math.pow(" + arg1 + "," + arg2 + ")");
+        return ("Math.pow(" + castToNumber(arg1) + "," + castToNumber(arg2) + ")");
     }
 
     @Override
@@ -126,7 +138,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     protected String translateInTest(String arg1, boolean startOpen, String start, boolean endOpen, String end) {
-        return "(" + arg1 + (startOpen ? ">" : ">=") + start + " && " + arg1 + (endOpen ? "<" : "<=") + end + ")";
+        return "(" + castToNumber(arg1) + (startOpen ? ">" : ">=") + start + " && " + castToNumber(arg1) + (endOpen ? "<" : "<=") + end + ")";
     }
 
     @Override

@@ -10,4 +10,5 @@ import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 public interface BPMNTranslator<T> {
      
     public T translate(BpmnModelInstance dmn) throws FeelTranslatorException;
+    
 }

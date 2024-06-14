@@ -9,6 +9,7 @@ import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.camunda.bpm.model.bpmn.instance.EndEvent;
 import org.camunda.bpm.model.bpmn.instance.Event;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
+import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.Gateway;
 import org.camunda.bpm.model.bpmn.instance.InclusiveGateway;
 import org.camunda.bpm.model.bpmn.instance.ManualTask;
@@ -214,20 +215,31 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     }
 
     @Override
-    public T translate(BpmnModelInstance dmn) throws FeelTranslatorException {
-        reset();
-        Collection<StartEvent> start = dmn.getModelElementsByType(StartEvent.class);
+    public T translate(BpmnModelInstance bpmn) throws FeelTranslatorException {
+        List<T> translated_processes = new ArrayList<>();
+        Collection<Process> processes = bpmn.getModelElementsByType(Process.class);
+        for (Process process : processes) {
+            reset();
+            translated_processes.add(translate(process));
+        }
+        return finalizeModelTranslation(translated_processes);
+    }
+
+    public T translate(Process p) throws FeelTranslatorException {
+        Collection<StartEvent> start = p.getChildElementsByType(StartEvent.class);
         //ci possono essere più start su nodi comuni???
         for (StartEvent s : start) {
             BPMNDecodedNamedFlow<T> flow = translateFlow(s);
             translateNamedFlow(flow.name(), flow.code());
         }
-        return finalizeTranslation();
+        return finalizeProcessTranslation(p.getName() != null ? p.getName() : p.getId());
     }
 
     protected abstract void reset();
 
-    protected abstract T finalizeTranslation();
+    protected abstract T finalizeModelTranslation(List<T> processes);
+
+    protected abstract T finalizeProcessTranslation(String name);
 
     protected abstract T translateNamedFlow(String name, T code);
 

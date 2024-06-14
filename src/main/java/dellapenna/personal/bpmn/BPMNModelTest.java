@@ -57,16 +57,40 @@ public class BPMNModelTest {
 
     public static String pre_code() {
         return """
-                             
-               
-               class prova {
-               """;
+            class TypeUtils {
+
+                public static Double tonumber(Object o) {
+                    if (o instanceof Number n) {
+                        return n.doubleValue();
+                    } else {
+                        try {
+                            return Double.valueOf(o.toString());
+                        } catch (NumberFormatException ex) {
+                            return 0.0; //should raise an exception
+                        }
+                    }
+                }
+
+                public static String tostring(Object o) {
+                    return o.toString();
+                }
+
+                public static Boolean toboolean(Object o) {
+                    if (o instanceof Boolean b) {
+                        return b;
+                    } else if (o instanceof Number n) {
+                        return n.doubleValue() != 0;
+                    } else {
+                        return Boolean.valueOf(o.toString());
+
+                    }
+                }
+            }
+            """;
     }
 
     public static String post_code() {
-        return """
-               }
-               """;
+        return "";
     }
 
     public static void paperTranslation() throws IOException, FeelTranslatorException {
@@ -74,7 +98,7 @@ public class BPMNModelTest {
 
             out.write(pre_code());
             out.newLine();
-
+            
             DMNTranslator<String> dt = new ToJavaDMNTranslator();
             BPMNTranslator<String> bt = new ToJavaBPMNTranslator();
 
@@ -93,7 +117,6 @@ public class BPMNModelTest {
 
             out.newLine();
             out.write(post_code());
-
         }
 
     }
@@ -101,8 +124,7 @@ public class BPMNModelTest {
     public static void main(String[] args) throws FeelTranslatorException, IOException {
         paperTranslation();
         System.exit(0);
-        
-        
+
         BufferedWriter out = new BufferedWriter(new FileWriter("output.java"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();

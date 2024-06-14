@@ -43,31 +43,41 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         String procName = sanitizeName("dmn_" + id);
         String output_record_name = procName + "_result";
 
-        return "public static record " + output_record_name + "("
+        return "class " + output_record_name + "{"
                 + outputs.stream()
                         .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
-                        .collect(Collectors.joining(", "))
-                + "){}"
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "public " + output_record_name + "("
+                + outputs.stream()
+                        .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
+                        .collect(Collectors.joining(","))
+                + ") {"
+                + outputs.stream()
+                        .map(o -> "this." + o.getName() + "=" + o.getName())
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "}\n"
+                + "}"
                 + "\n\n"
-                + "public " + output_record_name + " " + procName + "("
+                + "class " + procName + " {\n\n"
+                //+ "public " + output_record_name + " " + procName + "("
+                + "public static " + output_record_name + " execute("
+                //                + inputs.stream()
+                //                        .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent()))
+                //                        .collect(Collectors.joining(", "))
+                
                 + inputs.stream()
-                        .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent()))
+                        .map(i -> "Object _" + sanitizeName(i.getInputExpression().getTextContent()))
                         .collect(Collectors.joining(", "))
-                + ") {\n\n" + translateRules(decoded_rules, output_record_name)
+                + ") {\n\n"
+                + inputs.stream()
+                        .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent())
+                        + " = TypeUtils.to" + i.getInputExpression().getTypeRef() + "(_" + sanitizeName(i.getInputExpression().getTextContent()) + ")")
+                        .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
+                
+                + translateRules(decoded_rules, output_record_name)
+                + "\n}"
                 + "\n}";
 
-//                return "public Map<String,Object> " + sanitizeName("dmn_" + id) + "(Map<String,Object> params) {\n"
-//                + inputs.stream()
-//                        .map(i -> "var " + sanitizeName(i.getInputExpression().getTextContent()) + " = params.get(\"" + sanitizeName(i.getInputExpression().getTextContent()) + "\");"
-//                        + "//type: " + i.getInputExpression().getTypeRef())
-//                        .collect(Collectors.joining("\n"))
-//                + "\n\n" + translated_rules
-//                + "\n\n\tMap<String,Object> result = new HashMap<>();\n"
-//                + outputs.stream()
-//                        .map(o -> "\tresult.put(\"" + o.getName() + "\",VALUE); //type: " + o.getTypeRef())
-//                        .collect(Collectors.joining("\n"))
-//                + "\nreturn result;"
-//                + "\n}";
     }
 
     @Override

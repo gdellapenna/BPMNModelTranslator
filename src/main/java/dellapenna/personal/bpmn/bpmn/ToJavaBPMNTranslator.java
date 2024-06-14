@@ -24,25 +24,34 @@ import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 
 //TODO le variabili di output devono essere globali?!? Ma non possiamo determinarne il tipo! Facciamo object?!? e poi con gli operatori?
-
 public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     private final static String ZEEBENS = "http://camunda.org/schema/zeebe/1.0";
 
     private static final ToJavaFeelTranslator feel = new ToJavaFeelTranslator();
     private final Map<String, FunctionDefinition> functions = new HashMap<>();
+    private final Map<String, GlobalVariableDefinition> globals = new HashMap<>();
+
+  
 
     @Override
     protected void reset() {
         functions.clear();
     }
-    
-    private FunctionDefinition registerGlobalVariable(String name) {
-        return registerFunction(name, "\tSystem.out.println(\"" + name + "\");\n" + "\treturn null;");
+
+    private GlobalVariableDefinition registerGlobalVariable(String name) {
+        GlobalVariableDefinition g;
+        if (!globals.containsKey(name)) {
+            g = new GlobalVariableDefinition(name);
+            globals.put(name, g);
+        } else {
+            g = globals.get(name);
+        }
+        return g;
     }
 
     private FunctionDefinition registerProcedure(String name) {
-        return registerFunction(name, "\tSystem.out.println(\"" + name + "\");\n" + "\treturn null;");
+        return registerFunction(name, "\tSystem.out.println(\"" + name + "\");\n" /*+ "\treturn null;"*/);
     }
 
     private FunctionDefinition registerFunction(String name, String code) {
@@ -56,18 +65,42 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     }
 
     private String outputFunctionCode(FunctionDefinition f) {
-        return "public " + f.returnType().getName() + " " + f.name() + "("
-                + f.parameters().entrySet().stream().map(e -> e.getValue().getName() + " " + e.getKey()).collect(Collectors.joining(", "))
+        return "public " + (f.returnType().equals(Void.class) ? "void" : f.returnType().getName()) + " " + f.name() + "("
+                + f.parameters().entrySet().stream().map(e -> e.getValue().getName() + " " + e.getKey()).collect(Collectors.joining(", ")) //convert types?
                 + ") {\n"
                 + f.body()
                 + "\n}";
     }
 
     @Override
-    protected String finalizeTranslation() {
-        return functions.values().stream()
-                .map(fd -> outputFunctionCode(fd))
-                .collect(Collectors.joining("\n\n"));
+    protected String finalizeProcessTranslation(String name) {
+        return "\nclass bpmn_p_" + sanitizeName(name) + " {\n\n"
+                + globals.values().stream()
+                        .map(gd -> "Object " + gd.name())
+                        .collect(Collectors.joining(";\n")) + ";\n\n"
+                + functions.values().stream()
+                        .map(fd -> outputFunctionCode(fd))
+                        .collect(Collectors.joining("\n\n"))
+                + "\n}\n\n";
+    }
+
+    @Override
+    protected String finalizeModelTranslation(List<String> processes) {
+        return processes.stream().collect(Collectors.joining("\n\n"));
+    }
+
+    private String translateOutputs(FlowNode t) {
+        ModelElementInstance ioMapping = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping");
+        if (ioMapping != null) {
+
+            ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream().forEach(e -> registerGlobalVariable(e.getAttribute("target")));
+
+            return ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
+                    .map(e -> /*"\tvar " + */ e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
+                    .collect(Collectors.joining(";\n"));
+        } else {
+            return "";
+        }
     }
 
     @Override
@@ -134,15 +167,14 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
         return (t.getName() != null ? "//" + t.getName() : "")
                 + "\n\t" + output_record_name + " " + calledDecision.getAttributeValue("resultVariable")
-                + "=" + procName
+                + "=" + procName + ".execute"
                 + "(" + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
                         .map(e -> "/*" + e.getAttribute("target") + "*/" + feel.translateChecked(e.getAttribute("source").substring(1))).collect(Collectors.joining(", "))
                 + ");\n"
-                //da sostituire modificando nell'espressione ogni riferimento a var.campo in result.get("campo")
-                + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
-                        .map(e -> "\tvar " + e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
-                        //.map(s -> s.replaceAll(calledDecision.getAttributeValue("resultVariable") + ".([a-z0-9_]+)", calledDecision.getAttributeValue("resultVariable") + ".get(\"$1\")"))
-                        .collect(Collectors.joining(";\n"));
+                + translateOutputs(t);
+//                + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
+//                        .map(e -> "\tvar " + e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
+//                        .collect(Collectors.joining(";\n"));
     }
 
     /////// EVENTS
@@ -153,12 +185,19 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         for (EventDefinition eventDef : eventDefs) {
             if (eventDef instanceof ErrorEventDefinition eed) {
                 result += "\nSystem.err.println(\"" + eed.getError().getName() + "\");"; //TODO: handle other event definitions here?
+                try {
+                    int code = Integer.valueOf(eed.getError().getErrorCode());
+                    result += "\nSystem.exit(" + code + ");";
+                    return result;
+                } catch (NumberFormatException ex) {
+                    //code is not a number
+                    result += "\nSystem.exit(1);";
+                }
+
             }
         }
-
-        result += "\nSystem.exit(0);"
-                + "\nreturn null;";
-        
+        result += "\nSystem.exit(0);";
+        //////result+= "\nreturn null;";
         return result;
     }
 
@@ -171,22 +210,10 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         //inserire una condizione??
     }
 
-    private String translateOutputs(FlowNode t) {
-        ModelElementInstance ioMapping = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping");
-        if (ioMapping != null) {
-            return ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
-                    .map(e -> "\tvar " + e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
-                    //.map(s -> s.replaceAll(calledDecision.getAttributeValue("resultVariable") + ".([a-z0-9_]+)", calledDecision.getAttributeValue("resultVariable") + ".get(\"$1\")"))
-                    .collect(Collectors.joining(";\n"));
-        } else {
-            return "";
-        }
-    }
-
     ////// GATEWAYS
     private String translateJoiningGateway(String name, String code) throws FeelTranslatorException {
         FunctionDefinition proc = registerFunction(name, code);
-        return "return " + proc.name() + "();";
+        return /*"return " +*/ proc.name() + "();";
     }
 
     @Override
@@ -252,7 +279,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (default_branch != null) {
             result += "{\n" + default_branch.code() + "\n}";
         } else {
-            result += " { return null; }";
+            result += "{\n//no default case\n}";
+            //////result += " { return null; }";
         }
         return result;
     }
