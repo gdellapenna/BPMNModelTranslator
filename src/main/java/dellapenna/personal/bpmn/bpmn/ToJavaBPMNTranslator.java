@@ -292,3 +292,69 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     }
 
 }
+
+/*
+ExecutorService pgw_123_executor = Executors.newFixedThreadPool(10);
+Future<Integer> future = new SquareCalculator().calculate(10);
+
+while(!future.isDone()) {
+    System.out.println("Calculating...");
+    Thread.sleep(300);
+}
+
+Integer result = future.get();
+
+---------
+
+ForkJoinPool commonPool = ForkJoinPool.commonPool();
+forkJoinPool.execute(customRecursiveTask);
+int result = customRecursiveTask.join();
+ForkJoinTask.invokeAll(createSubtasks());
+
+
+public void test() {
+
+        //parallel gateway
+        ForkJoinTask<Integer>[] tasks = new ForkJoinTask[]{
+            ForkJoinTask.adapt(() -> {
+                System.out.println("ciao");
+                return 1;
+            }),
+            ForkJoinTask.adapt(() -> {
+                System.out.println("ciao");
+                return 1;
+            })
+        };
+        //serve un modo per dare un nome al pool in modo da poter dire di quali elementi fare il JOIN DOPO averli chiamati, e non allo stesso tempo
+        //parallel join gateway 
+        Collection<ForkJoinTask<Integer>> results = ForkJoinTask.invokeAll(Arrays.asList(tasks));
+    }
+*/
+
+/*
+SOLUZIONE MIGLIORE
+
+
+//parallel gateway
+        FutureTask<Integer>[] pgw_123_tasks = new FutureTask[]{
+            new FutureTask<>(() -> {
+                System.out.println("ciao");
+                return 1;
+            }),
+            new FutureTask<>(() -> {
+                System.out.println("ciao");
+                return 1;
+            })
+        };
+        for (FutureTask<Integer> t : pgw_123_tasks) {
+            t.run();
+        }
+        ----
+        //i vari sotto-flussi devono uscire ritornando qualcosa invece di chiamatre la funzione-flusso di uscita dal join parallel gw...
+        ----
+        //join parallel gateway 
+        while (!Arrays.stream(pgw_123_tasks).allMatch(t -> t.isDone())) {
+            Thread.sleep(300);
+        }
+        //funzione-flusso di uscita dal join parallel gw...
+*/

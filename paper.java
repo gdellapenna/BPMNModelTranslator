@@ -198,6 +198,5 @@ class bpmn_p_Shipment {
 
     public void t_g_sign_declaration() {
         System.out.println("t_g_sign declaration");
-
     }
 }
