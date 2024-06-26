@@ -123,42 +123,31 @@ class bpmn_p_Shipment {
 
     }
 
-    public void e_e_no_shipment() {
-//end: no shipment
-
-        System.err.println("No Shipment");
-        System.exit(3);
-    }
-
-    public void e_s_package_received() {
-//start: package received
-        pType = getPackageType();
-    }
-
-    public void e_e_undefined_length() {
-//end: undefined length
-
-        System.err.println("Undefined Length");
-        System.exit(1);
-    }
-
     public void f_StartEvent_1() {
-        e_s_package_received();
+//start: package received
+        pType = "std";
 //get length
         dmn_GetLengthDT_result getLengthResult = dmn_GetLengthDT.execute(/*Type*/pType);
         pLength = getLengthResult.Length;
         if (pLength.equals(-(TypeUtils.tonumber(1.0)))) {
-            e_e_undefined_length();
+//end: undefined length
+            System.err.println("Undefined Length");
+            System.exit(1);
         } else {
             t_u_measure_weight();
+            pWeight = 4.0;
             if (TypeUtils.tonumber(pWeight) > TypeUtils.tonumber(10.0)) {
-                e_e_unsuppoted_weight();
+//end: unsuppoted weight
+                System.err.println("Unsupported Weight");
+                System.exit(2);
             } else {
 //determine mode
                 dmn_DetermineModeDT_result determineModeResult = dmn_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/ pWeight);
                 sMode = determineModeResult.Mode;
                 if (sMode.equals("undef")) {
-                    e_e_no_shipment();
+//end: no shipment
+                    System.err.println("No Shipment");
+                    System.exit(3);
                 } else {
 //choose consent
                     dmn_ChooseConsentDT_result chooseConsentResult = dmn_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/ pWeight);
@@ -173,7 +162,6 @@ class bpmn_p_Shipment {
                         f_Event_1pjc4df();
                     } else {
 //no default case
-                        System.exit(9999);
                     }
                 }
             }
@@ -186,14 +174,8 @@ class bpmn_p_Shipment {
     }
 
     public void t_u_measure_weight() {
-        pWeight = getPackageWeight();
-    }
+        System.out.println("t_u_measure weight");
 
-    public void e_e_unsuppoted_weight() {
-//end: unsuppoted weight
-
-        System.err.println("Unsupported Weight");
-        System.exit(2);
     }
 
     public void t_g_sign_declaration() {

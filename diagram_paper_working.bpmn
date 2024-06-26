@@ -72,7 +72,7 @@
     <bpmn:startEvent id="StartEvent_1" name="package received">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=getPackageType()" target="pType" />
+          <zeebe:output source="=&#34;std&#34;" target="pType" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:outgoing>Flow_1asd4kl</bpmn:outgoing>
@@ -137,7 +137,7 @@
     <bpmn:userTask id="Activity_0iafefy" name="measure weight">
       <bpmn:extensionElements>
         <zeebe:ioMapping>
-          <zeebe:output source="=getPackageWeight()" target="pWeight" />
+          <zeebe:output source="=4" target="pWeight" />
         </zeebe:ioMapping>
         <zeebe:formDefinition formKey="WeightInputForm" />
       </bpmn:extensionElements>

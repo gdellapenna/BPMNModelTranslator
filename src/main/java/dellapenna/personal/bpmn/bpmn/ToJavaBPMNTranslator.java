@@ -32,8 +32,6 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     private final Map<String, FunctionDefinition> functions = new HashMap<>();
     private final Map<String, GlobalVariableDefinition> globals = new HashMap<>();
 
-  
-
     @Override
     protected void reset() {
         functions.clear();
@@ -50,12 +48,16 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return g;
     }
 
-    private FunctionDefinition registerProcedure(String name) {
-        return registerFunction(name, "\tSystem.out.println(\"" + name + "\");\n" /*+ "\treturn null;"*/);
+    private FunctionDefinition registerProcedure(String name, String code) {
+        if (code == null || code.isBlank()) {
+            code = "\tSystem.out.println(\"" + name + "\");\n";
+            /*+ "\treturn null;"*/
+        }
+        return registerFunction(name, code, Void.class);
     }
 
-    private FunctionDefinition registerFunction(String name, String code) {
-        FunctionDefinition f = new FunctionDefinition(sanitizeName(name), code, Void.class, Collections.EMPTY_MAP);
+    private FunctionDefinition registerFunction(String name, String code, Class returnType) {
+        FunctionDefinition f = new FunctionDefinition(sanitizeName(name), code, returnType, Collections.EMPTY_MAP);
         functions.put(name, f);
         return f;
     }
@@ -105,7 +107,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     protected String translateNamedFlow(String name, String code) {
-        return outputFunctionCode(registerFunction(name, code));
+        return outputFunctionCode(registerProcedure(name, code));
     }
 
     @Override
@@ -114,46 +116,45 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     }
 
     /////TASKS
-    private String translateTask(String name) {
-        FunctionDefinition proc = registerProcedure(name);
+    private String internal_TranslateAsFunction(String name, String code) {
+        FunctionDefinition proc = registerProcedure(name, code);
         return proc.name() + "()";
     }
 
     @Override
     protected String translateGenericTask(Task t) {
-        return translateTask("t_g_" + t.getName());
+        return internal_TranslateAsFunction("t_g_" + t.getName(), null);
     }
 
     @Override
     protected String translateManualTask(ManualTask t) {
-        return translateTask("t_m_" + t.getName());
+        return internal_TranslateAsFunction("t_m_" + t.getName(), null);
     }
 
     @Override
     protected String translateScriptTask(ScriptTask t) {
-        return translateTask("t_s_" + t.getName());
+        return internal_TranslateAsFunction("t_s_" + t.getName(), null);
     }
 
     @Override
     protected String translateUserTask(UserTask t) {
         String outs = translateOutputs(t);
-        return translateTask("t_u_" + t.getName())
-                + ((!outs.isBlank()) ? ";\n" + outs : "");
+        return internal_TranslateAsFunction("t_u_" + t.getName(), ((!outs.isBlank()) ? outs + ";" : null));
     }
 
     @Override
     protected String translateServiceTask(ServiceTask t) {
-        return translateTask("t_a_" + t.getName());
+        return internal_TranslateAsFunction("t_a_" + t.getName(), null);
     }
 
     @Override
     protected String translateSendTask(SendTask t) {
-        return translateTask("t_send_" + t.getName());
+        return internal_TranslateAsFunction("t_send_" + t.getName(), null);
     }
 
     @Override
     protected String translateReceiveTask(ReceiveTask t) {
-        return translateTask("t_recv_" + t.getName());
+        return internal_TranslateAsFunction("t_recv_" + t.getName(), null);
     }
 
     @Override
@@ -177,43 +178,44 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 //                        .collect(Collectors.joining(";\n"));
     }
 
-    /////// EVENTS
     @Override
     protected String translateEndEvent(EndEvent t) {
-        String result = "//end: " + t.getName();
+        String code = "";
         Collection<EventDefinition> eventDefs = t.getEventDefinitions();
         for (EventDefinition eventDef : eventDefs) {
             if (eventDef instanceof ErrorEventDefinition eed) {
-                result += "\nSystem.err.println(\"" + eed.getError().getName() + "\");"; //TODO: handle other event definitions here?
+                code += "\nSystem.err.println(\"" + eed.getError().getName() + "\");"; //TODO: handle other event definitions here?
                 try {
-                    int code = Integer.valueOf(eed.getError().getErrorCode());
-                    result += "\nSystem.exit(" + code + ");";
-                    return result;
+                    int error_code = Integer.valueOf(eed.getError().getErrorCode());
+                    code += "\nSystem.exit(" + error_code + ");";
                 } catch (NumberFormatException ex) {
                     //code is not a number
-                    result += "\nSystem.exit(1);";
+                    code += "\nSystem.exit(1);";
                 }
-
             }
         }
-        result += "\nSystem.exit(0);";
-        //////result+= "\nreturn null;";
-        return result;
+        if (!code.isBlank()) {
+            return internal_TranslateAsFunction("e_e_" + t.getName(), "//end: " + t.getName() + "\n" + code);
+        } else {
+            return "//end: " + t.getName() + "\nSystem.exit(0);";
+        }
     }
 
     @Override
     protected String translateStartEvent(StartEvent t) {
         String outs = translateOutputs(t);
-        return "//start: " + t.getName()
-                + ((!outs.isBlank()) ? "\n" + outs : "");
-
+        if (!outs.isBlank()) {
+            return internal_TranslateAsFunction("e_s_" + t.getName(), "//start: " + t.getName() + "\n" + outs + ";");
+        } else {
+            return "//start: " + t.getName();
+        }
         //inserire una condizione??
     }
 
     ////// GATEWAYS
     private String translateJoiningGateway(String name, String code) throws FeelTranslatorException {
-        FunctionDefinition proc = registerFunction(name, code);
-        return /*"return " +*/ proc.name() + "();";
+        FunctionDefinition proc = registerProcedure(name, code);
+        return /*"return " +*/ proc.name() + "()";
     }
 
     @Override
@@ -252,7 +254,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         for (int o = 0; o < splitFlows.size(); ++o) {
             result += "if "
                     + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")" + "{\n" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                    + splitFlows.get(o).code()
+                    + splitFlows.get(o).code()+";"
                     + "\n}";
         }
         return result;
@@ -268,7 +270,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     result += " else ";
                 }
                 result += "if " + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")";  //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                result += "{\n" + splitFlows.get(o).code() + "\n}";
+                result += "{\n" + splitFlows.get(o).code() + ";\n}";
             } else {
                 default_branch = splitFlows.get(o);
             }
@@ -279,7 +281,11 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (default_branch != null) {
             result += "{\n" + default_branch.code() + "\n}";
         } else {
-            result += "{\n//no default case\n}";
+            result += """
+                      {
+                      //no default case
+                      System.exit(9999);
+                      }""";
             //////result += " { return null; }";
         }
         return result;
