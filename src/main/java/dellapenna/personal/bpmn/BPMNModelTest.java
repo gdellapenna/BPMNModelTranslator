@@ -1,6 +1,7 @@
 package dellapenna.personal.bpmn;
 
 import dellapenna.personal.bpmn.bpmn.BPMNTranslator;
+import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
@@ -93,7 +94,7 @@ public class BPMNModelTest {
         return "";
     }
 
-    public static void paperTranslation() throws IOException, FeelTranslatorException {
+    public static void paperTranslation() throws IOException, FeelTranslatorException, BpmnTranslatorException {
         try (BufferedWriter out = new BufferedWriter(new FileWriter("paper.java"))) {
 
             out.write(pre_code());
@@ -113,7 +114,7 @@ public class BPMNModelTest {
             out.newLine();
 
             BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_paper.bpmn"));
-            out.write(bt.translate(bpmnInstance));
+            out.write(bt.translateBpmn(bpmnInstance));
 
             out.newLine();
             out.write(post_code());
@@ -121,31 +122,31 @@ public class BPMNModelTest {
 
     }
 
-    public static void main(String[] args) throws FeelTranslatorException, IOException {
+    public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException {
         paperTranslation();
-        System.exit(0);
+        //System.exit(0);
 
         BufferedWriter out = new BufferedWriter(new FileWriter("output.java"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
-        //System.out.println(ft.translate("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
-        //System.out.println(ft.translate("a.b=c"));        
+        //System.out.println(ft.translateBpmn("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
+        //System.out.println(ft.translateBpmn("a.b=c"));        
 //
         out.write(pre_code());
         out.newLine();
 
-        DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("diagram_1.dmn"));
-        DMNTranslator<String> dt = new ToJavaDMNTranslator();
-        //((AbstractDMNTranslator) dt).dump(dmnInstance);
-        out.write(dt.translate(dmnInstance));
-
-        out.newLine();
-        out.newLine();
+//        DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("diagram_1.dmn"));
+//        DMNTranslator<String> dt = new ToJavaDMNTranslator();
+//        //((AbstractDMNTranslator) dt).dump(dmnInstance);
+//        out.write(dt.translate(dmnInstance));
 //
-        BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_1.bpmn"));
+//        out.newLine();
+//        out.newLine();
+//
+        BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_2.bpmn"));
         BPMNTranslator<String> bt = new ToJavaBPMNTranslator();
         //((AbstractBPMNTranslator) bt).dump(bpmnInstance);
-        out.write(bt.translate(bpmnInstance));
+        out.write(bt.translateBpmn(bpmnInstance));
 
         out.newLine();
         out.write(post_code());

@@ -40,7 +40,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
     @Override
     protected String translateDecisionTable(String id, List<Input> inputs, List<Output> outputs, List<DMNDecisionRule<String>> decoded_rules) {
-        String procName = sanitizeName("dmn_" + id);
+        String procName = sanitizeName("dmn_dtable_" + id);
         String output_record_name = procName + "_result";
 
         return "class " + output_record_name + "{"

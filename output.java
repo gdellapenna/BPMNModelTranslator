@@ -1,53 +1,94 @@
 
+class TypeUtils {
 
-class prova {
+    public static Double tonumber(Object o) {
+        if (o instanceof Number n) {
+            return n.doubleValue();
+        } else {
+            try {
+                return Double.valueOf(o.toString());
+            } catch (NumberFormatException ex) {
+                return 0.0; //should raise an exception
+            }
+        }
+    }
 
-public static record dmn_DecisionTable_0wip7uc_result(boolean done, string message){}
+    public static String tostring(Object o) {
+        return o.toString();
+    }
 
-public dmn_DecisionTable_0wip7uc_result dmn_DecisionTable_0wip7uc(number abs_a_, string s) {
+    public static Boolean toboolean(Object o) {
+        if (o instanceof Boolean b) {
+            return b;
+        } else if (o instanceof Number n) {
+            return n.doubleValue() != 0;
+        } else {
+            return Boolean.valueOf(o.toString());
 
-if (contains(abs(a),constRange(3,5)) && not("1","2")) { return new dmn_DecisionTable_0wip7uc_result(/*done*/true, /*message*/"ok");} else if (abs(a) > 10 && inList(s,"a","b")) { return new dmn_DecisionTable_0wip7uc_result(/*done*/false, /*message*/"no");} else if (abs(a) > 1 && s == "c") { return new dmn_DecisionTable_0wip7uc_result(/*done*/false, /*message*/"ko");}
+        }
+    }
 }
 
-public java.lang.Void t_g_Prepara_una_carbonara() {
-	System.out.println("t_g_Prepara una carbonara");
-	return null;
-}
+class bpmn_process_Process_1njo00q {
 
-public java.lang.Void t_u_Prepara_una_Bistecca() {
-	System.out.println("t_u_Prepara una Bistecca");
-	return null;
-}
+    Object ID_usato_anche_nel_parallel_join_parallels;
 
-public java.lang.Void t_g_Bisogna_Mangiare() {
-	System.out.println("t_g_Bisogna Mangiare");
-	return null;
-}
+    public void flow_StartEvent_1() {
+//start: null;
+        ID_usato_anche_nel_parallel_join_parallels = new FutureTask[2];
+        FutureTask<Integer> t;
+        t = new FutureTask<>(() -> {
+            ID_usato_anche_nel_parallel_join_parallel_0();
 
-public java.lang.Void f_Activity_01p6jwz() {
-t_g_Mangia();
-//Prendi una decisione
-	dmn_DecisionTable_0wip7uc_result dresult=dmn_DecisionTable_0wip7uc(/*a*/"a", /*s*/"ciao");
-	var message=dresult.message;
-	var done=dresult.done;
-//end: Sei sazio
-System.exit(0);return  null;
-}
+            return 1;
+        });
+        t.run();
+        ((FutureTask<Integer>[]) ID_usato_anche_nel_parallel_join_parallels)[0] = t;
+        t = new FutureTask<>(() -> {
+            ID_usato_anche_nel_parallel_join_parallel_1();
 
-public java.lang.Void f_StartEvent_1() {
-//start: Hai fame;
-t_g_Bisogna_Mangiare();
-if (preferenza == "primo"){
-t_g_Prepara_una_carbonara();
-return f_Activity_01p6jwz();
-} else if (preferenza == "secondo"){
-t_u_Prepara_una_Bistecca();
-return f_Activity_01p6jwz();
-} else { return null; }
-}
+            return 1;
+        });
+        t.run();
+        ((FutureTask<Integer>[]) ID_usato_anche_nel_parallel_join_parallels)[1] = t;
 
-public java.lang.Void t_g_Mangia() {
-	System.out.println("t_g_Mangia");
-	return null;
-}
+        chiamata_a_funzione_join();
+    }
+
+    public void flow_Activity_16zc6e7() {
+        while (!Arrays.stream(((FutureTask<Integer>[]) flow_Activity_16zc6e7_parallels)).allMatch(t -> t.isDone())) {
+            Thread.sleep(300);
+        }
+
+        task_generic_Task3();
+    }
+
+    public void ID_usato_anche_nel_parallel_join_parallel_1() {
+        if (true) {
+            task_generic_Task1();
+
+        }
+    }
+
+    public void ID_usato_anche_nel_parallel_join_parallel_0() {
+        if (true) {
+            task_generic_Task2();
+
+        }
+    }
+
+    public void task_generic_Task3() {
+        System.out.println("task_generic_Task3");
+
+    }
+
+    public void task_generic_Task2() {
+        System.out.println("task_generic_Task2");
+
+    }
+
+    public void task_generic_Task1() {
+        System.out.println("task_generic_Task1");
+
+    }
 }
