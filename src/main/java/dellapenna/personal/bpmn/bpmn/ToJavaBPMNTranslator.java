@@ -116,8 +116,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     //////
     @Override
-    protected String translateNamedFlow(String name, String code) {
-        return translateFunction(registerProcedure(name, code, ProcType.FLOW));
+    protected String translateFlow(BPMNDecodedFlow<String> flow) {
+        return translateFunction(registerProcedure(flow.name(),
+                flow.code()
+                + "//start:" + flow.firstStep().getId()
+                + "//end:" + flow.lastStep().getId(),
+                ProcType.FLOW));
     }
 
     @Override
@@ -235,51 +239,78 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     }
 
     ////// GATEWAYS
-    private String translateJoiningGateway(String name, String code) throws FeelTranslatorException {
-        FunctionDefinition proc = registerProcedure(name, code, ProcType.FLOW);
-        return proc.name() + "()";
+    private String translateJoiningGateway(BPMNDecodedFlow<String> joinedflow) throws FeelTranslatorException {
+        return translateFunctionCall(
+                joinedflow.name(),
+                joinedflow.code()
+                + "//start:" + joinedflow.firstStep().getId()
+                + "//end:" + joinedflow.lastStep().getId(),
+                ProcType.FLOW);
+//        FunctionDefinition proc = registerProcedure(name, code, ProcType.FLOW);
+//        return proc.name() + "()";
     }
 
     @Override
-    public String translateParallelJoiningGateway(ParallelGateway n, BPMNDecodedNamedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+    public String translateParallelJoiningGateway(ParallelGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
         String join_code = "while (!Arrays.stream(((FutureTask<Integer>[])" + sanitizeName(joinedflow.name()) + "_parallels)" + ").allMatch(t -> t.isDone())) { Thread.sleep(300); } ";
-        FunctionDefinition proc = registerProcedure(joinedflow.name(), join_code + "\n\n" + joinedflow.code() + ";", ProcType.FLOW);
+        FunctionDefinition proc = registerProcedure(
+                joinedflow.name(), join_code + "\n\n" + joinedflow.code() + ";"+ "//start:" + joinedflow.firstStep().getId()
+                + "//end:" + joinedflow.lastStep().getId(), ProcType.FLOW);
         return ""; //no join code at the end of the parallel flows
     }
 
     @Override
-    public String translateInclusiveJoiningGateway(InclusiveGateway n, BPMNDecodedNamedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
-        return translateJoiningGateway(joinedflow.name(), joinedflow.code());
+    public String translateInclusiveJoiningGateway(InclusiveGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+        return translateJoiningGateway(joinedflow);
     }
 
     @Override
-    public String translateExclusiveJoiningGateway(ExclusiveGateway n, BPMNDecodedNamedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
-        return translateJoiningGateway(joinedflow.name(), joinedflow.code());
+    public String translateExclusiveJoiningGateway(ExclusiveGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+        return translateJoiningGateway(joinedflow);
     }
 
     @Override
-    public String translateEventJoiningGateway(EventBasedGateway n, BPMNDecodedNamedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+    public String translateEventJoiningGateway(EventBasedGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+//    @Override
+//    public String translateParallelGateway(ParallelGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
+//        String common_name = "ID_usato_anche_nel_parallel_join";
+//        registerGlobalVariable(common_name + "_parallels");
+//        String code = /*"FutureTask<Integer>[] " +*/ common_name + "_parallels = new FutureTask[" + splitFlows.size() + "];"
+//                + "\nFutureTask<Integer> t;";
+//        for (int o = 0; o < splitFlows.size(); ++o) {
+//
+//            String subflow_code = "";
+//            if (splitFlows.get(o).condition() != null) {
+//                subflow_code += "if " + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")";  //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
+//                subflow_code += "{\n" + splitFlows.get(o).code() + "\n}";
+//            } else {
+//                subflow_code += splitFlows.get(o).code();
+//            }
+//            code += "t = new FutureTask<>(() -> {" + translateFunctionCall(common_name + "_parallel_" + o, subflow_code, ProcType.FLOW) + ";\n\n return 1;});"
+//                    + "\nt.run();"
+//                    + "\n((FutureTask<Integer>[])" + common_name + "_parallels)[" + o + "]=t;"
+//                    + "\n";
+//        }
+//        code += "\nchiamata_a_funzione_join();"; //oppure continuiamo inline??? si potrebbe inserire già qui il codice della join gw, ma come?
+//        return code;
+//    }
     @Override
     public String translateParallelGateway(ParallelGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
-        String common_name = "ID_usato_anche_nel_parallel_join";
-        registerGlobalVariable(common_name + "_parallels");
-        String code = /*"FutureTask<Integer>[] " +*/ common_name + "_parallels = new FutureTask[" + splitFlows.size() + "];"
-                + "\nFutureTask<Integer> t;";
+        String code = "";
         for (int o = 0; o < splitFlows.size(); ++o) {
-
-            String subflow_code = "";
-            if (splitFlows.get(o).condition() != null) {
-                subflow_code += "if " + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")";  //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                subflow_code += "{\n" + splitFlows.get(o).code() + "\n}";
-            } else {
-                subflow_code += splitFlows.get(o).code();
-            }
-            code += "t = new FutureTask<>(() -> {" + translateFunctionCall(common_name + "_parallel_" + o, subflow_code, ProcType.FLOW) + ";\n\n return 1;});"
-                    + "\nt.run();"
-                    + "\n((FutureTask<Integer>[])" + common_name + "_parallels)[" + o + "]=t;"
+//            String subflow_code = "";
+//            if (splitFlows.get(o).condition() != null) { //no conditions in parallel gateways
+//                subflow_code += "if " + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")";  //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
+//                subflow_code += "{\n" + splitFlows.get(o).code() + "\n}";
+//            } else {
+//                subflow_code += splitFlows.get(o).code();
+//            }
+            registerGlobalVariable(splitFlows.get(o).name() + "_thread");
+            code += splitFlows.get(o).name() + "_thread = new FutureTask<>(() -> {" + translateFunctionCall(splitFlows.get(o).name() + "_parallel", splitFlows.get(o).code(), ProcType.FLOW) + ";\n\n return 1;});"
+                    + "\n" + splitFlows.get(o).name() + "_thread.run();"
                     + "\n";
         }
         code += "\nchiamata_a_funzione_join();"; //oppure continuiamo inline??? si potrebbe inserire già qui il codice della join gw, ma come?

@@ -1,5 +1,5 @@
 
-package dellapenna.personal.bpmn.bpmn;
+package dellapenna.personal.bpmn.unused;
 
 /**
  *
