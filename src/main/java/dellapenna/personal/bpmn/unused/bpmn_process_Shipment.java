@@ -1,4 +1,6 @@
 
+package dellapenna.personal.bpmn.unused;
+
 class TypeUtils {
 
     public static Double tonumber(Object o) {
@@ -123,7 +125,7 @@ class dmn_dtable_ChooseConsentDT {
     }
 }
 
-class bpmn_process_Shipment {
+public class bpmn_process_Shipment {
 
     Object pType;
     Object pWeight;
@@ -131,93 +133,136 @@ class bpmn_process_Shipment {
     Object consent;
     Object sMode;
 
-    public void flow_undefined_length() {//end event: undefined length;
-        System.err.println("Undefined Length");
-        System.exit(1);
+    public void flow_Activity_1cbdv9z() {
+//choose consent
+        dmn_dtable_ChooseConsentDT_result chooseConsentResult = dmn_dtable_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/ pWeight);
+        consent = chooseConsentResult.Consent;
+        if (consent.equals("com")) {
+            flow_Activity_1njskid();;
+        } else if (consent.equals("owner")) {
+            flow_Activity_1nfni4r();;
+        } else if (consent.equals("none")) {
+            flow_Gateway_07f90ke();;
+        } else {
+            ProcessUtils.NoDefaultError();
+        }
     }
 
-    public void flow_unsuppoted_weight() {//end event: unsuppoted weight;
-        System.err.println("Unsupported Weight");
-        System.exit(2);
-    }
-
-    public void flow_ready_for_shipment() {//end event: ready for shipment;
-        System.exit(0);
-    }
-
-    public void flow_Gateway_07f90ke() {
-        flow_ready_for_shipment();
-    }
-
-    public void flow_sign_declaration() {
+    public void flow_Activity_1njskid() {
         task_generic_sign_declaration();
         flow_Gateway_07f90ke();
     }
 
-    public void flow_fetch_declaration() {
+    public void flow_Gateway_07f90ke() {
+        flow_Event_1pjc4df();
+    }
+
+    public void flow_StartEvent_1() {
+        event_start_package_received();
+//get length
+        dmn_dtable_GetLengthDT_result getLengthResult = dmn_dtable_GetLengthDT.execute(/*Type*/pType);
+        pLength = getLengthResult.Length;
+        if (pLength.equals(-(TypeUtils.tonumber(1.0)))) {
+            flow_Event_06urgzi();;
+        } else {
+            flow_Activity_0iafefy();
+        }
+    }
+
+    public void flow_Activity_1ol43bw() {
+//determine mode
+        dmn_dtable_DetermineModeDT_result determineModeResult = dmn_dtable_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/ pWeight);
+        sMode = determineModeResult.Mode;
+        if (sMode.equals("undef")) {
+            flow_Event_19ylwnc();;
+        } else {
+            flow_Activity_1cbdv9z();
+        }
+    }
+
+    public void flow_Event_06urgzi() {
+        event_end_undefined_length();
+    }
+
+    public void flow_Activity_0iafefy() {
+        task_user_measure_weight();
+        if (TypeUtils.tonumber(pWeight) > TypeUtils.tonumber(10.0)) {
+            flow_Event_0wjo1ye();;
+        } else {
+            flow_Activity_1ol43bw();
+        }
+    }
+
+    public void flow_Activity_1nfni4r() {
         task_generic_fetch_declaration();
         flow_Gateway_07f90ke();
     }
 
-    public void flow_package_received() {//start event: package received;
-        pType = getPackageType();
-//get length;
-        dmn_dtable_GetLengthDT_result getLengthResult = dmn_dtable_GetLengthDT.execute(/*Type*/pType);
-        pLength = getLengthResult.Length;
-        if (pLength.equals(-(TypeUtils.tonumber(1.0)))) {
-            flow_undefined_length();
-        } else {
-            flow_measure_weight();
-        };
+    public void flow_Event_0wjo1ye() {
+        event_end_unsuppoted_weight();
     }
 
-    public void flow_no_shipment() {//end event: no shipment;
-        System.err.println("No Shipment");
-        System.exit(3);
+    public void flow_Event_1pjc4df() {
+//end: ready for shipment
+        System.exit(0);
     }
 
-    public void flow_choose_consent() {//choose consent;
-        dmn_dtable_ChooseConsentDT_result chooseConsentResult = dmn_dtable_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/ pWeight);
-        consent = chooseConsentResult.Consent;
-        if (consent.equals("com")) {
-            flow_sign_declaration();
-        } else if (consent.equals("owner")) {
-            flow_fetch_declaration();
-        } else if (consent.equals("none")) {
-            flow_Gateway_07f90ke();
-        } else {
-            ProcessUtils_NoDefaultError();
-        };
+    public void flow_Event_19ylwnc() {
+        event_end_no_shipment();
     }
 
-    public void flow_measure_weight() {
-        task_user_measure_weight();
-        if (TypeUtils.tonumber(pWeight) > TypeUtils.tonumber(10.0)) {
-            flow_unsuppoted_weight();
-        } else {
-            flow_determine_mode();
-        };
-    }
-
-    public void flow_determine_mode() {//determine mode;
-        dmn_dtable_DetermineModeDT_result determineModeResult = dmn_dtable_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/ pWeight);
-        sMode = determineModeResult.Mode;
-        if (sMode.equals("undef")) {
-            flow_no_shipment();
-        } else {
-            flow_choose_consent();
-        };
-    }
-
+    //////////////////
     public void task_user_measure_weight() {
         pWeight = getPackageWeight();
     }
 
     public void task_generic_fetch_declaration() {
         System.out.println("task_generic_fetch declaration");
+
     }
 
     public void task_generic_sign_declaration() {
         System.out.println("task_generic_sign declaration");
+
+    }
+
+    public void event_start_package_received() {
+//start: package received
+        pType = getPackageType();
+    }
+
+    public void event_end_unsuppoted_weight() {
+//end: unsuppoted weight
+
+        System.err.println("Unsupported Weight");
+        System.exit(2);
+    }
+
+    public void event_end_undefined_length() {
+//end: undefined length
+
+        System.err.println("Undefined Length");
+        System.exit(1);
+    }
+
+    public void event_end_no_shipment() {
+//end: no shipment
+
+        System.err.println("No Shipment");
+        System.exit(3);
+    }
+
+    public String getPackageType() {
+        return "std";
+    }
+
+    public Double getPackageWeight() {
+        return 10.0;
+    }
+
+    public static void main(String[] args) {
+        bpmn_process_Shipment i = new bpmn_process_Shipment();
+        i.flow_StartEvent_1();
+
     }
 }

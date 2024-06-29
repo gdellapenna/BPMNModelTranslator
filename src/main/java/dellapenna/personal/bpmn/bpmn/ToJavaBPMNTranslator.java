@@ -2,6 +2,7 @@ package dellapenna.personal.bpmn.bpmn;
 
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     protected void reset() {
+        super.reset();
         globals.clear();
         functions.clear();
         for (ProcType t : ProcType.values()) {
@@ -68,10 +70,14 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return g;
     }
 
-    private FunctionDefinition registerFunction(String name, String code, Class returnType, ProcType type) {
+    private FunctionDefinition registerFunction(String name, List<String> code, Class returnType, ProcType type) {
+        return registerFunction(name, code, new ArrayList<>(List.of()), returnType, type);
+    }
+
+    private FunctionDefinition registerFunction(String name, List<String> code, List<String> triggers, Class returnType, ProcType type) {
         FunctionDefinition f;
         if (!functions.get(type).containsKey(name)) {
-            f = new FunctionDefinition(sanitizeName(name), code, returnType, Collections.EMPTY_MAP);
+            f = new FunctionDefinition(sanitizeName(name), code, triggers, returnType, Collections.EMPTY_MAP);
             functions.get(type).put(name, f);
 
         } else {
@@ -81,9 +87,9 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return f;
     }
 
-    private FunctionDefinition registerProcedure(String name, String code, ProcType type) {
-        if (code == null || code.isBlank()) {
-            code = "\tSystem.out.println(\"" + name + "\");\n";
+    private FunctionDefinition registerProcedure(String name, List<String> code, ProcType type) {
+        if (code == null || code.isEmpty()) {
+            code = new ArrayList<>(List.of("System.out.println(\"" + name + "\")"));
         }
         return registerFunction(name, code, Void.class, type);
     }
@@ -92,41 +98,37 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     private String translateFunction(FunctionDefinition f) {
         return "public " + (f.returnType().equals(Void.class) ? "void" : f.returnType().getName()) + " " + f.name() + "("
                 + f.parameters().entrySet().stream().map(e -> e.getValue().getName() + " " + e.getKey()).collect(Collectors.joining(", ")) //convert types?
-                + ") {\n"
-                + f.body()
-                + "\n}";
+                + ") {" + translateStatementSequence(f.body()) + "}";
     }
 
-    private String translateFunctionCall(String name, String code, ProcType type) {
+    private List<String> translateFunctionCall(String name, List<String> code, ProcType type) {
         FunctionDefinition proc = registerProcedure(name, code, type);
-        return proc.name() + "()";
+        return new ArrayList<>(List.of(proc.name() + "()"));
     }
 
-    private String translateOutputs(FlowNode t) {
+    private List<String> translateOutputs(FlowNode t) {
         ModelElementInstance ioMapping = t.getExtensionElements() != null ? t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping") : null;
         if (ioMapping != null) {
             ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream().forEach(e -> registerGlobalVariable(e.getAttribute("target")));
             return ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
                     .map(e -> e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
-                    .collect(Collectors.joining(";\n"));
+                    .collect(Collectors.toList());
         } else {
-            return "";
+            return new ArrayList<>(List.of());
         }
     }
 
     //////
     @Override
-    protected String translateFlow(BPMNDecodedFlow<String> flow) {
-        return translateFunction(registerProcedure(flow.name(),
-                flow.code()
-                + "//start:" + flow.firstStep().getId()
-                + "//end:" + flow.lastStep().getId(),
-                ProcType.FLOW));
+    protected List<String> translateFlow(BPMNDecodedFlow<String> flow) {
+        return new ArrayList<>(List.of(translateFunction(registerProcedure(flow.name(),
+                flow.code(),
+                ProcType.FLOW))));
     }
 
     @Override
-    protected String translateCodeSequence(List<String> statements) {
-        return statements.stream().collect(Collectors.joining(";\n"));
+    public String translateStatementSequence(List<String> statements) {
+        return statements.stream().collect(Collectors.joining(";\n", "", ";\n"));
     }
 
     /////
@@ -137,56 +139,56 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     protected String translateProcess(String name, List<String> flows_code) {
-        return "\nclass bpmn_process_" + sanitizeName(name) + " {\n\n"
+        return " class bpmn_process_" + sanitizeName(name) + " { "
                 + globals.values().stream()
                         .map(gd -> "Object " + gd.name())
-                        .collect(Collectors.joining(";\n")) + ";\n\n"
+                        .collect(Collectors.joining(";\n")) + "; "
                 + functions.values().stream()
                         .flatMap(f -> f.values().stream())
                         .map(fd -> translateFunction(fd))
                         .collect(Collectors.joining("\n\n"))
-                + "\n}\n\n";
+                + "}";
     }
 
     ////TASKS
     @Override
-    public String translateGenericTask(Task t) {
+    public List<String> translateGenericTask(Task t) {
         return translateFunctionCall("task_generic_" + t.getName(), null, ProcType.TASK);
     }
 
     @Override
-    public String translateManualTask(ManualTask t) {
+    public List<String> translateManualTask(ManualTask t) {
         return translateFunctionCall("task_manual_" + t.getName(), null, ProcType.TASK);
     }
 
     @Override
-    public String translateScriptTask(ScriptTask t) {
+    public List<String> translateScriptTask(ScriptTask t) {
         return translateFunctionCall("task_script_" + t.getName(), null, ProcType.TASK);
     }
 
     @Override
-    public String translateUserTask(UserTask t) {
-        String outs = translateOutputs(t);
-        return translateFunctionCall("task_user_" + t.getName(), ((!outs.isBlank()) ? outs + ";" : null), ProcType.TASK);
+    public List<String> translateUserTask(UserTask t) {
+        List<String> outs = translateOutputs(t);
+        return translateFunctionCall("task_user_" + t.getName(), ((!outs.isEmpty()) ? outs : null), ProcType.TASK);
     }
 
     @Override
-    public String translateServiceTask(ServiceTask t) {
+    public List<String> translateServiceTask(ServiceTask t) {
         return translateFunctionCall("task_service_" + t.getName(), null, ProcType.TASK);
     }
 
     @Override
-    public String translateSendTask(SendTask t) {
+    public List<String> translateSendTask(SendTask t) {
         return translateFunctionCall("task_send_" + t.getName(), null, ProcType.TASK);
     }
 
     @Override
-    public String translateReceiveTask(ReceiveTask t) {
+    public List<String> translateReceiveTask(ReceiveTask t) {
         return translateFunctionCall("task_receive_" + t.getName(), null, ProcType.TASK);
     }
 
     @Override
-    public String translateBusinessRuleTask(BusinessRuleTask t) {
+    public List<String> translateBusinessRuleTask(BusinessRuleTask t) {
 
         ModelElementInstance ioMapping = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping");
         ModelElementInstance calledDecision = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "calledDecision");
@@ -194,83 +196,101 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         String procName = sanitizeName("dmn_dtable_" + calledDecision.getAttributeValue("decisionId"));
         String output_record_name = procName + "_result";
 
-        return (t.getName() != null ? "//" + t.getName() : "")
-                + "\n\t" + output_record_name + " " + calledDecision.getAttributeValue("resultVariable")
+        List<String> statements = new ArrayList<>(List.of(
+                t.getName() != null ? "//" + t.getName() : "",
+                output_record_name + " " + calledDecision.getAttributeValue("resultVariable")
                 + "=" + procName + ".execute"
                 + "(" + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
                         .map(e -> "/*" + e.getAttribute("target") + "*/" + feel.translateChecked(e.getAttribute("source").substring(1))).collect(Collectors.joining(", "))
-                + ");\n"
-                + translateOutputs(t);
+                + ")"));
+        statements.addAll(translateOutputs(t));
+        return statements;
+
     }
 
     ////EVENTS
     @Override
-    public String translateEndEvent(EndEvent t) {
-        String code = "";
+    public List<String> translateEndEvent(EndEvent t) {
+        List<String> code = new ArrayList<>();
         Collection<EventDefinition> eventDefs = t.getEventDefinitions();
         for (EventDefinition eventDef : eventDefs) {
             if (eventDef instanceof ErrorEventDefinition eed) {
-                code += "\nSystem.err.println(\"" + eed.getError().getName() + "\");"; //TODO: handle other event definitions here?
+                code.add("System.err.println(\"" + eed.getError().getName() + "\")"); //TODO: handle other event definitions here?
                 try {
                     int error_code = Integer.valueOf(eed.getError().getErrorCode());
-                    code += "\nSystem.exit(" + error_code + ");";
+                    code.add("System.exit(" + error_code + ")");
                 } catch (NumberFormatException ex) {
                     //code is not a number
-                    code += "\nSystem.exit(1);";
+                    code.add("System.exit(1)");
                 }
             }
         }
-        if (!code.isBlank()) {
-            return translateFunctionCall("event_end_" + t.getName(), "//end: " + t.getName() + "\n" + code, ProcType.EVENT);
-        } else {
-            return "//end: " + t.getName() + "\nSystem.exit(0);";
+
+        if (code.isEmpty()) {
+            code.add("System.exit(0)");
         }
+//        if (!code.isEmpty()) {
+//            code.add(0, "//end: " + t.getName());
+//            return translateFunctionCall("event_end_" + t.getName(), code, ProcType.EVENT);
+//        } else {
+        code.add(0, "//end event: " + t.getName());
+        return code;
+//        return new ArrayList<>(List.of("//end: " + t.getName(), "System.exit(0)"));
+
+//        }
     }
 
     @Override
-    public String translateStartEvent(StartEvent t) {
-        String outs = translateOutputs(t);
-        if (!outs.isBlank()) {
-            return translateFunctionCall("event_start_" + t.getName(), "//start: " + t.getName() + "\n" + outs + ";", ProcType.EVENT);
-        } else {
-            return "//start: " + t.getName();
-        }
+    public List<String> translateStartEvent(StartEvent t) {
+        List<String> code = translateOutputs(t);
+//        if (!code.isEmpty()) {
+//            code.add(0, "//start: " + t.getName());
+//            return translateFunctionCall("event_start_" + t.getName(), code, ProcType.EVENT);
+//        } else {
+        code.add(0, "//start event: " + t.getName());
+        return code;
+        //return new ArrayList<>(List.of("//start: " + t.getName()));
+//    }
         //inserire una condizione??
     }
 
-    ////// GATEWAYS
-    private String translateJoiningGateway(BPMNDecodedFlow<String> joinedflow) throws FeelTranslatorException {
-        return translateFunctionCall(
-                joinedflow.name(),
-                joinedflow.code()
-                + "//start:" + joinedflow.firstStep().getId()
-                + "//end:" + joinedflow.lastStep().getId(),
-                ProcType.FLOW);
+////// GATEWAYS
+    private List<String> translateJoiningGateway(FlowNode joinedflow) throws FeelTranslatorException {
+        return translateNodeJoint(joinedflow);
+//        return translateFunctionCall(
+//                joinedflow.name(),
+//                joinedflow.code()
+//                + "//start:" + joinedflow.firstStep().getId()
+//                + "//end:" + joinedflow.lastStep().getId(),
+//                ProcType.FLOW);
 //        FunctionDefinition proc = registerProcedure(name, code, ProcType.FLOW);
 //        return proc.name() + "()";
     }
 
+    
+    ////***********BISOGNA GENERARE UNA FUNZIONE AGGANCIATA AL GATEWAY AVENTE COME TRIGGER I NODI ENTRANTI CHE CHIAMA IL JOINEDFLOW*************
+    
     @Override
-    public String translateParallelJoiningGateway(ParallelGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
-        String join_code = "while (!Arrays.stream(((FutureTask<Integer>[])" + sanitizeName(joinedflow.name()) + "_parallels)" + ").allMatch(t -> t.isDone())) { Thread.sleep(300); } ";
-        FunctionDefinition proc = registerProcedure(
-                joinedflow.name(), join_code + "\n\n" + joinedflow.code() + ";"+ "//start:" + joinedflow.firstStep().getId()
-                + "//end:" + joinedflow.lastStep().getId(), ProcType.FLOW);
-        return ""; //no join code at the end of the parallel flows
+    public List<String> translateParallelJoiningGateway(ParallelGateway n, FlowNode joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+//        String join_code = "while (!Arrays.stream(((FutureTask<Integer>[])" + sanitizeName(joinedflow.name()) + "_parallels)" + ").allMatch(t -> t.isDone())) { Thread.sleep(300); } ";
+//        FunctionDefinition proc = registerProcedure(
+//                joinedflow.name(), join_code + "\n\n" + joinedflow.code() + ";" + "//start:" + joinedflow.firstStep().getId()
+//                + "//end:" + joinedflow.lastStep().getId(), ProcType.FLOW);
+        return new ArrayList<>(List.of("ProcessUtils.signal(ID DEL NODO ENTRANTE)")); 
     }
 
     @Override
-    public String translateInclusiveJoiningGateway(InclusiveGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+    public List<String> translateInclusiveJoiningGateway(InclusiveGateway n, FlowNode joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
         return translateJoiningGateway(joinedflow);
     }
 
     @Override
-    public String translateExclusiveJoiningGateway(ExclusiveGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+    public List<String> translateExclusiveJoiningGateway(ExclusiveGateway n, FlowNode joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
         return translateJoiningGateway(joinedflow);
     }
 
     @Override
-    public String translateEventJoiningGateway(EventBasedGateway n, BPMNDecodedFlow<String> joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
+    public List<String> translateEventJoiningGateway(EventBasedGateway n, FlowNode joinedflow) throws BpmnTranslatorException, FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
@@ -298,8 +318,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 //        return code;
 //    }
     @Override
-    public String translateParallelGateway(ParallelGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
-        String code = "";
+    public List<String> translateParallelGateway(ParallelGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
+        List<String> code = new ArrayList<>();
         for (int o = 0; o < splitFlows.size(); ++o) {
 //            String subflow_code = "";
 //            if (splitFlows.get(o).condition() != null) { //no conditions in parallel gateways
@@ -308,29 +328,31 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 //            } else {
 //                subflow_code += splitFlows.get(o).code();
 //            }
-            registerGlobalVariable(splitFlows.get(o).name() + "_thread");
-            code += splitFlows.get(o).name() + "_thread = new FutureTask<>(() -> {" + translateFunctionCall(splitFlows.get(o).name() + "_parallel", splitFlows.get(o).code(), ProcType.FLOW) + ";\n\n return 1;});"
-                    + "\n" + splitFlows.get(o).name() + "_thread.run();"
-                    + "\n";
+
+//registerGlobalVariable(splitFlows.get(o).name() + "_thread");
+//            code += splitFlows.get(o).name() + "_thread = new FutureTask<>(() -> {" + translateFunctionCall(splitFlows.get(o).name() + "_parallel", splitFlows.get(o).code(), ProcType.FLOW) + ";\n\n return 1;});"
+//                    + "\n" + splitFlows.get(o).name() + "_thread.run();"
+//                    + "\n";
+            code.add(translateStatementSequence(List.of("ProcessUtils.fork(" + translateNodeJoint(splitFlows.get(o).firstStep())))); //start parallel tasks
         }
-        code += "\nchiamata_a_funzione_join();"; //oppure continuiamo inline??? si potrebbe inserire già qui il codice della join gw, ma come?
-        return code;
+        //code += "\nchiamata_a_funzione_join();"; //oppure continuiamo inline??? si potrebbe inserire già qui il codice della join gw, ma come?
+
+        return new ArrayList<>(List.of());
     }
 
     @Override
-    public String translateInclusiveGateway(InclusiveGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
+    public List<String> translateInclusiveGateway(InclusiveGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
         String code = "";
         for (int o = 0; o < splitFlows.size(); ++o) {
             code += "if "
-                    + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")" + "{\n" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                    + splitFlows.get(o).code() + ";"
-                    + "\n}";
+                    + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
+                    + "{" + translateStatementSequence(translateNodeJoint(splitFlows.get(o).firstStep())) + "} ";
         }
-        return code;
+        return new ArrayList<>(List.of(code));
     }
 
     @Override
-    public String translateExclusiveGateway(ExclusiveGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
+    public List<String> translateExclusiveGateway(ExclusiveGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
         String code = "";
         BPMNDecodedConditionalFlow<String> default_branch = null;
         for (int o = 0; o < splitFlows.size(); ++o) {
@@ -339,7 +361,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     code += " else ";
                 }
                 code += "if " + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")";  //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                code += "{\n" + splitFlows.get(o).code() + ";\n}";
+                code += "{" + translateStatementSequence(translateNodeJoint(splitFlows.get(o).firstStep())) + "}";
             } else {
                 default_branch = splitFlows.get(o);
             }
@@ -348,21 +370,31 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             code += " else ";
         }
         if (default_branch != null) {
-            code += "{\n" + default_branch.code() + "\n}";
+            code += "{" + translateStatementSequence(translateNodeJoint(default_branch.firstStep())) + "}";
         } else {
-            code += """
-                      {
-                      //no default case
-                      System.exit(9999);
-                      }""";
+            code += "{" + translateStatementSequence(translateNodeJoint("ProcessUtils.NoDefaultError")) + "}";
+//            code += """
+//                      {
+//                      //no default case
+//                      System.exit(9999);
+//                      }""";
             //////result += " { return null; }";
         }
-        return code;
+        return new ArrayList<>(List.of(code));
     }
 
     @Override
-    public String translateEventGateway(EventBasedGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
+    public List<String> translateEventGateway(EventBasedGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    protected List<String> translateNodeJoint(FlowNode flowStart) {
+        return translateNodeJoint(getFlowName(flowStart));
+    }
+
+    protected List<String> translateNodeJoint(String flowName) {
+        return new ArrayList<>(List.of(sanitizeName(flowName) + "()"));
     }
 
 }

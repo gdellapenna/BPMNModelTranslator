@@ -87,6 +87,12 @@ public class BPMNModelTest {
                     }
                 }
             }
+               
+               class ProcessUtils {               
+                    public static void NoDefaultError() { System.exit(9999); }
+                    public static void signal(String s) {  }
+                    public static void wait(String... s) {  }
+                }
             """;
     }
 

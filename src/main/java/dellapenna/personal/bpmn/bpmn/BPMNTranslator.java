@@ -26,44 +26,48 @@ import org.camunda.bpm.model.bpmn.instance.Process;
  */
 public interface BPMNTranslator<T> {
 
+    public T translateStatementSequence(List<T> statements) throws FeelTranslatorException, BpmnTranslatorException;
+    
     public T translateBpmn(BpmnModelInstance dmn) throws FeelTranslatorException, BpmnTranslatorException;
 
     public T translateProcess(Process p) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public T translateManualTask(ManualTask t) throws BpmnTranslatorException;
+    public List<T> translateManualTask(ManualTask t) throws BpmnTranslatorException;
 
-    public T translateScriptTask(ScriptTask t) throws BpmnTranslatorException;
+    public List<T> translateScriptTask(ScriptTask t) throws BpmnTranslatorException;
 
-    public T translateUserTask(UserTask t) throws BpmnTranslatorException;
+    public List<T> translateUserTask(UserTask t) throws BpmnTranslatorException;
 
-    public T translateServiceTask(ServiceTask t) throws BpmnTranslatorException;
+    public List<T> translateServiceTask(ServiceTask t) throws BpmnTranslatorException;
 
-    public T translateSendTask(SendTask t) throws BpmnTranslatorException;
+    public List<T> translateSendTask(SendTask t) throws BpmnTranslatorException;
 
-    public T translateReceiveTask(ReceiveTask t) throws BpmnTranslatorException;
+    public List<T> translateReceiveTask(ReceiveTask t) throws BpmnTranslatorException;
 
-    public T translateBusinessRuleTask(BusinessRuleTask t) throws BpmnTranslatorException;
+    public List<T> translateBusinessRuleTask(BusinessRuleTask t) throws BpmnTranslatorException;
 
-    public T translateGenericTask(Task t) throws BpmnTranslatorException;
+    public List<T> translateGenericTask(Task t) throws BpmnTranslatorException;
 
-    public T translateEndEvent(EndEvent t) throws BpmnTranslatorException;
+    public List<T> translateEndEvent(EndEvent t) throws BpmnTranslatorException;
 
-    public T translateStartEvent(StartEvent t) throws BpmnTranslatorException;
+    public List<T> translateStartEvent(StartEvent t) throws BpmnTranslatorException;
 
-    public T translateParallelGateway(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateParallelGateway(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public T translateEventGateway(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateEventGateway(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public T translateInclusiveGateway(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateInclusiveGateway(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
     
-    public T translateExclusiveGateway(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateExclusiveGateway(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
     
-    public T translateParallelJoiningGateway(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateParallelJoiningGateway(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public T translateEventJoiningGateway(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateEventJoiningGateway(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public T translateInclusiveJoiningGateway(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateInclusiveJoiningGateway(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public T translateExclusiveJoiningGateway(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public List<T> translateExclusiveJoiningGateway(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    
+    
 
 }

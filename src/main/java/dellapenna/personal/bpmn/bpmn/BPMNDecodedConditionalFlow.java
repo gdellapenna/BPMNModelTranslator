@@ -6,6 +6,6 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
  *
  * @author giuse
  */
-public record BPMNDecodedConditionalFlow<T>(String name, String condition, T code, FlowNode firstStep, FlowNode lastStep) {
+public record BPMNDecodedConditionalFlow<T>(String name, String condition, FlowNode firstStep) {
 
 }

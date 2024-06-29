@@ -4,12 +4,13 @@
  */
 package dellapenna.personal.bpmn.bpmn;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  *
  * @author giuse
  */
-public record FunctionDefinition(String name, String body, Class returnType, Map<String,Class> parameters) {
+public record FunctionDefinition(String name, List<String> body, List<String> triggers, Class returnType, Map<String,Class> parameters) {
     
 }
