@@ -135,8 +135,8 @@ public class BPMNModelTest {
         BufferedWriter out = new BufferedWriter(new FileWriter("output.java"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
-        //System.out.println(ft.translateBpmn("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
-        //System.out.println(ft.translateBpmn("a.b=c"));        
+        //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
+        //System.out.println(ft.generateBpmnSource("a.b=c"));        
 //
         out.write(pre_code());
         out.newLine();

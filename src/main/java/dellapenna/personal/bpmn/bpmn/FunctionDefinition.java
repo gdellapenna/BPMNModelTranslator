@@ -11,6 +11,6 @@ import java.util.Map;
  *
  * @author giuse
  */
-public record FunctionDefinition(String name, List<String> body, List<String> triggers, Class returnType, Map<String,Class> parameters) {
+public record FunctionDefinition<T>(String name, Code<T> body, List<T> triggers, Class returnType, Map<String,Class> parameters) {
     
 }

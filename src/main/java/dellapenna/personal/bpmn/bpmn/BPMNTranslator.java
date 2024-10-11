@@ -26,47 +26,47 @@ import org.camunda.bpm.model.bpmn.instance.Process;
  */
 public interface BPMNTranslator<T> {
 
-    public T translateStatementSequence(List<T> statements) throws FeelTranslatorException, BpmnTranslatorException;
+    public T generateCompoundStatementCode(List<T> statements) throws FeelTranslatorException, BpmnTranslatorException;
     
-    public T translateBpmn(BpmnModelInstance dmn) throws FeelTranslatorException, BpmnTranslatorException;
+    public BPMNDecoded<T> decodeBpmn(BpmnModelInstance dmn) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public T translateProcess(Process p) throws FeelTranslatorException, BpmnTranslatorException;
+    public BPMNDecodedProcess<T> decodeProcessNode(Process p) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public List<T> translateManualTask(ManualTask t) throws BpmnTranslatorException;
+    public Code<T> generateManualTaskCode(ManualTask t) throws BpmnTranslatorException;
 
-    public List<T> translateScriptTask(ScriptTask t) throws BpmnTranslatorException;
+    public Code<T> generateScriptTaskCode(ScriptTask t) throws BpmnTranslatorException;
 
-    public List<T> translateUserTask(UserTask t) throws BpmnTranslatorException;
+    public Code<T> generateUserTaskCode(UserTask t) throws BpmnTranslatorException;
 
-    public List<T> translateServiceTask(ServiceTask t) throws BpmnTranslatorException;
+    public Code<T> generateServiceTaskCode(ServiceTask t) throws BpmnTranslatorException;
 
-    public List<T> translateSendTask(SendTask t) throws BpmnTranslatorException;
+    public Code<T> generateSendTaskCode(SendTask t) throws BpmnTranslatorException;
 
-    public List<T> translateReceiveTask(ReceiveTask t) throws BpmnTranslatorException;
+    public Code<T> generateReceiveTaskCode(ReceiveTask t) throws BpmnTranslatorException;
 
-    public List<T> translateBusinessRuleTask(BusinessRuleTask t) throws BpmnTranslatorException;
+    public Code<T> generateBusinessRuleTaskCode(BusinessRuleTask t) throws BpmnTranslatorException;
 
-    public List<T> translateGenericTask(Task t) throws BpmnTranslatorException;
+    public Code<T> generateGenericTaskCode(Task t) throws BpmnTranslatorException;
 
-    public List<T> translateEndEvent(EndEvent t) throws BpmnTranslatorException;
+    public Code<T> generateEndEventCode(EndEvent t) throws BpmnTranslatorException;
 
-    public List<T> translateStartEvent(StartEvent t) throws BpmnTranslatorException;
+    public Code<T> generateStartEventCode(StartEvent t) throws BpmnTranslatorException;
 
-    public List<T> translateParallelGateway(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateParallelGatewayCode(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public List<T> translateEventGateway(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateEventGatewayCode(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public List<T> translateInclusiveGateway(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateInclusiveGatewayCode(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
     
-    public List<T> translateExclusiveGateway(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateExclusiveGatewayCode(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
     
-    public List<T> translateParallelJoiningGateway(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateParallelJoiningGatewayCode(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public List<T> translateEventJoiningGateway(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateEventJoiningGatewayCode(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public List<T> translateInclusiveJoiningGateway(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateInclusiveJoiningGatewayCode(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
 
-    public List<T> translateExclusiveJoiningGateway(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    public Code<T> generateExclusiveJoiningGatewayCode(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
     
     
 
