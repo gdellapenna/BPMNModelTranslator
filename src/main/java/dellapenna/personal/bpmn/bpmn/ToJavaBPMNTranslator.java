@@ -34,13 +34,6 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     private static final ToJavaFeelTranslator feel = new ToJavaFeelTranslator();
 
-    private enum ProcType {
-        EVENT, TASK, FLOW, GETTER, GENERAL
-    };
-
-    private final Map<ProcType, Map<String, FunctionDefinition>> functions = new HashMap<>();
-    private final Map<String, GlobalVariableDefinition> globals = new HashMap<>();
-
     public ToJavaBPMNTranslator() {
         reset();
     }
@@ -48,119 +41,87 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     protected void reset() {
         super.reset();
-        globals.clear();
-        functions.clear();
-        for (ProcType t : ProcType.values()) {
-            functions.put(t, new HashMap<>());
-        }
     }
 
-    private String sanitizeName(String n) {
+    public static String sanitizeName(String n) {
         return n.replaceAll("[^A-Za-z0-9_]", "_");
     }
 
-    //registers a new global class variable for the process and returns its internal definition
-    private GlobalVariableDefinition registerGlobalVariable(String name) {
-        GlobalVariableDefinition g;
-        if (!globals.containsKey(name)) {
-            g = new GlobalVariableDefinition(name);
-            globals.put(name, g);
-        } else {
-            g = globals.get(name);
-        }
-        return g;
-    }
-
-    //creates a new function to output, assigned to the specified function class, and returns its internal definition
-    private FunctionDefinition registerFunction(String name, Code<String> code, Class returnType, ProcType type) {
-        return registerFunction(name, code, new ArrayList<>(List.of()), returnType, type);
-    }
-
-    //creates a new possibly constrained function to output, assigned to the specified function class, and returns its internal definition
-    private FunctionDefinition registerFunction(String name, Code<String> code, List<String> triggers, Class returnType, ProcType type) {
-        FunctionDefinition f;
-        if (!functions.get(type).containsKey(name)) {
-            f = new FunctionDefinition(sanitizeName(name), code, triggers, returnType, Collections.EMPTY_MAP);
-            functions.get(type).put(name, f);
-
-        } else {
-            f = functions.get(type).get(name);
-            System.err.println("warning: discarding function re-definition: " + name);
-        }
-        return f;
-    }
-
-    //creates a new procedure to output, assigned to the specified function class, and returns its internal definition
-    private FunctionDefinition registerProcedure(String name, Code<String> code, ProcType type) {
-        if (code == null || code.getStatements().isEmpty()) {
-            code = new Code("System.out.println(\"" + name + "\")");
-        }
-        return registerFunction(name, code, Void.class, type);
-    }
-
     /////////////////////////////////////////////////////////////////////
-    //generates the code to call a function, registering it if needed
-    private Code<String> generateProcedureCallCode(String name, Code<String> code, ProcType type) {
-        FunctionDefinition proc = registerProcedure(name, code, type);
-        return new Code(proc.name() + "()");
-    }
-
-    //generates the code to capture the output of a node, as a set of variable assignments
-    private Code<String> generateOutputAssignemntsCode(FlowNode t) {
-        ModelElementInstance ioMapping = t.getExtensionElements() != null ? t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping") : null;
-        if (ioMapping != null) {
-            ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream().forEach(e -> registerGlobalVariable(e.getAttribute("target")));
-            return new Code(ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
-                    .map(e -> e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
-                    .collect(Collectors.toList()));
-        } else {
-            return new Code();
-        }
-    }
-
-    //////
-    //generates the code for a decoded flow
+    //generates the source code for a complete BPMN given the code of its single processes
     @Override
-    protected Code<String> generateFlowCode(BPMNDecodedFlow<String> flow) {
-        return new Code(generateSource(registerProcedure(flow.name(), flow.code(), ProcType.FLOW)));
+    public String generateBpmnSource(BPMNDecoded<String> bpmn) {
+        return bpmn.processes().stream()
+                .map(p -> generateProcessSource(p))
+                .collect(Collectors.joining("\n\n"));
     }
 
-    /////
-    ////TASKS
+    //generates the source code for a complete BPMN process
+    protected String generateProcessSource(BPMNDecodedProcess<String> process) {
+        String globals = process.body().stream()
+                .flatMap(flow -> flow.code().getGlobals().values().stream()
+                .map(gd -> "Object " + gd.name()))
+                .collect(Collectors.joining(";\n")) + "; ";
+        String functions = process.body().stream()
+                .flatMap(flow -> flow.code().getFunctions().values().stream()
+                .flatMap(fc -> fc.values().stream())
+                .map(fd -> generateFunctionSource(fd)))
+                .collect(Collectors.joining("\n\n")) + "; ";
+
+        return " class bpmn_process_" + sanitizeName(process.name()) + " { "
+                + globals + functions + "}";
+    }
+
+    //generates the source code for a given function definition
+    private String generateFunctionSource(FunctionDefinition<String> f) {
+        return "public " + (f.returnType().equals(Void.class) ? "void" : f.returnType().getName()) + " " + f.name() + "("
+                + f.parameters().entrySet().stream().map(e -> e.getValue().getName() + " " + e.getKey()).collect(Collectors.joining(", ")) //convert types?
+                + ") {" + generateCodeSource(f.body()) + "}";
+    }
+
+    //generates the text source for a code block    
+    public String generateCodeSource(Code<String> code) {
+        return code.getStatements().stream().collect(Collectors.joining(";\n", "", ";\n"));
+    }
+
+    //////////////////
+    // Generate code for specific BPMN nodes
+    //////////////////
+    //TASKS
     @Override
     public Code<String> generateGenericTaskCode(Task t) {
-        return generateProcedureCallCode("task_generic_" + t.getName(), null, ProcType.TASK);
+        return generateProcedureCallCode("task_generic_" + t.getName(), null, Code.ProcType.TASK);
     }
 
     @Override
     public Code<String> generateManualTaskCode(ManualTask t) {
-        return generateProcedureCallCode("task_manual_" + t.getName(), null, ProcType.TASK);
+        return generateProcedureCallCode("task_manual_" + t.getName(), null, Code.ProcType.TASK);
     }
 
     @Override
     public Code<String> generateScriptTaskCode(ScriptTask t) {
-        return generateProcedureCallCode("task_script_" + t.getName(), null, ProcType.TASK);
+        return generateProcedureCallCode("task_script_" + t.getName(), null, Code.ProcType.TASK);
     }
 
     @Override
     public Code<String> generateServiceTaskCode(ServiceTask t) {
-        return generateProcedureCallCode("task_service_" + t.getName(), null, ProcType.TASK);
+        return generateProcedureCallCode("task_service_" + t.getName(), null, Code.ProcType.TASK);
     }
 
     @Override
     public Code<String> generateSendTaskCode(SendTask t) {
-        return generateProcedureCallCode("task_send_" + t.getName(), null, ProcType.TASK);
+        return generateProcedureCallCode("task_send_" + t.getName(), null, Code.ProcType.TASK);
     }
 
     @Override
     public Code<String> generateReceiveTaskCode(ReceiveTask t) {
-        return generateProcedureCallCode("task_receive_" + t.getName(), null, ProcType.TASK);
+        return generateProcedureCallCode("task_receive_" + t.getName(), null, Code.ProcType.TASK);
     }
 
     @Override
     public Code<String> generateUserTaskCode(UserTask t) {
         Code<String> outs = generateOutputAssignemntsCode(t);
-        return generateProcedureCallCode("task_user_" + t.getName(), ((!outs.isEmpty()) ? outs : null), ProcType.TASK);
+        return generateProcedureCallCode("task_user_" + t.getName(), ((!outs.isEmpty()) ? outs : null), Code.ProcType.TASK);
     }
 
     @Override
@@ -184,7 +145,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     }
 
-    ////EVENTS
+    //EVENTS
     @Override
     public Code<String> generateEndEventCode(EndEvent t) {
         Code<String> code = new Code<>();
@@ -205,29 +166,15 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (code.isEmpty()) {
             code.append("System.exit(0)");
         }
-//        if (!code.isEmpty()) {
-//            code.add(0, "//end: " + t.getName());
-//            return translateFunctionCall("event_end_" + t.getName(), code, ProcType.EVENT);
-//        } else {
-        code.prepend(0, "//end event: " + t.getName());
+        code.prepend("//end event: " + t.getName());
         return code;
-//        return new ArrayList<>(List.of("//end: " + t.getName(), "System.exit(0)"));
-
-//        }
     }
 
     @Override
     public Code<String> generateStartEventCode(StartEvent t) {
-        List<String> code = generateOutputAssignemntsCode(t);
-//        if (!code.isEmpty()) {
-//            code.add(0, "//start: " + t.getName());
-//            return translateFunctionCall("event_start_" + t.getName(), code, ProcType.EVENT);
-//        } else {
-        code.add(0, "//start event: " + t.getName());
+        Code<String> code = generateOutputAssignemntsCode(t);
+        code.prepend("//start event: " + t.getName());
         return code;
-        //return new ArrayList<>(List.of("//start: " + t.getName()));
-//    }
-        //inserire una condizione??
     }
 
 ////// GATEWAYS
@@ -250,7 +197,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 //        FunctionDefinition proc = registerProcedure(
 //                joinedflow.name(), join_code + "\n\n" + joinedflow.code() + ";" + "//start:" + joinedflow.firstStep().getId()
 //                + "//end:" + joinedflow.lastStep().getId(), ProcType.FLOW);
-        return new ArrayList<>(List.of("ProcessUtils.signal(ID DEL NODO ENTRANTE)"));
+        return new Code<>("ProcessUtils.signal(ID DEL NODO ENTRANTE)");
     }
 
     @Override
@@ -307,7 +254,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 //            code += splitFlows.get(o).name() + "_thread = new FutureTask<>(() -> {" + translateFunctionCall(splitFlows.get(o).name() + "_parallel", splitFlows.get(o).code(), ProcType.FLOW) + ";\n\n return 1;});"
 //                    + "\n" + splitFlows.get(o).name() + "_thread.run();"
 //                    + "\n";
-            code.add(generateCompoundStatementCode(List.of("ProcessUtils.fork(" + generateNodeJointCode(splitFlows.get(o).firstStep())))); //start parallel tasks
+            code.add(generateCodeSource(new Code<>("ProcessUtils.fork(" + generateNodeJointCode(splitFlows.get(o).firstStep())))); //start parallel tasks
         }
         //code += "\nchiamata_a_funzione_join();"; //oppure continuiamo inline??? si potrebbe inserire già qui il codice della join gw, ma come?
 
@@ -316,26 +263,34 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     public Code<String> generateInclusiveGatewayCode(InclusiveGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
+        Code<String> result = new Code<>();
         String code = "";
         for (int o = 0; o < splitFlows.size(); ++o) {
+            Code<String> splitCode = generateNodeJointCode(splitFlows.get(o).firstStep());
+            result.append(splitCode);
             code += "if "
                     + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                    + "{" + generateCompoundStatementCode(generateNodeJointCode(splitFlows.get(o).firstStep())) + "} ";
+                    + "{" + generateCodeSource(splitCode)
+                    + "} ";
         }
-        return new ArrayList<>(List.of(code));
+        result.append(code);
+        return result;
     }
 
     @Override
     public Code<String> generateExclusiveGatewayCode(ExclusiveGateway n, List<BPMNDecodedConditionalFlow<String>> splitFlows) throws FeelTranslatorException {
+        Code<String> result = new Code<>();
         String code = "";
         BPMNDecodedConditionalFlow<String> default_branch = null;
         for (int o = 0; o < splitFlows.size(); ++o) {
+            Code<String> splitCode = generateNodeJointCode(splitFlows.get(o).firstStep());
+            result.append(splitCode);            
             if (splitFlows.get(o).condition() != null) {
                 if (!code.isBlank()) {
                     code += " else ";
                 }
                 code += "if " + "(" + feel.translate(splitFlows.get(o).condition().substring(1)) + ")";  //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                code += "{" + generateCompoundStatementCode(generateNodeJointCode(splitFlows.get(o).firstStep())) + "}";
+                code += "{" + generateCodeSource(splitCode) + "}";
             } else {
                 default_branch = splitFlows.get(o);
             }
@@ -344,9 +299,11 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             code += " else ";
         }
         if (default_branch != null) {
-            code += "{" + generateCompoundStatementCode(generateNodeJointCode(default_branch.firstStep())) + "}";
+            Code<String> splitCode = generateNodeJointCode(default_branch.firstStep());
+            result.append(splitCode);            
+            code += "{" + generateCodeSource(splitCode) + "}";
         } else {
-            code += "{" + generateCompoundStatementCode(translateNodeJoint("ProcessUtils.NoDefaultError")) + "}";
+            code += "{" + generateCodeSource(generateNodeJointCode("ProcessUtils.NoDefaultError")) + "}";
 //            code += """
 //                      {
 //                      //no default case
@@ -354,7 +311,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 //                      }""";
             //////result += " { return null; }";
         }
-        return new ArrayList<>(List.of(code));
+        result.append(code);
+        return result;
     }
 
     @Override
@@ -364,46 +322,44 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     @Override
     protected Code<String> generateNodeJointCode(FlowNode flowStart) {
-        return translateNodeJoint(getFlowName(flowStart));
+        return generateNodeJointCode(getFlowName(flowStart));
     }
 
-    protected Code<String> translateNodeJoint(String flowName) {
-        return new ArrayList<>(List.of(sanitizeName(flowName) + "()"));
+    protected Code<String> generateNodeJointCode(String flowName) {
+        return new Code<>(sanitizeName(flowName) + "()");
     }
 
-    //generates the text source for a code block
-    @Override
-    public String generateSource(Code<String> code) {
-        return code.getStatements().stream().collect(Collectors.joining(";\n", "", ";\n"));
+    //////////////
+    // Code generation utilities
+    //////////////
+    //generates the code to call a function, registering it if needed
+    private Code<String> generateProcedureCallCode(String name, Code<String> code, Code.ProcType type) {
+        Code<String> result = new Code<>();
+        FunctionDefinition proc = result.registerProcedure(name, code, type);
+        result.append(proc.name() + "()");
+        return result;
+
     }
 
-    //generates the source code for a given function definition
-    private String generateSource(FunctionDefinition<String> f) {
-        return "public " + (f.returnType().equals(Void.class) ? "void" : f.returnType().getName()) + " " + f.name() + "("
-                + f.parameters().entrySet().stream().map(e -> e.getValue().getName() + " " + e.getKey()).collect(Collectors.joining(", ")) //convert types?
-                + ") {" + generateSource(f.body()) + "}";
+    //generates the code to capture the output of a node, as a set of variable assignments
+    private Code<String> generateOutputAssignemntsCode(FlowNode t) {
+        Code<String> result = new Code<>();
+        ModelElementInstance ioMapping = t.getExtensionElements() != null ? t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping") : null;
+        if (ioMapping != null) {
+            ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream().forEach(e -> result.registerGlobalVariable(e.getAttribute("target")));
+            result.append(ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
+                    .map(e -> e.getAttribute("target") + "=" + feel.translateChecked(e.getAttribute("source").substring(1)))
+                    .collect(Collectors.toList()));
+        }
+        return result;
     }
 
-    //generates the source code for a complete BPMN given the code of its single processes
-    @Override
-    protected String generateBpmnSource(List<String> processes_code) {
-        return processes_code.stream().collect(Collectors.joining("\n\n"));
-    }
-
-    //generates the source code for a complete BPMN process
-    @Override
-    protected String generateProcessSource(String name, List<String> flows_code) {
-        return " class bpmn_process_" + sanitizeName(name) + " { "
-                + globals.values().stream()
-                        .map(gd -> "Object " + gd.name())
-                        .collect(Collectors.joining(";\n")) + "; "
-                + functions.values().stream()
-                        .flatMap(f -> f.values().stream())
-                        .map(fd -> generateSource(fd))
-                        .collect(Collectors.joining("\n\n"))
-                + "}";
-    }
-
+//    //generate the code for a decoded flow
+//    protected Code<String> generateFlowCode(BPMNDecodedFlow<String> flow) {
+//        Code<String> result = new Code<>();
+//        new Code(generateFunctionSource(registerProcedure(flow.name(), flow.code(), Code.ProcType.FLOW)));
+//        return result;
+//    }
 }
 
 /*

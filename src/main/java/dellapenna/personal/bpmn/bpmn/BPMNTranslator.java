@@ -25,8 +25,8 @@ import org.camunda.bpm.model.bpmn.instance.Process;
  * @param <T>
  */
 public interface BPMNTranslator<T> {
-
-    public T generateCompoundStatementCode(List<T> statements) throws FeelTranslatorException, BpmnTranslatorException;
+  
+    public T generateBpmnSource(BPMNDecoded<T> bpmn);
     
     public BPMNDecoded<T> decodeBpmn(BpmnModelInstance dmn) throws FeelTranslatorException, BpmnTranslatorException;
 

@@ -33,12 +33,12 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     Deque<FlowNode> flows_to_translate = new ArrayDeque<>();
 
     ///
-    protected abstract T generateBpmnSource(List<T> processes_code);
+    
 
-    protected abstract T generateProcessSource(String name, List<T> flows_code);
-
-    protected abstract Code generateFlowCode(BPMNDecodedFlow<T> flow);
-
+    //protected abstract T generateProcessSource(String name, List<T> flows_code);
+    //protected abstract Code generateFlowCode(BPMNDecodedFlow<T> flow);
+    
+    
     /////////////////////
     // Utilities
     /////////////////////
@@ -72,15 +72,15 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     public BPMNDecodedProcess<T> decodeProcessNode(Process p) throws FeelTranslatorException, BpmnTranslatorException {
         //ci possono essere più start su nodi comuni???        
         flows_to_translate.addAll(p.getChildElementsByType(StartEvent.class));
-        Code<T> flows_code = new Code<>();
+        List<BPMNDecodedFlow<T>> flows = new ArrayList<>();
         while (!flows_to_translate.isEmpty()) {
             FlowNode s = flows_to_translate.poll();
             BPMNDecodedFlow<T> flow = decodeLinearFlow(s); //null if already generated
             if (flow != null) {
-                flows_code.append(generateFlowCode(flow));
+                flows.add(flow);
             }
         }
-        return new BPMNDecodedProcess<>(p.getName() != null ? p.getName() : p.getId(), flows_code);
+        return new BPMNDecodedProcess<>(p.getName() != null ? p.getName() : p.getId(), flows);
     }
 
     ////////////////////////
@@ -105,7 +105,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     }
 
     ////////////////////////
-    // Decode node sequences into BPMNDecodedFlow (code + info)
+    // Decode a node sequence to BPMNDecodedFlow (code + info)
     ////////////////////////
     private BPMNDecodedFlow<T> decodeLinearFlow(FlowNode start) throws FeelTranslatorException, BpmnTranslatorException {
         if (!generated_flows.contains(start)) {
