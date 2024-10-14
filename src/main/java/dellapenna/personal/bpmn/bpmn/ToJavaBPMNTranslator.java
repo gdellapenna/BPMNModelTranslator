@@ -4,10 +4,7 @@ import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.camunda.bpm.model.bpmn.instance.EndEvent;
@@ -68,8 +65,17 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 .map(fd -> generateFunctionSource(fd)))
                 .collect(Collectors.joining("\n\n")) + "; ";
 
+        Code<String> flows_code = new Code();
+        for (BPMNDecodedFlow<String> f : process.body()) {
+            flows_code.registerProcedure(f.name(), f.code(), Code.ProcType.FLOW);
+        }
+        String flows = flows_code.getFunctions().values().stream()
+                .flatMap(fc -> fc.values().stream())
+                .map(fd -> generateFunctionSource(fd))
+                .collect(Collectors.joining("\n\n")) + "; ";
+
         return " class bpmn_process_" + sanitizeName(process.name()) + " { "
-                + globals + functions + "}";
+                + globals + flows + functions + "}";
     }
 
     //generates the source code for a given function definition
@@ -284,7 +290,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         BPMNDecodedConditionalFlow<String> default_branch = null;
         for (int o = 0; o < splitFlows.size(); ++o) {
             Code<String> splitCode = generateNodeJointCode(splitFlows.get(o).firstStep());
-            result.append(splitCode);            
+            result.append(splitCode);
             if (splitFlows.get(o).condition() != null) {
                 if (!code.isBlank()) {
                     code += " else ";
@@ -300,7 +306,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         }
         if (default_branch != null) {
             Code<String> splitCode = generateNodeJointCode(default_branch.firstStep());
-            result.append(splitCode);            
+            result.append(splitCode);
             code += "{" + generateCodeSource(splitCode) + "}";
         } else {
             code += "{" + generateCodeSource(generateNodeJointCode("ProcessUtils.NoDefaultError")) + "}";

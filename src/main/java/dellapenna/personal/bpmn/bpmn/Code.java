@@ -39,26 +39,26 @@ public class Code<T> {
     }
 
     public List<T> getStatements() {
-        return statements;
+        return this.statements;
     }
 
     public Map<ProcType, Map<String, FunctionDefinition>> getFunctions() {
-        return functions;
+        return this.functions;
     }
 
     public Map<String, GlobalVariableDefinition> getGlobals() {
-        return globals;
+        return this.globals;
     }
 
     public void append(List<T> statements) {
-        statements.addAll(statements);
+        this.statements.addAll(statements);
     }
 
     public void append(Code<T> code) {
-        statements.addAll(code.statements);
-        globals.putAll(code.globals);
+        this.statements.addAll(code.statements);
+        this.globals.putAll(code.globals);
         for(ProcType pt : ProcType.values()) {
-            functions.get(pt).putAll(code.functions.get(pt));
+            this.functions.get(pt).putAll(code.functions.get(pt));
         }
     }
 
@@ -71,7 +71,7 @@ public class Code<T> {
     }
 
     public boolean isEmpty() {
-        return statements.isEmpty();
+        return this.statements.isEmpty();
     }
 
     ////
