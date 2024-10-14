@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn;
 
+import dellapenna.personal.bpmn.bpmn.AbstractBPMNTranslator;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslator;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
@@ -107,7 +108,7 @@ public class BPMNModelTest {
             out.newLine();
             
             DMNTranslator<String> dt = new ToJavaDMNTranslator();
-            BPMNTranslator<String> bt = new ToJavaBPMNTranslator();
+            AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
 
             DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("get_length.dmn"));
             out.write(dt.translate(dmnInstance));
@@ -150,7 +151,7 @@ public class BPMNModelTest {
 //        out.newLine();
 //
         BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_2.bpmn"));
-        BPMNTranslator<String> bt = new ToJavaBPMNTranslator();
+        AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
         //((AbstractBPMNTranslator) bt).dump(bpmnInstance);
         
 

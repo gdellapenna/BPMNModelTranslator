@@ -126,9 +126,22 @@ class dmn_dtable_ChooseConsentDT {
 class bpmn_process_Shipment {
 
     Object pType;
+    Object pWeight;
     Object pLength;
-    Object sMode;
     Object consent;
+    Object sMode;
+
+    public void task_user_measure_weight() {
+        pWeight = getPackageWeight();
+    }
+
+    public void task_generic_fetch_declaration() {
+        System.out.println("task_generic_fetch declaration");
+    }
+
+    public void task_generic_sign_declaration() {
+        System.out.println("task_generic_sign declaration");
+    }
 
     public void flow_undefined_length() {//end event: undefined length;
         System.err.println("Undefined Length");
@@ -163,9 +176,6 @@ class bpmn_process_Shipment {
 //get length;
         dmn_dtable_GetLengthDT_result getLengthResult = dmn_dtable_GetLengthDT.execute(/*Type*/pType);
         pLength = getLengthResult.Length;
-        flow_measure_weight();
-        flow_undefined_length();
-        flow_measure_weight();
         if (pLength.equals(-(TypeUtils.tonumber(1.0)))) {
             flow_undefined_length();
         } else {
@@ -181,9 +191,6 @@ class bpmn_process_Shipment {
     public void flow_choose_consent() {//choose consent;
         dmn_dtable_ChooseConsentDT_result chooseConsentResult = dmn_dtable_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/ pWeight);
         consent = chooseConsentResult.Consent;
-        flow_sign_declaration();
-        flow_fetch_declaration();
-        flow_Gateway_07f90ke();
         if (consent.equals("com")) {
             flow_sign_declaration();
         } else if (consent.equals("owner")) {
@@ -197,9 +204,6 @@ class bpmn_process_Shipment {
 
     public void flow_measure_weight() {
         task_user_measure_weight();
-        flow_unsuppoted_weight();
-        flow_determine_mode();
-        flow_determine_mode();
         if (TypeUtils.tonumber(pWeight) > TypeUtils.tonumber(10.0)) {
             flow_unsuppoted_weight();
         } else {
@@ -210,26 +214,11 @@ class bpmn_process_Shipment {
     public void flow_determine_mode() {//determine mode;
         dmn_dtable_DetermineModeDT_result determineModeResult = dmn_dtable_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/ pWeight);
         sMode = determineModeResult.Mode;
-        flow_no_shipment();
-        flow_choose_consent();
-        flow_choose_consent();
         if (sMode.equals("undef")) {
             flow_no_shipment();
         } else {
             flow_choose_consent();
         };
-    }
-
-    ; public void task_user_measure_weight() {
-        pWeight = getPackageWeight();
-    }
-
-    public void task_generic_fetch_declaration() {
-        System.out.println("task_generic_fetch declaration");
-    }
-
-    public void task_generic_sign_declaration() {
-        System.out.println("task_generic_sign declaration");
     }
 ;
 }
