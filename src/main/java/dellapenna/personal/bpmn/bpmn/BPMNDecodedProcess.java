@@ -65,8 +65,11 @@ public class BPMNDecodedProcess {
 
     //creates a new procedure to output, assigned to the specified function class, and returns its internal definition
     public FunctionDefinition registerProcedure(String name, Code code, Code.ProcType type) {
-        if (code == null || code.getStatements().isEmpty()) {
-            code = new Code("System.out.println(\"" + name + "\")");
+//        if (code == null || code.getStatements().isEmpty()) {
+//            code = new Code("System.out.println(\"" + name + "\")");
+//        }
+        if (code == null) {
+            code = new Code();
         }
         return registerFunction(name, code, Void.class, type);
     }

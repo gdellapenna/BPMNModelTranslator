@@ -106,7 +106,7 @@ public class BPMNModelTest {
 
             out.write(pre_code());
             out.newLine();
-            
+
             DMNTranslator<String> dt = new ToJavaDMNTranslator();
             AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
 
@@ -153,9 +153,8 @@ public class BPMNModelTest {
         BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_2.bpmn"));
         AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
         //((AbstractBPMNTranslator) bt).dump(bpmnInstance);
-        
 
-//out.write(bt.translateBpmn(bpmnInstance));
+        out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance)));
 
         out.newLine();
         out.write(post_code());
