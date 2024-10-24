@@ -8,6 +8,6 @@ package dellapenna.personal.bpmn.bpmn;
  *
  * @author giuse
  */
-public record GlobalVariableDefinition(String name) {
+public record VariableDefinition(String name) {
     
 }

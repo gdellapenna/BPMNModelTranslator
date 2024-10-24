@@ -1,8 +1,8 @@
 package dellapenna.personal.bpmn;
 
 import dellapenna.personal.bpmn.bpmn.AbstractBPMNTranslator;
-import dellapenna.personal.bpmn.bpmn.BPMNTranslator;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
+import dellapenna.personal.bpmn.bpmn.Options;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
@@ -89,10 +89,80 @@ public class BPMNModelTest {
                 }
             }
                
-               class ProcessUtils {               
-                    public static void NoDefaultError() { System.exit(9999); }
-                    public static void signal(String s) {  }
-                    public static void wait(String... s) {  }
+               class ProcessUtils {
+                         static java.io.PrintStream debugChannel = System.out;
+                         static java.io.PrintStream resultChannel = System.out;
+                         static java.util.Properties outputs = new java.util.Properties();
+                         static java.util.Properties inputs = new java.util.Properties();
+               
+                         
+                             public static void start() {        
+                                 java.io.File inputs_file = new java.io.File("inputs.properties");
+                                 if (inputs_file.canRead()) {
+                                     try {
+                                         inputs.load(new java.io.FileReader(inputs_file));
+                                     } catch (java.io.IOException ex) {
+                         
+                                 }
+                             }
+                         }
+                             
+                             public static void end() {
+                                 java.io.File outputs_file = new java.io.File("outputs.properties");
+                                try {
+                                    outputs.store(new java.io.FileWriter(outputs_file), null);
+                                } catch (java.io.IOException ex) {
+                                    //
+                                }                                 
+                                 System.exit(Integer.parseInt(outputs.getProperty("code", "0")));
+                             }
+               
+                	 public static void signal(String s) {
+                            }
+                        
+                            public static void wait(String... s) {
+                            }
+                        
+                            public static void error(String s, int c) {
+                                ProcessUtils.debugOutput("ERROR: %s", s);
+                                ProcessUtils.logResult(false,s,c);
+                                ProcessUtils.end();
+                            }
+                        
+                            public static void noDefaultCaseError() {
+                                error("No default branch in gateway", 9999);
+                            }
+                        
+                            public static void success(String s, int c) {
+                                if (s != null) {
+                                    ProcessUtils.debugOutput("SUCCESS: %s", s);
+                                } else {
+                                    ProcessUtils.debugOutput("SUCCESS");               
+                                }
+                                ProcessUtils.logResult(true,s,c);
+                                ProcessUtils.end();                                
+                            }
+                        
+                            public static void success() {
+                                success(null, 0);                                
+                            }
+                        
+                            public static void debugOutput(String s, Object... args) {
+                                String message = String.format(s,args);
+                                debugChannel.println(message);
+                            }         	
+               
+                            public static void logInput(String name, Object value) {
+                                    resultChannel.println(name + "=" + value);
+                                    outputs.setProperty(name, (value != null ? value.toString() : "<NULL>"));
+                                }
+                            
+                            public static void logResult(boolean success, String message, int code) {
+                                resultChannel.println(success ? "SUCCESS" : "FAILURE" + "," + code + "," + message);
+                                outputs.setProperty("output_success", success ? "true" : "false");
+                                outputs.setProperty("output_message", message != null ? message : "");
+                                outputs.setProperty("output_code", String.valueOf(code));
+                            }  
                 }
             """;
     }
@@ -102,6 +172,8 @@ public class BPMNModelTest {
     }
 
     public static void paperTranslation() throws IOException, FeelTranslatorException, BpmnTranslatorException {
+        Options opt = new Options();
+        opt.setDebug(true);
         try (BufferedWriter out = new BufferedWriter(new FileWriter("paper.java"))) {
 
             out.write(pre_code());
@@ -121,7 +193,7 @@ public class BPMNModelTest {
             out.newLine();
 
             BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_paper.bpmn"));
-            out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance)));
+            out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance, opt), opt));
 
             out.newLine();
             out.write(post_code());
@@ -133,6 +205,8 @@ public class BPMNModelTest {
         paperTranslation();
         //System.exit(0);
 
+        Options opt = new Options();
+        opt.setDebug(true);
         BufferedWriter out = new BufferedWriter(new FileWriter("output.java"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
@@ -154,7 +228,7 @@ public class BPMNModelTest {
         AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
         //((AbstractBPMNTranslator) bt).dump(bpmnInstance);
 
-        out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance)));
+        out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance,opt),opt));
 
         out.newLine();
         out.write(post_code());

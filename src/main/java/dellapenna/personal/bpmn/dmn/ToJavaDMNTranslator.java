@@ -43,7 +43,8 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         String procName = sanitizeName("dmn_dtable_" + id);
         String output_record_name = procName + "_result";
 
-        return "class " + output_record_name + "{"
+        return "// wrapper class for the output of DMN table " + id + "\n"
+                + "class " + output_record_name + "{"
                 + outputs.stream()
                         .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
                         .collect(Collectors.joining(";\n", "", ";\n"))
@@ -55,16 +56,23 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + outputs.stream()
                         .map(o -> "this." + o.getName() + "=" + o.getName())
                         .collect(Collectors.joining(";\n", "", ";\n"))
+                + "}\n"                
+                + "public String toString() { String result=\"{\"; "
+                + outputs.stream()
+                        .map(o -> "result+=\""+o.getName() + "=\"+this." + o.getName()+ " ")
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "return result+\"}\";"
                 + "}\n"
                 + "}"
                 + "\n\n"
+                + "// decision code for DMN table " + id + "\n"
                 + "class " + procName + " {\n\n"
                 //+ "public " + output_record_name + " " + procName + "("
                 + "public static " + output_record_name + " execute("
                 //                + inputs.stream()
                 //                        .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent()))
                 //                        .collect(Collectors.joining(", "))
-                
+
                 + inputs.stream()
                         .map(i -> "Object _" + sanitizeName(i.getInputExpression().getTextContent()))
                         .collect(Collectors.joining(", "))
@@ -73,7 +81,6 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                         .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent())
                         + " = TypeUtils.to" + i.getInputExpression().getTypeRef() + "(_" + sanitizeName(i.getInputExpression().getTextContent()) + ")")
                         .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
-                
                 + translateRules(decoded_rules, output_record_name)
                 + "\n}"
                 + "\n}";
@@ -82,7 +89,12 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
     @Override
     protected String translateDecisionModel(Map<String, String> decoded_tables) {
-        return decoded_tables.values().stream().collect(Collectors.joining("\n\n"));
+        return """
+               /*
+                * ****************************** DMN Generated Code *************************
+                */
+               """
+                + decoded_tables.values().stream().collect(Collectors.joining("\n\n"));
     }
 
     @Override

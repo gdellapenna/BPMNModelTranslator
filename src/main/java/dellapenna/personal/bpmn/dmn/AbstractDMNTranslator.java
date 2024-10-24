@@ -51,7 +51,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
                     ));
                 } else {
                     rule_conditions.add(new DMNCondition<>(
-                            translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent()),
+                            translateExpression(null, inputs.get(ref_counter++).getInputExpression().getTextContent()),
                             null));
                 }
             }

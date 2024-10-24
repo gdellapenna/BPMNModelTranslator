@@ -15,7 +15,9 @@ public class BPMNDecodedProcess {
     private String name;
     private List<BPMNDecodedFlow> rawFlows = new ArrayList<>();
     private final Map<Code.ProcType, Map<String, FunctionDefinition>> functions = new HashMap<>();
-    private final Map<String, GlobalVariableDefinition> globals = new HashMap<>();
+    private final Map<String, VariableDefinition> globals = new HashMap<>();
+    private final Map<String, VariableDefinition> inputs = new HashMap<>();
+    private final List<String> startEventFlowNames = new ArrayList<>();
 
     public BPMNDecodedProcess(String name) {
         this.name = name;
@@ -25,16 +27,24 @@ public class BPMNDecodedProcess {
         return this.functions;
     }
 
-    public Map<String, GlobalVariableDefinition> getVariables() {
+    public Map<String, VariableDefinition> getVariables() {
         return this.globals;
+    }
+
+    public List<String> getStartEventFlowNames() {
+        return this.startEventFlowNames;
+    }
+
+    public Map<String, VariableDefinition> getInputs() {
+        return this.inputs;
     }
 
     ////
     //registers a new global class variable for the process and returns its internal definition
-    public GlobalVariableDefinition registerProcessVariable(String name) {
-        GlobalVariableDefinition g;
+    public VariableDefinition registerProcessVariable(String name) {
+        VariableDefinition g;
         if (!globals.containsKey(name)) {
-            g = new GlobalVariableDefinition(name);
+            g = new VariableDefinition(name);
             globals.put(name, g);
         } else {
             g = globals.get(name);
@@ -78,6 +88,22 @@ public class BPMNDecodedProcess {
         registerProcedure(name, code, Code.ProcType.FLOW);
     }
 
+    public void registerStartEventFlowName(String name) {
+        this.startEventFlowNames.add(name);
+    }
+
+    //registers a new input variable (from start events or user tasks)
+    public VariableDefinition registerInput(String name) {
+        VariableDefinition i;
+        if (!inputs.containsKey(name)) {
+            i = new VariableDefinition(name);
+            inputs.put(name, i);
+        } else {
+            i = inputs.get(name);
+        }
+        return i;
+    }
+
     /**
      * @return the name
      */
@@ -91,5 +117,4 @@ public class BPMNDecodedProcess {
     public List<BPMNDecodedFlow> getRawFlows() {
         return rawFlows;
     }
-
 }
