@@ -143,13 +143,14 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         if (opt.isDebug()) {
             code.append("ProcessUtils.debugOutput(\"TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
-        FunctionDefinition f = p.registerProcedure(
-                "task_generic_" + (t.getName() != null ? t.getName() : ""),
-                code,
-                Code.ProcType.TASK);
-        Code result = generateProcedureCallCode(p, f);
-        //result.prepend("//generic task: " + (t.getName() != null ? t.getName() : ""));
-        return result;
+//        FunctionDefinition f = p.registerProcedure(
+//                "task_generic_" + (t.getName() != null ? t.getName() : ""),
+//                code,
+//                Code.ProcType.TASK);
+//        Code result = generateProcedureCallCode(p, f);
+//        //result.prepend("//generic task: " + (t.getName() != null ? t.getName() : ""));
+//        return result;
+        return code;
     }
 
     @Override
@@ -158,13 +159,14 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         if (opt.isDebug()) {
             code.append("ProcessUtils.debugOutput(\"MANUAL TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
-        FunctionDefinition f = p.registerProcedure(
-                "task_manual_" + (t.getName() != null ? t.getName() : ""),
-                code,
-                Code.ProcType.TASK);
-        Code result = generateProcedureCallCode(p, f);
-        //result.prepend("//manual task: " + (t.getName() != null ? t.getName() : ""));
-        return result;
+//        FunctionDefinition f = p.registerProcedure(
+//                "task_manual_" + (t.getName() != null ? t.getName() : ""),
+//                code,
+//                Code.ProcType.TASK);
+//        Code result = generateProcedureCallCode(p, f);
+//        //result.prepend("//manual task: " + (t.getName() != null ? t.getName() : ""));
+//        return result;
+        return code;
     }
 
     @Override
@@ -180,15 +182,15 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         if (script != null) {
             String resultVariable = script.getAttributeValue("resultVariable");
             String expression = script.getAttributeValue("expression");
-            code.append(resultVariable+"="+feel.translateChecked(expression.substring(1)));            
+            code.append(resultVariable + "=" + feel.translateChecked(expression.substring(1)));
         }
 
-        FunctionDefinition f = p.registerProcedure("task_script_" + (t.getName() != null ? t.getName() : ""),
-                code,
-                Code.ProcType.TASK);
-        Code result = generateProcedureCallCode(p, f);
-        //result.prepend("//script task: " + (t.getName() != null ? t.getName() : ""));
-        return result;
+//        FunctionDefinition f = p.registerProcedure("task_script_" + (t.getName() != null ? t.getName() : ""),
+//                code,
+//                Code.ProcType.TASK);
+//        Code result = generateProcedureCallCode(p, f);
+        //return result;
+        return code;
     }
 
     @Override
@@ -197,12 +199,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         if (opt.isDebug()) {
             code.append("ProcessUtils.debugOutput(\"SERVICE TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
-        FunctionDefinition f = p.registerProcedure("task_service_" + (t.getName() != null ? t.getName() : ""),
-                code,
-                Code.ProcType.TASK);
-        Code result = generateProcedureCallCode(p, f);
-        //result.prepend("//service task: " + (t.getName() != null ? t.getName() : ""));
-        return result;
+//        FunctionDefinition f = p.registerProcedure("task_service_" + (t.getName() != null ? t.getName() : ""),
+//                code,
+//                Code.ProcType.TASK);
+//        Code result = generateProcedureCallCode(p, f);
+//        //result.prepend("//service task: " + (t.getName() != null ? t.getName() : ""));
+//        return result;
+        return code;
     }
 
     @Override
@@ -212,12 +215,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
             code.append("ProcessUtils.debugOutput(\"SEND TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
 
-        FunctionDefinition f = p.registerProcedure("task_send_" + (t.getName() != null ? t.getName() : ""),
-                code,
-                Code.ProcType.TASK);
-        Code result = generateProcedureCallCode(p, f);
-        //result.prepend("//send task: " + (t.getName() != null ? t.getName() : ""));
-        return result;
+//        FunctionDefinition f = p.registerProcedure("task_send_" + (t.getName() != null ? t.getName() : ""),
+//                code,
+//                Code.ProcType.TASK);
+//        Code result = generateProcedureCallCode(p, f);
+//        //result.prepend("//send task: " + (t.getName() != null ? t.getName() : ""));
+//        return result;
+        return code;
     }
 
     @Override
@@ -227,12 +231,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
             code.append("ProcessUtils.debugOutput(\"RECEIVE TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
 
-        FunctionDefinition f = p.registerProcedure("task_receive_" + (t.getName() != null ? t.getName() : ""),
-                code,
-                Code.ProcType.TASK);
-        Code result = generateProcedureCallCode(p, f);
-        //result.prepend("//receive task: " + (t.getName() != null ? t.getName() : ""));
-        return result;
+//        FunctionDefinition f = p.registerProcedure("task_receive_" + (t.getName() != null ? t.getName() : ""),
+//                code,
+//                Code.ProcType.TASK);
+//        Code result = generateProcedureCallCode(p, f);
+//        //result.prepend("//receive task: " + (t.getName() != null ? t.getName() : ""));
+//        return result;
+        return code;
     }
 
     @Override
@@ -242,10 +247,11 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
             outs.prepend("ProcessUtils.debugOutput(\"USER TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
         outs.prepend("//user task: " + (t.getName() != null ? t.getName() : ""));
-        FunctionDefinition f = p.registerProcedure("task_user_" + (t.getName() != null ? t.getName() : ""), outs, Code.ProcType.TASK);
-        Code result = generateProcedureCallCode(p, f);
-        //result.prepend("//user task: " + (t.getName() != null ? t.getName() : ""));
-        return result;
+//        FunctionDefinition f = p.registerProcedure("task_user_" + (t.getName() != null ? t.getName() : ""), outs, Code.ProcType.TASK);
+//        Code result = generateProcedureCallCode(p, f);
+//        //result.prepend("//user task: " + (t.getName() != null ? t.getName() : ""));
+//        return result;
+        return outs;
     }
 
     @Override
@@ -310,7 +316,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
             code.prepend("ProcessUtils.debugOutput(\"START EVENT: " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
         code.prepend("\t//start event: " + (t.getName() != null ? t.getName() : ""));
-        p.registerStartEventFlowName(sanitizeName(getFlowName(t)));
+        p.registerStartEventFlowName(sanitizeName(p.getFlowName(t)));
         return code;
     }
 
@@ -353,7 +359,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, List<BPMNDecodedConditionalFlow> splitFlows, Options opt) throws FeelTranslatorException {
         Code result = new Code();
         for (int o = 0; o < splitFlows.size(); ++o) {
-            result.append("ProcessUtils.fork(\"" + sanitizeName(getFlowName(splitFlows.get(o).firstStep())) + "\")");
+            result.append("ProcessUtils.fork(\"" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep())) + "\")");
         }
         //code += "\nchiamata_a_funzione_join();"; //oppure continuiamo inline??? si potrebbe inserire già qui il codice della join gw, ma come?        
         if (opt.isDebug()) {
@@ -424,7 +430,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
 
     @Override
     protected Code generateFlowJointCode(BPMNDecodedProcess p, FlowNode flowStart, Options opt) {
-        return generateFlowJointCode(p, sanitizeName(getFlowName(flowStart)), opt);
+        return generateFlowJointCode(p, sanitizeName(p.getFlowName(flowStart)), opt);
     }
 
     //////////////
@@ -473,7 +479,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     }
 
 //    //generate the code for a decoded flow
-//    protected Code registerFlow(BPMNDecodedFlow<String> flow) {
+//    protected Code registerNodeProcedure(BPMNDecodedFlow<String> flow) {
 //        Code result = new Code();
 //        new Code(generateFunctionSource(registerProcedure(flow.name(), flow.code(), Code.ProcType.FLOW)));
 //        return result;

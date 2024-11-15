@@ -53,7 +53,7 @@ public abstract class AbstractBPMNTranslator {
 
     ///
     //protected abstract T generateProcessSource(String name, List flows_code);
-    //protected abstract Code registerFlow(BPMNDecodedFlow flow);
+    //protected abstract Code registerNodeProcedure(BPMNDecodedFlow flow);
     /////////////////////
     // Utilities
     /////////////////////
@@ -62,9 +62,7 @@ public abstract class AbstractBPMNTranslator {
         flows_to_translate.clear();
     }
 
-    protected String getFlowName(FlowNode start) {
-        return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
-    }
+    
 
     ////////////////////////
     // Decode a BPMN instance to BPMNDecoded structure
@@ -88,7 +86,7 @@ public abstract class AbstractBPMNTranslator {
         flows_to_translate.addAll(p.getChildElementsByType(StartEvent.class));
         while (!flows_to_translate.isEmpty()) {
             FlowNode s = flows_to_translate.poll();
-            decodeLinearFlow(dp, s, opt);
+            decodeFlow(dp, s, opt);
         }
         return dp;
     }
@@ -104,37 +102,73 @@ public abstract class AbstractBPMNTranslator {
             //BPMNDecodedFlow subflow = decodeLinearFlow(o.getTarget());
             flows_to_translate.addFirst(o.getTarget()); //schedule flow for decoding
             if (o.getConditionExpression() != null) {
-                conditional_subflows.add(new BPMNDecodedConditionalFlow(getFlowName(o.getTarget()), o.getConditionExpression().getTextContent(), o.getTarget()));
+                conditional_subflows.add(new BPMNDecodedConditionalFlow(p.getFlowName(o.getTarget()), o.getConditionExpression().getTextContent(), o.getTarget()));
             } else if (o.getId().equals(defaultFlow)) {
-                conditional_subflows.add(new BPMNDecodedConditionalFlow(getFlowName(o.getTarget()), null, o.getTarget()));
+                conditional_subflows.add(new BPMNDecodedConditionalFlow(p.getFlowName(o.getTarget()), null, o.getTarget()));
             } else {
-                conditional_subflows.add(new BPMNDecodedConditionalFlow(getFlowName(o.getTarget()), "=true", o.getTarget())); //always enabled
+                conditional_subflows.add(new BPMNDecodedConditionalFlow(p.getFlowName(o.getTarget()), "=true", o.getTarget())); //always enabled
             }
         }
         return conditional_subflows;
     }
 
-    ////////////////////////
-    // Decode a node sequence to BPMNDecodedFlow (code + info)
-    ////////////////////////
-    private void decodeLinearFlow(BPMNDecodedProcess p, FlowNode start, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        if (!generated_flows.contains(start)) {
-            Code code = new Code();
-            FlowNode current = start;
-            while (current != null) {
-                if (!generated_flows.contains(current)) {
-                    BPMNDecodedNode decoded_node = decodeNode(p, current, opt);
-                    code.append(decoded_node.code());
-                    current = decoded_node.nextStep();
-                } else {
-                    //from this point, the flow has been already generated - just join with a call                
-                    code.append(generateFlowJointCode(p, current, opt));
-                    current = null;
+    
+
+    //EXPERIMENTAL
+    private void decodeFlow(BPMNDecodedProcess p, FlowNode start, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+        //if (!generated_flows.contains(start)) {
+        FlowNode n = start;
+        while (n != null && !generated_flows.contains(n)) {
+            if (n.getOutgoing().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
+                //se un nodo ha più n.getOutgoing(), posporre un inclusive virtuale
+                org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
+                SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
+                virtualGateway.setName(n.getName() + " SPLIT GATEWAY");
+                virtualGateway.setId(n.getId() + "XVG");
+                n.getParentElement().addChildElement(virtualGateway);
+                n.getParentElement().addChildElement(virtualSequence);
+                virtualSequence.setSource(n);
+                for (SequenceFlow seq : n.getOutgoing()) {
+                    seq.setSource(virtualGateway);
                 }
+                virtualGateway.getOutgoing().addAll(n.getOutgoing());
+                virtualGateway.getIncoming().add(virtualSequence);
+                virtualSequence.setTarget(virtualGateway);
+                n.getOutgoing().clear();
+                n.getOutgoing().add(virtualSequence);
             }
-            generated_flows.add(start);
-            p.registerFlow(getFlowName(start), code);
+//            if (n.getIncoming().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
+//                //se un nodo ha più ingoing, premettere un inclusive virtuale
+//                org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
+//                SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
+//                virtualGateway.setName(n.getName() + " JOIN GATEWAY");
+//                virtualGateway.setId(n.getId() + "EVG");
+//                n.getParentElement().addChildElement(virtualGateway);
+//                n.getParentElement().addChildElement(virtualSequence);
+//                virtualSequence.setSource(virtualGateway);
+//                virtualGateway.getOutgoing().add(virtualSequence);
+//                for (SequenceFlow seq : n.getIncoming()) {
+//                    seq.setTarget(virtualGateway);
+//                }
+//                virtualGateway.getIncoming().addAll(n.getIncoming());
+//                virtualSequence.setTarget(n);
+//                n.getIncoming().clear();
+//                n.getIncoming().add(virtualSequence);
+//                n = virtualGateway;
+//            }
+            Code code = new Code();
+            //code.prepend("//" + p.getFlowName(n)); //TEMP!!!                    
+            BPMNDecodedNode decoded_node = decodeNode(p, n, opt);
+            code.append(decoded_node.code());
+            generated_flows.add(n);
+            p.registerNodeProcedure(n, code);
+            n = decoded_node.nextStep();
+            if (n != null) {
+                code.append(generateFlowJointCode(p, n, opt));
+            }
         }
+
+        //}
     }
 
     ////////////////////////
@@ -144,44 +178,43 @@ public abstract class AbstractBPMNTranslator {
         BPMNDecodedNode result;
 
         //HYP: i nodi hanno tutti un incoming e un outgoing TRANNE i gateway       
-        if (n.getOutgoing().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
-            //se un nodo ha più n.getOutgoing(), posporre un inclusive virtuale
-            org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
-            SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
-            virtualGateway.setName(n.getName() + " SPLIT GATEWAY");
-            virtualGateway.setId(n.getId() + "XVG");
-            n.getParentElement().addChildElement(virtualGateway);
-            n.getParentElement().addChildElement(virtualSequence);
-            virtualSequence.setSource(n);
-            for (SequenceFlow seq : n.getOutgoing()) {
-                seq.setSource(virtualGateway);
-            }
-            virtualGateway.getOutgoing().addAll(n.getOutgoing());
-            virtualGateway.getIncoming().add(virtualSequence);
-            virtualSequence.setTarget(virtualGateway);
-            n.getOutgoing().clear();
-            n.getOutgoing().add(virtualSequence);
-        }
-        if (n.getIncoming().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
-            //se un nodo ha più ingoing, premettere un inclusive virtuale
-            org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
-            SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
-            virtualGateway.setName(n.getName() + " JOIN GATEWAY");
-            virtualGateway.setId(n.getId() + "EVG");
-            n.getParentElement().addChildElement(virtualGateway);
-            n.getParentElement().addChildElement(virtualSequence);
-            virtualSequence.setSource(virtualGateway);
-            virtualGateway.getOutgoing().add(virtualSequence);
-            for (SequenceFlow seq : n.getIncoming()) {
-                seq.setTarget(virtualGateway);
-            }
-            virtualGateway.getIncoming().addAll(n.getIncoming());
-            virtualSequence.setTarget(n);
-            n.getIncoming().clear();
-            n.getIncoming().add(virtualSequence);
-            n = virtualGateway;
-        }
-        ///***DOVREMMO CREARE UN GATEWAY VIRTUALE IN OGNI CASO SE UN FLOW USCENTE HA UNA CONDIZIONE!****///
+//        if (n.getOutgoing().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
+//            //se un nodo ha più n.getOutgoing(), posporre un inclusive virtuale
+//            org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
+//            SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
+//            virtualGateway.setName(n.getName() + " SPLIT GATEWAY");
+//            virtualGateway.setId(n.getId() + "XVG");
+//            n.getParentElement().addChildElement(virtualGateway);
+//            n.getParentElement().addChildElement(virtualSequence);
+//            virtualSequence.setSource(n);
+//            for (SequenceFlow seq : n.getOutgoing()) {
+//                seq.setSource(virtualGateway);
+//            }
+//            virtualGateway.getOutgoing().addAll(n.getOutgoing());
+//            virtualGateway.getIncoming().add(virtualSequence);
+//            virtualSequence.setTarget(virtualGateway);
+//            n.getOutgoing().clear();
+//            n.getOutgoing().add(virtualSequence);
+//        }
+//        if (n.getIncoming().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
+//            //se un nodo ha più ingoing, premettere un inclusive virtuale
+//            org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
+//            SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
+//            virtualGateway.setName(n.getName() + " JOIN GATEWAY");
+//            virtualGateway.setId(n.getId() + "EVG");
+//            n.getParentElement().addChildElement(virtualGateway);
+//            n.getParentElement().addChildElement(virtualSequence);
+//            virtualSequence.setSource(virtualGateway);
+//            virtualGateway.getOutgoing().add(virtualSequence);
+//            for (SequenceFlow seq : n.getIncoming()) {
+//                seq.setTarget(virtualGateway);
+//            }
+//            virtualGateway.getIncoming().addAll(n.getIncoming());
+//            virtualSequence.setTarget(n);
+//            n.getIncoming().clear();
+//            n.getIncoming().add(virtualSequence);
+//            n = virtualGateway;
+//        }
         switch (n) {
             case org.camunda.bpm.model.bpmn.instance.Event t -> {
                 result = decodeEventNode(p, t, opt);
@@ -394,7 +427,7 @@ public abstract class AbstractBPMNTranslator {
     public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
         FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
         //enumerare gli step entranti
-        n.getIncoming().stream().map(m -> getFlowName(m.getSource()) + "_trigger").toList();
+        n.getIncoming().stream().map(m -> p.getFlowName(m.getSource()) + "_trigger").toList();
         return generateParallelJoiningGatewayCode(p, n, outgoingFlow, opt);
     }
 
@@ -415,19 +448,19 @@ public abstract class AbstractBPMNTranslator {
     }
 
     ////////////////////
-    //i gateway joining chiamano registerFlow
-    //gli eventi (almneno start) chiamano registerFlow
+    //i gateway joining chiamano registerNodeProcedure
+    //gli eventi (almneno start) chiamano registerNodeProcedure
 //    private BPMNDecodedFlow decodeFlowWithName(FlowNode n) throws FeelTranslatorException, BpmnTranslatorException {
-//        //return new BPMNDecodedNamedFlow("flow_" + n.getId(), registerFlow(n));
-//        return registerFlow("flow_" + n.getId(), n);
+//        //return new BPMNDecodedNamedFlow("flow_" + n.getId(), registerNodeProcedure(n));
+//        return registerNodeProcedure("flow_" + n.getId(), n);
 //    }
     //translates a linear (until translateNode returns a nextStep, i.e., without gateways) flow
 //    private BPMNDecodedFlow decodeFlow(FlowNode start) throws FeelTranslatorException, BpmnTranslatorException {
-//        return registerFlow(null, start);
+//        return registerNodeProcedure(null, start);
 //        
 //
 //    }
-//    private BPMNDecodedFlow registerFlow(String name, FlowNode start) throws FeelTranslatorException, BpmnTranslatorException {
+//    private BPMNDecodedFlow registerNodeProcedure(String name, FlowNode start) throws FeelTranslatorException, BpmnTranslatorException {
 //        List code_sequence = new ArrayList<>();
 //        FlowNode current = start, last = start;
 //        while (current != null) {

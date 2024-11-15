@@ -11,7 +11,7 @@ import java.util.List;
 public class Code {
 
     public enum ProcType {
-        EVENT, TASK, FLOW, GETTER, GENERAL
+        GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
     };
 
     private final List<String> statements = new ArrayList<>();

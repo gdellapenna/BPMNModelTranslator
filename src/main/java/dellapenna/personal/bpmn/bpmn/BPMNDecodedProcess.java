@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.camunda.bpm.model.bpmn.instance.Event;
+import org.camunda.bpm.model.bpmn.instance.FlowNode;
+import org.camunda.bpm.model.bpmn.instance.Gateway;
+import org.camunda.bpm.model.bpmn.instance.Task;
 
 /**
  *
@@ -18,6 +22,22 @@ public class BPMNDecodedProcess {
     private final Map<String, VariableDefinition> globals = new HashMap<>();
     private final Map<String, VariableDefinition> inputs = new HashMap<>();
     private final List<String> startEventFlowNames = new ArrayList<>();
+    
+    
+    public String getFlowName(FlowNode start) {
+        //return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
+        Code.ProcType type = switch (start) {
+            case Gateway g ->
+                Code.ProcType.GATEWAY;
+            case Task t ->
+                Code.ProcType.TASK;
+            case Event e ->
+                Code.ProcType.EVENT;
+            default ->
+                Code.ProcType.FLOW;
+        };
+        return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
+    }
 
     public BPMNDecodedProcess(String name) {
         this.name = name;
@@ -84,8 +104,22 @@ public class BPMNDecodedProcess {
         return registerFunction(name, code, Void.class, type);
     }
 
-    public void registerFlow(String name, Code code) {
+    public void registerNodeProcedure(String name, Code code) {
         registerProcedure(name, code, Code.ProcType.FLOW);
+    }
+
+    public void registerNodeProcedure(FlowNode node, Code code) {
+        Code.ProcType type = switch (node) {
+            case Gateway g ->
+                Code.ProcType.GATEWAY;
+            case Task t ->
+                Code.ProcType.TASK;
+            case Event e ->
+                Code.ProcType.EVENT;
+            default ->
+                Code.ProcType.FLOW;
+        };        
+        registerProcedure(getFlowName(node), code, type);
     }
 
     public void registerStartEventFlowName(String name) {
