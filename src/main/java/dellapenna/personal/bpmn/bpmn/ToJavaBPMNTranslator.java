@@ -173,6 +173,16 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         if (opt.isDebug()) {
             code.append("ProcessUtils.debugOutput(\"SCRIPT TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
+        Code outs = generateOutputAssignmentsCode(p, t, opt);
+        code.append(outs);
+
+        ModelElementInstance script = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "script");
+        if (script != null) {
+            String resultVariable = script.getAttributeValue("resultVariable");
+            String expression = script.getAttributeValue("expression");
+            code.append(resultVariable+"="+feel.translateChecked(expression.substring(1)));            
+        }
+
         FunctionDefinition f = p.registerProcedure("task_script_" + (t.getName() != null ? t.getName() : ""),
                 code,
                 Code.ProcType.TASK);

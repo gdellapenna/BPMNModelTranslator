@@ -13,6 +13,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
@@ -171,10 +172,14 @@ public class BPMNModelTest {
         return "";
     }
 
-    public static void paperTranslation() throws IOException, FeelTranslatorException, BpmnTranslatorException {
+    public static void test(Path[] dmn_files, Path bpmn_file)
+            throws IOException, FeelTranslatorException, BpmnTranslatorException {
         Options opt = new Options();
         opt.setDebug(true);
-        try (BufferedWriter out = new BufferedWriter(new FileWriter("paper.java"))) {
+
+        Path output_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
+
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(output_file.toFile()))) {
 
             out.write(pre_code());
             out.newLine();
@@ -182,17 +187,14 @@ public class BPMNModelTest {
             DMNTranslator<String> dt = new ToJavaDMNTranslator();
             AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
 
-            DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("get_length.dmn"));
-            out.write(dt.translate(dmnInstance));
-            dmnInstance = Dmn.readModelFromFile(new File("determine_mode.dmn"));
-            out.write(dt.translate(dmnInstance));
-            dmnInstance = Dmn.readModelFromFile(new File("choose_consent.dmn"));
-            out.write(dt.translate(dmnInstance));
-
+            for (Path dmn_file : dmn_files) {
+                DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_file.toFile());
+                out.write(dt.translate(dmnInstance));
+            }
             out.newLine();
             out.newLine();
 
-            BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_paper.bpmn"));
+            BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
             out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance, opt), opt));
 
             out.newLine();
@@ -201,9 +203,48 @@ public class BPMNModelTest {
 
     }
 
+    public static void paperTranslation() throws IOException, FeelTranslatorException, BpmnTranslatorException {
+        
+        Path[] dmn_files = new Path[]{
+            Path.of("get_length.dmn"),Path.of("determine_mode.dmn"),Path.of("choose_consent.dmn")
+        };
+        Path bpmn_file = Path.of("diagram_paper.bpmn");
+        test(dmn_files,bpmn_file);
+        
+        
+//        Options opt = new Options();
+//        opt.setDebug(true);
+//        try (BufferedWriter out = new BufferedWriter(new FileWriter("paper.java"))) {
+//
+//            out.write(pre_code());
+//            out.newLine();
+//
+//            DMNTranslator<String> dt = new ToJavaDMNTranslator();
+//            AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
+//
+//            DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("get_length.dmn"));
+//            out.write(dt.translate(dmnInstance));
+//            dmnInstance = Dmn.readModelFromFile(new File("determine_mode.dmn"));
+//            out.write(dt.translate(dmnInstance));
+//            dmnInstance = Dmn.readModelFromFile(new File("choose_consent.dmn"));
+//            out.write(dt.translate(dmnInstance));
+//
+//            out.newLine();
+//            out.newLine();
+//
+//            BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(new File("diagram_paper.bpmn"));
+//            out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance, opt), opt));
+//
+//            out.newLine();
+//            out.write(post_code());
+//        }
+
+    }
+
     public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException {
         paperTranslation();
-        //System.exit(0);
+        test(new Path[0],Path.of("diagram_loop.bpmn"));
+        System.exit(0);
 
         Options opt = new Options();
         opt.setDebug(true);
@@ -228,7 +269,7 @@ public class BPMNModelTest {
         AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
         //((AbstractBPMNTranslator) bt).dump(bpmnInstance);
 
-        out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance,opt),opt));
+        out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance, opt), opt));
 
         out.newLine();
         out.write(post_code());
