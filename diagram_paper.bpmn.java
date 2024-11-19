@@ -1,383 +1,204 @@
-
-class TypeUtils {
-
-    public static Double tonumber(Object o) {
-        if (o instanceof Number n) {
-            return n.doubleValue();
-        } else {
-            try {
-                return Double.valueOf(o.toString());
-            } catch (NumberFormatException ex) {
-                return 0.0; //should raise an exception
-            }
-        }
-    }
-
-    public static String tostring(Object o) {
-        return o.toString();
-    }
-
-    public static Boolean toboolean(Object o) {
-        if (o instanceof Boolean b) {
-            return b;
-        } else if (o instanceof Number n) {
-            return n.doubleValue() != 0;
-        } else {
-            return Boolean.valueOf(o.toString());
-
-        }
-    }
-}
-
-class ProcessUtils {
-
-    static java.io.PrintStream debugChannel = System.out;
-    static java.io.PrintStream resultChannel = System.out;
-    static java.util.Properties outputs = new java.util.Properties();
-    static java.util.Properties inputs = new java.util.Properties();
-
-    public static void start() {
-        java.io.File inputs_file = new java.io.File("inputs.properties");
-        if (inputs_file.canRead()) {
-            try {
-                inputs.load(new java.io.FileReader(inputs_file));
-            } catch (java.io.IOException ex) {
-
-            }
-        }
-    }
-
-    public static void end() {
-        java.io.File outputs_file = new java.io.File("outputs.properties");
-        try {
-            outputs.store(new java.io.FileWriter(outputs_file), null);
-        } catch (java.io.IOException ex) {
-            //
-        }
-        System.exit(Integer.parseInt(outputs.getProperty("code", "0")));
-    }
-
-    public static void signal(String s) {
-    }
-
-    public static void wait(String... s) {
-    }
-
-    public static void error(String s, int c) {
-        ProcessUtils.debugOutput("ERROR: %s", s);
-        ProcessUtils.logResult(false, s, c);
-        ProcessUtils.end();
-    }
-
-    public static void noDefaultCaseError() {
-        error("No default branch in gateway", 9999);
-    }
-
-    public static void success(String s, int c) {
-        if (s != null) {
-            ProcessUtils.debugOutput("SUCCESS: %s", s);
-        } else {
-            ProcessUtils.debugOutput("SUCCESS");
-        }
-        ProcessUtils.logResult(true, s, c);
-        ProcessUtils.end();
-    }
-
-    public static void success() {
-        success(null, 0);
-    }
-
-    public static void debugOutput(String s, Object... args) {
-        String message = String.format(s, args);
-        debugChannel.println(message);
-    }
-
-    public static void logInput(String name, Object value) {
-        resultChannel.println(name + "=" + value);
-        outputs.setProperty(name, (value != null ? value.toString() : "<NULL>"));
-    }
-
-    public static void logResult(boolean success, String message, int code) {
-        resultChannel.println(success ? "SUCCESS" : "FAILURE" + "," + code + "," + message);
-        outputs.setProperty("output_success", success ? "true" : "false");
-        outputs.setProperty("output_message", message != null ? message : "");
-        outputs.setProperty("output_code", String.valueOf(code));
-    }
-}
+import dellapenna.personal.bpmn.exec.*;
 
 /*
  * ****************************** DMN Generated Code *************************
  */
 // wrapper class for the output of DMN table GetLengthDT
-class dmn_dtable_GetLengthDT_result {
-
-    Double Length;
-
-    public dmn_dtable_GetLengthDT_result(Double Length) {
-        this.Length = Length;
-    }
-
-    public String toString() {
-        String result = "{";
-        result += "Length=" + this.Length;
-        return result + "}";
-    }
+class dmn_dtable_GetLengthDT_result{Double Length;
+public dmn_dtable_GetLengthDT_result(Double Length) {this.Length=Length;
+}
+public String toString() { String result="{"; result+="Length="+this.Length ;
+return result+"}";}
 }
 
 // decision code for DMN table GetLengthDT
 class dmn_dtable_GetLengthDT {
 
-    public static dmn_dtable_GetLengthDT_result execute(Object _Type) {
+public static dmn_dtable_GetLengthDT_result execute(Object _Type) {
 
-        String Type = TypeUtils.tostring(_Type);
+String Type = BPMNExecTypeUtils.tostring(_Type);
 
-        if (TypeUtils.tostring(Type).equals("std")) {
-            return new dmn_dtable_GetLengthDT_result(/*Length*/0.5);
-        } else if (TypeUtils.tostring(Type).equals("large")) {
-            return new dmn_dtable_GetLengthDT_result(/*Length*/1.0);
-        } else if (TypeUtils.tostring(Type).equals("xl")) {
-            return new dmn_dtable_GetLengthDT_result(/*Length*/2.0);
-        } else {
-            return new dmn_dtable_GetLengthDT_result(/*Length*/-(TypeUtils.tonumber(1.0)));
-        }
-    }
+if (BPMNExecTypeUtils.tostring(Type).equals("std")) { return new dmn_dtable_GetLengthDT_result(/*Length*/0.5);} else if (BPMNExecTypeUtils.tostring(Type).equals("large")) { return new dmn_dtable_GetLengthDT_result(/*Length*/1.0);} else if (BPMNExecTypeUtils.tostring(Type).equals("xl")) { return new dmn_dtable_GetLengthDT_result(/*Length*/2.0);} else  { return new dmn_dtable_GetLengthDT_result(/*Length*/-(BPMNExecTypeUtils.tonumber(1.0)));}
+}
 }/*
  * ****************************** DMN Generated Code *************************
  */
 // wrapper class for the output of DMN table DetermineModeDT
-class dmn_dtable_DetermineModeDT_result {
-
-    String Mode;
-
-    public dmn_dtable_DetermineModeDT_result(String Mode) {
-        this.Mode = Mode;
-    }
-
-    public String toString() {
-        String result = "{";
-        result += "Mode=" + this.Mode;
-        return result + "}";
-    }
+class dmn_dtable_DetermineModeDT_result{String Mode;
+public dmn_dtable_DetermineModeDT_result(String Mode) {this.Mode=Mode;
+}
+public String toString() { String result="{"; result+="Mode="+this.Mode ;
+return result+"}";}
 }
 
 // decision code for DMN table DetermineModeDT
 class dmn_dtable_DetermineModeDT {
 
-    public static dmn_dtable_DetermineModeDT_result execute(Object _Length, Object _Weight) {
+public static dmn_dtable_DetermineModeDT_result execute(Object _Length, Object _Weight) {
 
-        Double Length = TypeUtils.tonumber(_Length);
-        Double Weight = TypeUtils.tonumber(_Weight);
+Double Length = BPMNExecTypeUtils.tonumber(_Length);
+Double Weight = BPMNExecTypeUtils.tonumber(_Weight);
 
-        if ((TypeUtils.tonumber(Length) > 0.0 && TypeUtils.tonumber(Length) <= 1.0) && (TypeUtils.tonumber(Weight) > 0.0 && TypeUtils.tonumber(Weight) <= 5.0)) {
-            return new dmn_dtable_DetermineModeDT_result(/*Mode*/"car");
-        } else if ((TypeUtils.tonumber(Length) > 1.0 && TypeUtils.tonumber(Length) <= 2.0) && (TypeUtils.tonumber(Weight) > 0.0 && TypeUtils.tonumber(Weight) <= 5.0)) {
-            return new dmn_dtable_DetermineModeDT_result(/*Mode*/"truck");
-        } else if ((TypeUtils.tonumber(Weight) > 5.0 && TypeUtils.tonumber(Weight) <= 10.0)) {
-            return new dmn_dtable_DetermineModeDT_result(/*Mode*/"truck");
-        } else {
-            return new dmn_dtable_DetermineModeDT_result(/*Mode*/"undef");
-        }
-    }
+if ((BPMNExecTypeUtils.tonumber(Length)>0.0 && BPMNExecTypeUtils.tonumber(Length)<=1.0) && (BPMNExecTypeUtils.tonumber(Weight)>0.0 && BPMNExecTypeUtils.tonumber(Weight)<=5.0)) { return new dmn_dtable_DetermineModeDT_result(/*Mode*/"car");} else if ((BPMNExecTypeUtils.tonumber(Length)>1.0 && BPMNExecTypeUtils.tonumber(Length)<=2.0) && (BPMNExecTypeUtils.tonumber(Weight)>0.0 && BPMNExecTypeUtils.tonumber(Weight)<=5.0)) { return new dmn_dtable_DetermineModeDT_result(/*Mode*/"truck");} else if ((BPMNExecTypeUtils.tonumber(Weight)>5.0 && BPMNExecTypeUtils.tonumber(Weight)<=10.0)) { return new dmn_dtable_DetermineModeDT_result(/*Mode*/"truck");} else  { return new dmn_dtable_DetermineModeDT_result(/*Mode*/"undef");}
+}
 }/*
  * ****************************** DMN Generated Code *************************
  */
 // wrapper class for the output of DMN table ChooseConsentDT
-class dmn_dtable_ChooseConsentDT_result {
-
-    String Consent;
-
-    public dmn_dtable_ChooseConsentDT_result(String Consent) {
-        this.Consent = Consent;
-    }
-
-    public String toString() {
-        String result = "{";
-        result += "Consent=" + this.Consent;
-        return result + "}";
-    }
+class dmn_dtable_ChooseConsentDT_result{String Consent;
+public dmn_dtable_ChooseConsentDT_result(String Consent) {this.Consent=Consent;
+}
+public String toString() { String result="{"; result+="Consent="+this.Consent ;
+return result+"}";}
 }
 
 // decision code for DMN table ChooseConsentDT
 class dmn_dtable_ChooseConsentDT {
 
-    public static dmn_dtable_ChooseConsentDT_result execute(Object _Mode, Object _Weight) {
+public static dmn_dtable_ChooseConsentDT_result execute(Object _Mode, Object _Weight) {
 
-        String Mode = TypeUtils.tostring(_Mode);
-        Double Weight = TypeUtils.tonumber(_Weight);
+String Mode = BPMNExecTypeUtils.tostring(_Mode);
+Double Weight = BPMNExecTypeUtils.tonumber(_Weight);
 
-        if (TypeUtils.tostring(Mode).equals("car") && TypeUtils.tonumber(Weight) > TypeUtils.tonumber(6.0)) {
-            return new dmn_dtable_ChooseConsentDT_result(/*Consent*/"owner");
-        } else if (TypeUtils.tostring(Mode).equals("truck") && TypeUtils.tonumber(Weight) > TypeUtils.tonumber(8.0)) {
-            return new dmn_dtable_ChooseConsentDT_result(/*Consent*/"com");
-        } else {
-            return new dmn_dtable_ChooseConsentDT_result(/*Consent*/"none");
-        }
-    }
+if (BPMNExecTypeUtils.tostring(Mode).equals("car") && BPMNExecTypeUtils.tonumber(Weight) > BPMNExecTypeUtils.tonumber(6.0)) { return new dmn_dtable_ChooseConsentDT_result(/*Consent*/"owner");} else if (BPMNExecTypeUtils.tostring(Mode).equals("truck") && BPMNExecTypeUtils.tonumber(Weight) > BPMNExecTypeUtils.tonumber(8.0)) { return new dmn_dtable_ChooseConsentDT_result(/*Consent*/"com");} else  { return new dmn_dtable_ChooseConsentDT_result(/*Consent*/"none");}
+}
 }
 
 /*
  * ****************************** BPMN Generated Code *************************
  */
-class bpmn_process_Shipment {
+ class bpmn_process_Shipment { 
 
 //Input Variables
-    Object input_PackageWeight;
-    Object input_PackageType;
+Object input_PackageWeight;
+Object input_PackageType;
+
+
 
 //Process Variables
-    Object pType;
-    Object pWeight;
-    Object pLength;
-    Object consent;
-    Object sMode;
+Object pType;
+Object pWeight;
+Object pLength;
+Object consent;
+Object sMode;
+
+
 
 //Process Dynamics
-    public void GATEWAY_Gateway_1tgxmu2() {//exclusive gateway
-        ProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_1tgxmu2");
-        if (TypeUtils.tonumber(pWeight) > TypeUtils.tonumber(10.0)) {
-            ProcessUtils.debugOutput("JOINING FLOW EVENT_unsuppoted_weight");
-            EVENT_unsuppoted_weight();
-        } else {
-            ProcessUtils.debugOutput("JOINING FLOW TASK_determine_mode");
-            TASK_determine_mode();
-        }
-    }
-
-    public void GATEWAY_Gateway_1ocbjca() {//exclusive gateway
-        ProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_1ocbjca");
-        if (sMode.equals("undef")) {
-            ProcessUtils.debugOutput("JOINING FLOW EVENT_no_shipment");
-            EVENT_no_shipment();
-        } else {
-            ProcessUtils.debugOutput("JOINING FLOW TASK_choose_consent");
-            TASK_choose_consent();
-        }
-    }
-
-    public void GATEWAY_Gateway_07f90ke() {//exclusive joining gateway
-        ProcessUtils.debugOutput("JOINING FLOW EVENT_ready_for_shipment");
-        EVENT_ready_for_shipment();
-    }
-
-    public void GATEWAY_Gateway_0i2yujj() {//exclusive gateway
-        ProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_0i2yujj");
-        if (pLength.equals(-(TypeUtils.tonumber(1.0)))) {
-            ProcessUtils.debugOutput("JOINING FLOW EVENT_undefined_length");
-            EVENT_undefined_length();
-        } else {
-            ProcessUtils.debugOutput("JOINING FLOW TASK_measure_weight");
-            TASK_measure_weight();
-        }
-    }
-
-    public void GATEWAY_Gateway_0u50uj6() {//exclusive gateway
-        ProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_0u50uj6");
-        if (consent.equals("com")) {
-            ProcessUtils.debugOutput("JOINING FLOW TASK_sign_declaration");
-            TASK_sign_declaration();
-        } else if (consent.equals("owner")) {
-            ProcessUtils.debugOutput("JOINING FLOW TASK_fetch_declaration");
-            TASK_fetch_declaration();
-        } else if (consent.equals("none")) {
-            ProcessUtils.debugOutput("JOINING FLOW GATEWAY_Gateway_07f90ke");
-            GATEWAY_Gateway_07f90ke();
-        } else {
-            ProcessUtils.debugOutput("JOINING FLOW ProcessUtils.noDefaultCaseError");
-            ProcessUtils.noDefaultCaseError();
-        }
-    }
-
-    public void EVENT_package_received() {//start event: package received
-        ProcessUtils.debugOutput("START EVENT: package received");
-        pType = input_PackageType;
-        ProcessUtils.debugOutput("ASSIGNING pType TO %s", input_PackageType);
-        ProcessUtils.debugOutput("JOINING FLOW TASK_get_length");
-        TASK_get_length();
-    }
-
-    public void EVENT_unsuppoted_weight() {//end event: unsuppoted weight
-        ProcessUtils.error("Unsupported Weight", 2);
-    }
-
-    public void EVENT_ready_for_shipment() {//end event: ready for shipment
-        ProcessUtils.success();
-    }
-
-    public void EVENT_undefined_length() {//end event: undefined length
-        ProcessUtils.error("Undefined Length", 1);
-    }
-
-    public void EVENT_no_shipment() {//end event: no shipment
-        ProcessUtils.error("No Shipment", 3);
-    }
-
-    public void TASK_determine_mode() {//business rule task: determine mode
-        ProcessUtils.debugOutput("EXECUTING DECISION determine mode");
-        dmn_dtable_DetermineModeDT_result determineModeResult = dmn_dtable_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/ pWeight);
-        ProcessUtils.debugOutput("DECISION RESULT IS %s", determineModeResult);
-        sMode = determineModeResult.Mode;
-        ProcessUtils.debugOutput("ASSIGNING sMode TO %s", determineModeResult.Mode);
-        ProcessUtils.debugOutput("JOINING FLOW GATEWAY_Gateway_1ocbjca");
-        GATEWAY_Gateway_1ocbjca();
-    }
-
-    public void TASK_get_length() {//business rule task: get length
-        ProcessUtils.debugOutput("EXECUTING DECISION get length");
-        dmn_dtable_GetLengthDT_result getLengthResult = dmn_dtable_GetLengthDT.execute(/*Type*/pType);
-        ProcessUtils.debugOutput("DECISION RESULT IS %s", getLengthResult);
-        pLength = getLengthResult.Length;
-        ProcessUtils.debugOutput("ASSIGNING pLength TO %s", getLengthResult.Length);
-        ProcessUtils.debugOutput("JOINING FLOW GATEWAY_Gateway_0i2yujj");
-        GATEWAY_Gateway_0i2yujj();
-    }
-
-    public void TASK_measure_weight() {//user task: measure weight
-        ProcessUtils.debugOutput("USER TASK measure weight");
-        pWeight = input_PackageWeight;
-        ProcessUtils.debugOutput("ASSIGNING pWeight TO %s", input_PackageWeight);
-        ProcessUtils.debugOutput("JOINING FLOW GATEWAY_Gateway_1tgxmu2");
-        GATEWAY_Gateway_1tgxmu2();
-    }
-
-    public void TASK_sign_declaration() {//generic task: sign declaration
-        ProcessUtils.debugOutput("TASK sign declaration");
-        ProcessUtils.debugOutput("JOINING FLOW GATEWAY_Gateway_07f90ke");
-        GATEWAY_Gateway_07f90ke();
-    }
-
-    public void TASK_fetch_declaration() {//generic task: fetch declaration
-        ProcessUtils.debugOutput("TASK fetch declaration");
-        ProcessUtils.debugOutput("JOINING FLOW GATEWAY_Gateway_07f90ke");
-        GATEWAY_Gateway_07f90ke();
-    }
-
-    public void TASK_choose_consent() {//business rule task: choose consent
-        ProcessUtils.debugOutput("EXECUTING DECISION choose consent");
-        dmn_dtable_ChooseConsentDT_result chooseConsentResult = dmn_dtable_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/ pWeight);
-        ProcessUtils.debugOutput("DECISION RESULT IS %s", chooseConsentResult);
-        consent = chooseConsentResult.Consent;
-        ProcessUtils.debugOutput("ASSIGNING consent TO %s", chooseConsentResult.Consent);
-        ProcessUtils.debugOutput("JOINING FLOW GATEWAY_Gateway_0u50uj6");
-        GATEWAY_Gateway_0u50uj6();
-    }
-
-    public void init() {
-        this.input_PackageWeight = null;	//TODO assign input variable
-        this.input_PackageType = null;	//TODO assign input variable
-        if (this.input_PackageWeight == null) {
-            input_PackageWeight = ProcessUtils.inputs.getProperty("input_PackageWeight", null);
-        }
-        if (this.input_PackageType == null) {
-            input_PackageType = ProcessUtils.inputs.getProperty("input_PackageType", null);
-        }
-        ProcessUtils.logInput("input_PackageWeight", this.input_PackageWeight);
-        ProcessUtils.logInput("input_PackageType", this.input_PackageType);
-    }
-
-    public static void main(String[] args) {
-        ProcessUtils.start();
-        bpmn_process_Shipment process = new bpmn_process_Shipment();
-        process.init();
-        process.EVENT_package_received();
-    }
+public void GATEWAY_Gateway_1tgxmu2(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
+BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_1tgxmu2");
+if (BPMNExecTypeUtils.tonumber(pWeight) > BPMNExecTypeUtils.tonumber(10.0)){EVENT_unsuppoted_weight(s);
+} else {TASK_determine_mode(s);
 }
+}
+
+public void GATEWAY_Gateway_1ocbjca(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
+BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_1ocbjca");
+if (sMode.equals("undef")){EVENT_no_shipment(s);
+} else {TASK_choose_consent(s);
+}
+}
+
+public void GATEWAY_Gateway_07f90ke(BPMNExecProcessUtils.ProcessStatus s) {//exclusive joining gateway
+BPMNExecProcessUtils.debugOutput("EXCLUSIVE JOINING GATEWAY Gateway_07f90ke");
+EVENT_ready_for_shipment(s);
+}
+
+public void GATEWAY_Gateway_0i2yujj(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
+BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_0i2yujj");
+if (pLength.equals(-(BPMNExecTypeUtils.tonumber(1.0)))){EVENT_undefined_length(s);
+} else {TASK_measure_weight(s);
+}
+}
+
+public void GATEWAY_Gateway_0u50uj6(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
+BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_0u50uj6");
+if (consent.equals("com")){TASK_sign_declaration(s);
+} else if (consent.equals("owner")){TASK_fetch_declaration(s);
+} else if (consent.equals("none")){GATEWAY_Gateway_07f90ke(s);
+} else { BPMNExecProcessUtils.noDefaultCaseError(); }
+}
+
+public void EVENT_package_received(BPMNExecProcessUtils.ProcessStatus s) {//start event: package received
+BPMNExecProcessUtils.debugOutput("START EVENT: package received");
+pType=input_PackageType;
+BPMNExecProcessUtils.debugOutput("ASSIGNING pType TO %s",input_PackageType);
+TASK_get_length(s);
+}
+
+public void EVENT_unsuppoted_weight(BPMNExecProcessUtils.ProcessStatus s) {//end event: unsuppoted weight
+BPMNExecProcessUtils.debugOutput("END EVENT unsuppoted weight");
+BPMNExecProcessUtils.error("Unsupported Weight", 2);
+}
+
+public void EVENT_ready_for_shipment(BPMNExecProcessUtils.ProcessStatus s) {//end event: ready for shipment
+BPMNExecProcessUtils.debugOutput("END EVENT ready for shipment");
+BPMNExecProcessUtils.success();
+}
+
+public void EVENT_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//end event: undefined length
+BPMNExecProcessUtils.debugOutput("END EVENT undefined length");
+BPMNExecProcessUtils.error("Undefined Length", 1);
+}
+
+public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//end event: no shipment
+BPMNExecProcessUtils.debugOutput("END EVENT no shipment");
+BPMNExecProcessUtils.error("No Shipment", 3);
+}
+
+public void TASK_determine_mode(BPMNExecProcessUtils.ProcessStatus s) {//business rule task: determine mode
+BPMNExecProcessUtils.debugOutput("EXECUTING DECISION determine mode");
+dmn_dtable_DetermineModeDT_result determineModeResult=dmn_dtable_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/pWeight);
+BPMNExecProcessUtils.debugOutput("DECISION RESULT IS %s",determineModeResult);
+sMode=determineModeResult.Mode;
+BPMNExecProcessUtils.debugOutput("ASSIGNING sMode TO %s",determineModeResult.Mode);
+GATEWAY_Gateway_1ocbjca(s);
+}
+
+public void TASK_get_length(BPMNExecProcessUtils.ProcessStatus s) {//business rule task: get length
+BPMNExecProcessUtils.debugOutput("EXECUTING DECISION get length");
+dmn_dtable_GetLengthDT_result getLengthResult=dmn_dtable_GetLengthDT.execute(/*Type*/pType);
+BPMNExecProcessUtils.debugOutput("DECISION RESULT IS %s",getLengthResult);
+pLength=getLengthResult.Length;
+BPMNExecProcessUtils.debugOutput("ASSIGNING pLength TO %s",getLengthResult.Length);
+GATEWAY_Gateway_0i2yujj(s);
+}
+
+public void TASK_measure_weight(BPMNExecProcessUtils.ProcessStatus s) {//user task: measure weight
+BPMNExecProcessUtils.debugOutput("USER TASK measure weight");
+pWeight=input_PackageWeight;
+BPMNExecProcessUtils.debugOutput("ASSIGNING pWeight TO %s",input_PackageWeight);
+GATEWAY_Gateway_1tgxmu2(s);
+}
+
+public void TASK_sign_declaration(BPMNExecProcessUtils.ProcessStatus s) {//generic task: sign declaration
+BPMNExecProcessUtils.debugOutput("TASK sign declaration");
+GATEWAY_Gateway_07f90ke(s);
+}
+
+public void TASK_fetch_declaration(BPMNExecProcessUtils.ProcessStatus s) {//generic task: fetch declaration
+BPMNExecProcessUtils.debugOutput("TASK fetch declaration");
+GATEWAY_Gateway_07f90ke(s);
+}
+
+public void TASK_choose_consent(BPMNExecProcessUtils.ProcessStatus s) {//business rule task: choose consent
+BPMNExecProcessUtils.debugOutput("EXECUTING DECISION choose consent");
+dmn_dtable_ChooseConsentDT_result chooseConsentResult=dmn_dtable_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/pWeight);
+BPMNExecProcessUtils.debugOutput("DECISION RESULT IS %s",chooseConsentResult);
+consent=chooseConsentResult.Consent;
+BPMNExecProcessUtils.debugOutput("ASSIGNING consent TO %s",chooseConsentResult.Consent);
+GATEWAY_Gateway_0u50uj6(s);
+}
+
+public void init() {
+this.input_PackageWeight = null;	//TODO assign input variable
+this.input_PackageType = null;	//TODO assign input variable
+if (this.input_PackageWeight==null) input_PackageWeight=BPMNExecProcessUtils.inputs.getProperty("input_PackageWeight", null);
+if (this.input_PackageType==null) input_PackageType=BPMNExecProcessUtils.inputs.getProperty("input_PackageType", null);
+BPMNExecProcessUtils.logInput("input_PackageWeight",this.input_PackageWeight);
+BPMNExecProcessUtils.logInput("input_PackageType",this.input_PackageType);
+}public static void main(String[] args) {
+BPMNExecProcessUtils.enableTrueParallel();BPMNExecProcessUtils.start();bpmn_process_Shipment process = new bpmn_process_Shipment();
+process.init();
+process.EVENT_package_received(new BPMNExecProcessUtils.ProcessStatus("Main"));
+}}

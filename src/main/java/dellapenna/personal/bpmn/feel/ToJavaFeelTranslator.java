@@ -11,15 +11,15 @@ import java.util.stream.Collectors;
 public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     private String castToNumber(String a) {
-        return "TypeUtils.tonumber(" + a + ")";
+        return "BPMNExecTypeUtils.tonumber(" + a + ")";
     }
 
     private String castToString(String a) {
-        return "TypeUtils.tostring(" + a + ")";
+        return "BPMNExecTypeUtils.tostring(" + a + ")";
     }
 
     private String castToBoolean(String a) {
-        return "TypeUtils.toboolean(" + a + ")";
+        return "BPMNExecTypeUtils.toboolean(" + a + ")";
     }
 
     @Override

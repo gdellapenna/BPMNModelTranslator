@@ -82,14 +82,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
 
     //generates the source code for a given function definition
     private String generateFunctionSource(FunctionDefinition<String> f) {
-        return "public " + (f.returnType().equals(Void.class) ? "void" : f.returnType().getName()) + " " + f.name() + "("
-                + f.parameters().entrySet().stream().map(e -> e.getValue().getName() + " " + e.getKey()).collect(Collectors.joining(", ")) //convert types?
+        return "public " + f.returnType() + " " + f.name() + "("
+                + f.parameters().entrySet().stream().map(e -> e.getValue() + " " + e.getKey()).collect(Collectors.joining(", "))
                 + ") {" + generateCodeSource(f.body()) + "}";
     }
 
     //generates the text source for a code block    
     public String generateCodeSource(Code code) {
-        //return code.getStatements().stream().collect(Collectors.joining(";\n", "", ";\n"));
         List<String> statements = code.getStatements();
         String source = "";
         for (int l = 0; l < statements.size(); ++l) {
@@ -107,10 +106,10 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         String source = "public void init() {\n";
         source += process.getInputs().values().stream().map(v -> "this." + v.name() + " = null;\t//TODO assign input variable\n").collect(Collectors.joining());
         source += process.getInputs().values().stream()
-                .map(v -> "if (this." + v.name() + "==null) " + v.name() + "=ProcessUtils.inputs.getProperty(\"" + v.name() + "\", null);\n")
+                .map(v -> "if (this." + v.name() + "==null) " + v.name() + "=BPMNExecProcessUtils.inputs.getProperty(\"" + v.name() + "\", null);\n")
                 .collect(Collectors.joining());
 
-        source += process.getInputs().values().stream().map(v -> "ProcessUtils.logInput(\"" + v.name() + "\",this." + v.name() + ");\n").collect(Collectors.joining());
+        source += process.getInputs().values().stream().map(v -> "BPMNExecProcessUtils.logInput(\"" + v.name() + "\",this." + v.name() + ");\n").collect(Collectors.joining());
         source += "}";
 
         return source;
@@ -120,13 +119,16 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public String generateProcessMainSource(BPMNDecodedProcess process, Options opt) {
         String source = "public static void main(String[] args) {\n";
         if (!opt.isDebug()) {
-            source += "ProcessUtils.debugChannel=new java.io.PrintStream(java.io.OutputStream.nullOutputStream());";
+            source += "BPMNExecProcessUtils.debugChannel=new java.io.PrintStream(java.io.OutputStream.nullOutputStream());";
         }
-        source += "ProcessUtils.start();";
+        if (opt.isTrueParallel()) {
+            source += "BPMNExecProcessUtils.enableTrueParallel();";
+        }
+        source += "BPMNExecProcessUtils.start();";
         source += "bpmn_process_" + sanitizeName(process.getName()) + " process = new " + "bpmn_process_" + sanitizeName(process.getName()) + "();\n";
         source += "process.init();\n";
         if (!process.getStartEventFlowNames().isEmpty()) {
-            source += "process." + sanitizeName(process.getStartEventFlowNames().getFirst()) + "();\n";
+            source += "process." + sanitizeName(process.getStartEventFlowNames().getFirst()) + "(new BPMNExecProcessUtils.ProcessStatus(\"Main\"));\n";
         }
         source += "}";
         return source;
@@ -141,7 +143,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateGenericTaskCode(BPMNDecodedProcess p, Task t, Options opt) {
         Code code = new Code("\t//generic task: " + (t.getName() != null ? t.getName() : ""));
         if (opt.isDebug()) {
-            code.append("ProcessUtils.debugOutput(\"TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.append("BPMNExecProcessUtils.debugOutput(\"TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
 //        FunctionDefinition f = p.registerProcedure(
 //                "task_generic_" + (t.getName() != null ? t.getName() : ""),
@@ -157,7 +159,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateManualTaskCode(BPMNDecodedProcess p, ManualTask t, Options opt) {
         Code code = new Code("\t//manual task: " + (t.getName() != null ? t.getName() : ""));
         if (opt.isDebug()) {
-            code.append("ProcessUtils.debugOutput(\"MANUAL TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.append("BPMNExecProcessUtils.debugOutput(\"MANUAL TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
 //        FunctionDefinition f = p.registerProcedure(
 //                "task_manual_" + (t.getName() != null ? t.getName() : ""),
@@ -173,7 +175,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateScriptTaskCode(BPMNDecodedProcess p, ScriptTask t, Options opt) {
         Code code = new Code("\t//script task: " + (t.getName() != null ? t.getName() : ""));
         if (opt.isDebug()) {
-            code.append("ProcessUtils.debugOutput(\"SCRIPT TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.append("BPMNExecProcessUtils.debugOutput(\"SCRIPT TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
         Code outs = generateOutputAssignmentsCode(p, t, opt);
         code.append(outs);
@@ -197,7 +199,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateServiceTaskCode(BPMNDecodedProcess p, ServiceTask t, Options opt) {
         Code code = new Code("\t//service task: " + (t.getName() != null ? t.getName() : ""));
         if (opt.isDebug()) {
-            code.append("ProcessUtils.debugOutput(\"SERVICE TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.append("BPMNExecProcessUtils.debugOutput(\"SERVICE TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
 //        FunctionDefinition f = p.registerProcedure("task_service_" + (t.getName() != null ? t.getName() : ""),
 //                code,
@@ -212,7 +214,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateSendTaskCode(BPMNDecodedProcess p, SendTask t, Options opt) {
         Code code = new Code("\t//send task: " + (t.getName() != null ? t.getName() : ""));
         if (opt.isDebug()) {
-            code.append("ProcessUtils.debugOutput(\"SEND TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.append("BPMNExecProcessUtils.debugOutput(\"SEND TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
 
 //        FunctionDefinition f = p.registerProcedure("task_send_" + (t.getName() != null ? t.getName() : ""),
@@ -228,7 +230,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateReceiveTaskCode(BPMNDecodedProcess p, ReceiveTask t, Options opt) {
         Code code = new Code("\t//receive task: " + (t.getName() != null ? t.getName() : ""));
         if (opt.isDebug()) {
-            code.append("ProcessUtils.debugOutput(\"RECEIVE TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.append("BPMNExecProcessUtils.debugOutput(\"RECEIVE TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
 
 //        FunctionDefinition f = p.registerProcedure("task_receive_" + (t.getName() != null ? t.getName() : ""),
@@ -244,7 +246,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateUserTaskCode(BPMNDecodedProcess p, UserTask t, Options opt) {
         Code outs = generateOutputAssignmentsCode(p, t, opt);
         if (opt.isDebug()) {
-            outs.prepend("ProcessUtils.debugOutput(\"USER TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            outs.prepend("BPMNExecProcessUtils.debugOutput(\"USER TASK " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
         outs.prepend("//user task: " + (t.getName() != null ? t.getName() : ""));
 //        FunctionDefinition f = p.registerProcedure("task_user_" + (t.getName() != null ? t.getName() : ""), outs, Code.ProcType.TASK);
@@ -270,13 +272,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
                 + ")");
 
         if (opt.isDebug()) {
-            code.append("ProcessUtils.debugOutput(\"DECISION RESULT IS %s\"," + calledDecision.getAttributeValue("resultVariable") + ")");
+            code.append("BPMNExecProcessUtils.debugOutput(\"DECISION RESULT IS %s\"," + calledDecision.getAttributeValue("resultVariable") + ")");
         }
 
         code.append(generateOutputAssignmentsCode(p, t, opt));
 
         if (opt.isDebug()) {
-            code.prepend("ProcessUtils.debugOutput(\"EXECUTING DECISION " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.prepend("BPMNExecProcessUtils.debugOutput(\"EXECUTING DECISION " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
         code.prepend("\t//business rule task: " + (t.getName() != null ? t.getName() : ""));
         return code;
@@ -298,12 +300,16 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
                     //code is not a number
                     error_code = 1;
                 }
-                code.append("ProcessUtils.error(\"" + error_message + "\", " + error_code + ")");
+                code.append("BPMNExecProcessUtils.error(\"" + error_message + "\", " + error_code + ")");
             }
         }
 
         if (code.isEmpty()) {
-            code.append("ProcessUtils.success()");
+            code.append("BPMNExecProcessUtils.success()");
+        }
+
+        if (opt.isDebug()) {
+            code.prepend("BPMNExecProcessUtils.debugOutput(\"END EVENT " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
         code.prepend("\t//end event: " + (t.getName() != null ? t.getName() : ""));
         return code;
@@ -313,7 +319,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateStartEventCode(BPMNDecodedProcess p, StartEvent t, Options opt) {
         Code code = generateOutputAssignmentsCode(p, t, opt);
         if (opt.isDebug()) {
-            code.prepend("ProcessUtils.debugOutput(\"START EVENT: " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
+            code.prepend("BPMNExecProcessUtils.debugOutput(\"START EVENT: " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
         code.prepend("\t//start event: " + (t.getName() != null ? t.getName() : ""));
         p.registerStartEventFlowName(sanitizeName(p.getFlowName(t)));
@@ -325,29 +331,36 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         return generateFlowJointCode(p, joinedflow, opt);
     }
 
-    ////***********BISOGNA GENERARE UNA FUNZIONE AGGANCIATA AL GATEWAY AVENTE COME TRIGGER I NODI ENTRANTI CHE CHIAMA IL JOINEDFLOW*************
     @Override
     public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway n, FlowNode joinedflow, Options opt) throws BpmnTranslatorException, FeelTranslatorException {
-//        String join_code = "while (!Arrays.stream(((FutureTask<Integer>[])" + sanitizeName(joinedflow.name()) + "_parallels)" + ").allMatch(t -> t.isDone())) { Thread.sleep(300); } ";
-//        FunctionDefinition proc = registerProcedure(
-//                joinedflow.name(), join_code + "\n\n" + joinedflow.code() + ";" + "//start:" + joinedflow.firstStep().getId()
-//                + "//end:" + joinedflow.lastStep().getId(), ProcType.FLOW);
-//TUTTI I RAMI PARALLELI DEVONO ARRIVARE AL GW PRIMA CHE CONTINUI L'ELABORAZIONE        
-        return new Code("ProcessUtils.signal(ID DEL NODO ENTRANTE)");
+        Code result = new Code();
+        result.append("BPMNExecProcessUtils.join(s, " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
+        result.append("BPMNExecProcessUtils.endCurrentThread()");
+        if (opt.isDebug()) {
+            result.prepend("BPMNExecProcessUtils.debugOutput(\"PARALLEL JOINING GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
+        }
+        result.prepend("\t//parallel joining gateway");
+        return result;
     }
 
     @Override
     public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway n, FlowNode joinedflow, Options opt) throws BpmnTranslatorException, FeelTranslatorException {
-        Code code = generateJoiningGatewayCode(p, joinedflow, opt);
-        code.prepend("\t//inclusive joining gateway");
-        return code;
+        Code result = generateJoiningGatewayCode(p, joinedflow, opt);
+        if (opt.isDebug()) {
+            result.prepend("BPMNExecProcessUtils.debugOutput(\"INCLUSIVE JOINING GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
+        }
+        result.prepend("\t//inclusive joining gateway");
+        return result;
     }
 
     @Override
     public Code generateExclusiveJoiningGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, FlowNode joinedflow, Options opt) throws BpmnTranslatorException, FeelTranslatorException {
-        Code code = generateJoiningGatewayCode(p, joinedflow, opt);
-        code.prepend("\t//exclusive joining gateway");
-        return code;
+        Code result = generateJoiningGatewayCode(p, joinedflow, opt);
+        if (opt.isDebug()) {
+            result.prepend("BPMNExecProcessUtils.debugOutput(\"EXCLUSIVE JOINING GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
+        }
+        result.prepend("\t//exclusive joining gateway");
+        return result;
     }
 
     @Override
@@ -358,14 +371,17 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     @Override
     public Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, List<BPMNDecodedConditionalFlow> splitFlows, Options opt) throws FeelTranslatorException {
         Code result = new Code();
+        String[] branch_functions = new String[splitFlows.size()];
         for (int o = 0; o < splitFlows.size(); ++o) {
-            result.append("ProcessUtils.fork(\"" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep())) + "\")");
+            branch_functions[o] = "this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep()));
         }
-        //code += "\nchiamata_a_funzione_join();"; //oppure continuiamo inline??? si potrebbe inserire già qui il codice della join gw, ma come?        
+        result.append("BPMNExecProcessUtils.fork(s,\"" + (n.getName() != null ? n.getName() : n.getId()) + "\"," + String.join(",", branch_functions) + ")");
+        result.append("BPMNExecProcessUtils.endCurrentThread()");
+
         if (opt.isDebug()) {
-            result.prepend("ProcessUtils.debugOutput(\"PARALLEL GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
+            result.prepend("BPMNExecProcessUtils.debugOutput(\"PARALLEL GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
         }
-        result.prepend("\t//parallel split");
+        result.prepend("\t//parallel gateway");
         return result;
     }
 
@@ -382,7 +398,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
 
         Code code = new Code(source);
         if (opt.isDebug()) {
-            code.prepend("ProcessUtils.debugOutput(\"INCLUSIVE GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
+            code.prepend("BPMNExecProcessUtils.debugOutput(\"INCLUSIVE GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
         }
         code.prepend("\t//inclusive gateway");
         return code;
@@ -411,13 +427,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
             Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, default_branch.firstStep(), opt);
             source += "{" + generateCodeSource(splitCode) + "}";
         } else {
-            source += "{" + generateCodeSource(generateFlowJointCode(p, "ProcessUtils.noDefaultCaseError", opt)) + "}";
+            source += "{ BPMNExecProcessUtils.noDefaultCaseError(); }";
 
         }
 
         Code code = new Code(source);
         if (opt.isDebug()) {
-            code.prepend("ProcessUtils.debugOutput(\"EXCLUSIVE GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
+            code.prepend("BPMNExecProcessUtils.debugOutput(\"EXCLUSIVE GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
         }
         code.prepend("\t//exclusive gateway");
         return code;
@@ -438,10 +454,10 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     //////////////
     protected Code generateFlowJointCode(BPMNDecodedProcess p, String flowName, Options opt) {
         //return new Code(sanitizeName(flowName) + "()");
-        Code code = new Code(flowName + "()");
-        if (opt.isDebug()) {
-            code.prepend("ProcessUtils.debugOutput(\"JOINING FLOW " + flowName + "\")");
-        }
+        Code code = new Code(flowName + "(s)");
+//        if (opt.isDebug()) {
+//            code.prepend("BPMNExecProcessUtils.debugOutput(\"JOINING FLOW " + flowName + "\")");
+//        }
         return code;
     }
 
@@ -471,7 +487,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
 
             if (opt.isDebug()) {
                 result.append(ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()
-                        .map(e -> "ProcessUtils.debugOutput(\"ASSIGNING " + e.getAttribute("target") + " TO %s\"," + feel.translateChecked(e.getAttribute("source").substring(1)) + ")")
+                        .map(e -> "BPMNExecProcessUtils.debugOutput(\"ASSIGNING " + e.getAttribute("target") + " TO %s\"," + feel.translateChecked(e.getAttribute("source").substring(1)) + ")")
                         .collect(Collectors.toList()));
             }
         }

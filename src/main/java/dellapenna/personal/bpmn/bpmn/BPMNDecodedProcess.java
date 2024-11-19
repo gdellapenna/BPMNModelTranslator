@@ -22,8 +22,7 @@ public class BPMNDecodedProcess {
     private final Map<String, VariableDefinition> globals = new HashMap<>();
     private final Map<String, VariableDefinition> inputs = new HashMap<>();
     private final List<String> startEventFlowNames = new ArrayList<>();
-    
-    
+
     public String getFlowName(FlowNode start) {
         //return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
         Code.ProcType type = switch (start) {
@@ -73,18 +72,18 @@ public class BPMNDecodedProcess {
     }
 
     //creates a new function to output, assigned to the specified function class, and returns its internal definition
-    public FunctionDefinition registerFunction(String name, Code code, Class returnType, Code.ProcType type) {
-        return registerFunction(name, code, new ArrayList<>(List.of()), returnType, type);
+    public FunctionDefinition registerFunction(String name, Code code, Map<String, String> parameters, String returnType, Code.ProcType type) {
+        return registerFunction(name, code, new ArrayList<>(List.of()), parameters, returnType, type);
     }
 
     //creates a new possibly constrained function to output, assigned to the specified function class, and returns its internal definition
-    public FunctionDefinition registerFunction(String name, Code code, List<String> triggers, Class returnType, Code.ProcType type) {
+    public FunctionDefinition registerFunction(String name, Code code, List<String> triggers, Map<String, String> parameters, String returnType, Code.ProcType type) {
         FunctionDefinition f;
         if (!functions.containsKey(type)) {
             functions.put(type, new HashMap<>());
         }
         if (!functions.get(type).containsKey(name)) {
-            f = new FunctionDefinition(ToJavaBPMNTranslator.sanitizeName(name), code, triggers, returnType, Collections.EMPTY_MAP);
+            f = new FunctionDefinition(ToJavaBPMNTranslator.sanitizeName(name), code, triggers, returnType, parameters);
             functions.get(type).put(name, f);
         } else {
             f = functions.get(type).get(name);
@@ -94,20 +93,19 @@ public class BPMNDecodedProcess {
     }
 
     //creates a new procedure to output, assigned to the specified function class, and returns its internal definition
-    public FunctionDefinition registerProcedure(String name, Code code, Code.ProcType type) {
+    public FunctionDefinition registerProcedure(String name, Code code, Map<String, String> parameters, Code.ProcType type) {
 //        if (code == null || code.getStatements().isEmpty()) {
 //            code = new Code("System.out.println(\"" + name + "\")");
 //        }
         if (code == null) {
             code = new Code();
         }
-        return registerFunction(name, code, Void.class, type);
+        return registerFunction(name, code, parameters, "void", type);
     }
 
-    public void registerNodeProcedure(String name, Code code) {
-        registerProcedure(name, code, Code.ProcType.FLOW);
-    }
-
+//    public void registerNodeProcedure(String name, Code code) {
+//        registerProcedure(name, code, Code.ProcType.FLOW);
+//    }
     public void registerNodeProcedure(FlowNode node, Code code) {
         Code.ProcType type = switch (node) {
             case Gateway g ->
@@ -118,8 +116,8 @@ public class BPMNDecodedProcess {
                 Code.ProcType.EVENT;
             default ->
                 Code.ProcType.FLOW;
-        };        
-        registerProcedure(getFlowName(node), code, type);
+        };
+        registerProcedure(getFlowName(node), code, Map.of("s", "BPMNExecProcessUtils.ProcessStatus"), type);
     }
 
     public void registerStartEventFlowName(String name) {

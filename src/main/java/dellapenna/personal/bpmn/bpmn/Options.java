@@ -6,7 +6,8 @@ package dellapenna.personal.bpmn.bpmn;
  * @author giuse
  */
 public class Options {
-    private boolean debug;
+    private boolean debug=false;
+    private boolean trueParallel=false;
     private String inputsFile = "inputs.properties";
     private String outputsFile = "outputs.properties";
 
@@ -50,6 +51,14 @@ public class Options {
      */
     public void setOutputsFile(String outputsFile) {
         this.outputsFile = outputsFile;
+    }
+
+    public boolean isTrueParallel() {
+        return trueParallel;
+    }
+
+    public void setTrueParallel(boolean trueParallel) {
+        this.trueParallel = trueParallel;
     }
 
 }

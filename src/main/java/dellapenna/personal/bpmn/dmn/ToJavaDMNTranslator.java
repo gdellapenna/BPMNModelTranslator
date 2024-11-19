@@ -79,7 +79,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + ") {\n\n"
                 + inputs.stream()
                         .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent())
-                        + " = TypeUtils.to" + i.getInputExpression().getTypeRef() + "(_" + sanitizeName(i.getInputExpression().getTextContent()) + ")")
+                        + " = BPMNExecTypeUtils.to" + i.getInputExpression().getTypeRef() + "(_" + sanitizeName(i.getInputExpression().getTextContent()) + ")")
                         .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
                 + translateRules(decoded_rules, output_record_name)
                 + "\n}"

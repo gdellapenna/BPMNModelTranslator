@@ -171,50 +171,10 @@ public abstract class AbstractBPMNTranslator {
         //}
     }
 
-    ////////////////////////
-    // Decode other BPMN nodes to BPMNDecodedNode structures (code + other info)
-    ////////////////////////
+
     private BPMNDecodedNode decodeNode(BPMNDecodedProcess p, FlowNode n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
         BPMNDecodedNode result;
 
-        //HYP: i nodi hanno tutti un incoming e un outgoing TRANNE i gateway       
-//        if (n.getOutgoing().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
-//            //se un nodo ha più n.getOutgoing(), posporre un inclusive virtuale
-//            org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
-//            SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
-//            virtualGateway.setName(n.getName() + " SPLIT GATEWAY");
-//            virtualGateway.setId(n.getId() + "XVG");
-//            n.getParentElement().addChildElement(virtualGateway);
-//            n.getParentElement().addChildElement(virtualSequence);
-//            virtualSequence.setSource(n);
-//            for (SequenceFlow seq : n.getOutgoing()) {
-//                seq.setSource(virtualGateway);
-//            }
-//            virtualGateway.getOutgoing().addAll(n.getOutgoing());
-//            virtualGateway.getIncoming().add(virtualSequence);
-//            virtualSequence.setTarget(virtualGateway);
-//            n.getOutgoing().clear();
-//            n.getOutgoing().add(virtualSequence);
-//        }
-//        if (n.getIncoming().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
-//            //se un nodo ha più ingoing, premettere un inclusive virtuale
-//            org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
-//            SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
-//            virtualGateway.setName(n.getName() + " JOIN GATEWAY");
-//            virtualGateway.setId(n.getId() + "EVG");
-//            n.getParentElement().addChildElement(virtualGateway);
-//            n.getParentElement().addChildElement(virtualSequence);
-//            virtualSequence.setSource(virtualGateway);
-//            virtualGateway.getOutgoing().add(virtualSequence);
-//            for (SequenceFlow seq : n.getIncoming()) {
-//                seq.setTarget(virtualGateway);
-//            }
-//            virtualGateway.getIncoming().addAll(n.getIncoming());
-//            virtualSequence.setTarget(n);
-//            n.getIncoming().clear();
-//            n.getIncoming().add(virtualSequence);
-//            n = virtualGateway;
-//        }
         switch (n) {
             case org.camunda.bpm.model.bpmn.instance.Event t -> {
                 result = decodeEventNode(p, t, opt);
@@ -245,7 +205,7 @@ public abstract class AbstractBPMNTranslator {
                 return new BPMNDecodedNode(generateEventGatewayCode(p, t, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.ParallelGateway t -> {
-                return new BPMNDecodedNode(generateParallelGatewayCode(p, t, opt), null); //nel caso parallel bisogna prevedere un nextStep che chiami la funzione di join (generata dal joining gateway?)
+                return new BPMNDecodedNode(generateParallelGatewayCode(p, t, opt), null); 
             }
             default -> {
                 throw new BpmnTranslatorException("Cannot translate gateway node of type " + n.getClass().getName());
@@ -265,7 +225,7 @@ public abstract class AbstractBPMNTranslator {
                 return new BPMNDecodedNode(generateEventJoiningGatewayCode(p, t, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.ParallelGateway t -> {
-                return new BPMNDecodedNode(generateParallelJoiningGatewayCode(p, t, opt), null); //nel caso parallel si genera un loop di attesa sugli entranti...
+                return new BPMNDecodedNode(generateParallelJoiningGatewayCode(p, t, opt), null); 
             }
             default -> {
                 throw new BpmnTranslatorException("Cannot translate gateway node of type " + n.getClass().getName());
