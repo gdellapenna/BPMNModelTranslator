@@ -1,4 +1,3 @@
-package dellapenna.personal.bpmn.unused;
 
 import dellapenna.personal.bpmn.exec.*;
 
@@ -115,7 +114,7 @@ class dmn_dtable_ChooseConsentDT {
 /*
  * ****************************** BPMN Generated Code *************************
  */
-class bpmn_process_shipment {
+class bpmn_process_Shipment {
 
 //Input Variables
     Object input_PackageWeight;
@@ -148,6 +147,7 @@ class bpmn_process_shipment {
     }
 
     public void GATEWAY_Gateway_07f90ke(BPMNExecProcessUtils.ProcessStatus s) {//exclusive joining gateway
+        BPMNExecProcessUtils.debugOutput("EXCLUSIVE JOINING GATEWAY Gateway_07f90ke");
         EVENT_ready_for_shipment(s);
     }
 
@@ -182,7 +182,7 @@ class bpmn_process_shipment {
 
     public void EVENT_unsuppoted_weight(BPMNExecProcessUtils.ProcessStatus s) {//end event: unsuppoted weight
         BPMNExecProcessUtils.debugOutput("END EVENT unsuppoted weight");
-        BPMNExecProcessUtils.error(s,"Unsupported Weight", 2);
+        BPMNExecProcessUtils.error(s, "Unsupported Weight", 2);
     }
 
     public void EVENT_ready_for_shipment(BPMNExecProcessUtils.ProcessStatus s) {//end event: ready for shipment
@@ -192,12 +192,12 @@ class bpmn_process_shipment {
 
     public void EVENT_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//end event: undefined length
         BPMNExecProcessUtils.debugOutput("END EVENT undefined length");
-        BPMNExecProcessUtils.error(s,"Undefined Length", 1);
+        BPMNExecProcessUtils.error(s, "Undefined Length", 1);
     }
 
     public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//end event: no shipment
         BPMNExecProcessUtils.debugOutput("END EVENT no shipment");
-        BPMNExecProcessUtils.error(s,"No Shipment", 3);
+        BPMNExecProcessUtils.error(s, "No Shipment", 3);
     }
 
     public void TASK_determine_mode(BPMNExecProcessUtils.ProcessStatus s) {//business rule task: determine mode
@@ -259,12 +259,10 @@ class bpmn_process_shipment {
 
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();
-        //BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();        
-        bpmn_process_shipment process = new bpmn_process_shipment();
-        //BPMNExecProcessUtils.initProcess(s, process::init);
-        //BPMNExecProcessUtils.startProcess(s,process::EVENT_package_received);
-        //BPMNExecProcessUtils.endProcess(s);
-        BPMNExecProcessUtils.executeProcess(process::init,process::EVENT_package_received);
-        
+        bpmn_process_Shipment process = new bpmn_process_Shipment();
+        BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();
+        BPMNExecProcessUtils.initProcess(s, process::init);
+        BPMNExecProcessUtils.startProcess(s, process::EVENT_package_received);
+        BPMNExecProcessUtils.endProcess(s);
     }
 }

@@ -22,7 +22,7 @@ public void GATEWAY_Decision(BPMNExecProcessUtils.ProcessStatus s) {//exclusive 
 BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Decision");
 if (BPMNExecTypeUtils.tonumber(a) >= BPMNExecTypeUtils.tonumber(10.0)){EVENT_Successful(s);
 } else if (BPMNExecTypeUtils.tonumber(a) < BPMNExecTypeUtils.tonumber(10.0)){TASK_Some_task(s);
-} else { BPMNExecProcessUtils.noDefaultCaseError(); }
+} else { BPMNExecProcessUtils.noDefaultCaseError(s); }
 }
 
 public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//start event: Start
@@ -34,7 +34,7 @@ TASK_Some_task(s);
 
 public void EVENT_Successful(BPMNExecProcessUtils.ProcessStatus s) {//end event: Successful
 BPMNExecProcessUtils.debugOutput("END EVENT Successful");
-BPMNExecProcessUtils.success();
+BPMNExecProcessUtils.success(s);
 }
 
 public void TASK_Some_task(BPMNExecProcessUtils.ProcessStatus s) {//script task: Some task
@@ -48,7 +48,6 @@ this.input_a = null;	//TODO assign input variable
 if (this.input_a==null) input_a=BPMNExecProcessUtils.inputs.getProperty("input_a", null);
 BPMNExecProcessUtils.logInput("input_a",this.input_a);
 }public static void main(String[] args) {
-BPMNExecProcessUtils.enableTrueParallel();BPMNExecProcessUtils.start();bpmn_process_loop process = new bpmn_process_loop();
-process.init();
-process.EVENT_Start(new BPMNExecProcessUtils.ProcessStatus("Main"));
-}}
+BPMNExecProcessUtils.enableTrueParallel();bpmn_process_loop process = new bpmn_process_loop();
+BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();
+BPMNExecProcessUtils.initProcess(s,process::init);BPMNExecProcessUtils.startProcess(s,process::EVENT_Start);BPMNExecProcessUtils.endProcess(s);}}

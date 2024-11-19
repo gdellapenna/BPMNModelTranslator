@@ -98,11 +98,13 @@ public class BPMNModelTest {
 
     public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException {
 
-        compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_paper.bpmn"));
+        compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_shipment.bpmn"));
 
         compile(new Path[0], Path.of("diagram_loop.bpmn"));
 
-        compile(new Path[0], Path.of("diagram_2_ext.bpmn"));
+        compile(new Path[0], Path.of("diagram_parallel.bpmn"));
+        
+        compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));

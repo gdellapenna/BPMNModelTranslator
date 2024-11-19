@@ -28,25 +28,23 @@ if ("a".equals(1.0)){TASK_Task2Branch1(s);
 public void GATEWAY_Parallel1Join(BPMNExecProcessUtils.ProcessStatus s) {//parallel joining gateway
 BPMNExecProcessUtils.debugOutput("PARALLEL JOINING GATEWAY Parallel1Join");
 BPMNExecProcessUtils.join(s, this::TASK_Final_Task);
-BPMNExecProcessUtils.endCurrentThread();
 }
 
 public void GATEWAY_Parallel1Split(BPMNExecProcessUtils.ProcessStatus s) {//parallel gateway
 BPMNExecProcessUtils.debugOutput("PARALLEL GATEWAY Parallel1Split");
 BPMNExecProcessUtils.fork(s,"Parallel1Split",this::TASK_Parallel_Task_2,this::TASK_Parallel_Task_1);
-BPMNExecProcessUtils.endCurrentThread();
+BPMNExecProcessUtils.endThread();
 }
 
 public void GATEWAY_Parallel2Split(BPMNExecProcessUtils.ProcessStatus s) {//parallel gateway
 BPMNExecProcessUtils.debugOutput("PARALLEL GATEWAY Parallel2Split");
 BPMNExecProcessUtils.fork(s,"Parallel2Split",this::TASK_InnerParallelTask1,this::TASK_InnerParallelTask2);
-BPMNExecProcessUtils.endCurrentThread();
+BPMNExecProcessUtils.endThread();
 }
 
 public void GATEWAY_Parallel2Join(BPMNExecProcessUtils.ProcessStatus s) {//parallel joining gateway
 BPMNExecProcessUtils.debugOutput("PARALLEL JOINING GATEWAY Parallel2Join");
 BPMNExecProcessUtils.join(s, this::GATEWAY_Parallel1Join);
-BPMNExecProcessUtils.endCurrentThread();
 }
 
 public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//start event: Start
@@ -56,7 +54,7 @@ GATEWAY_Parallel1Split(s);
 
 public void EVENT_End(BPMNExecProcessUtils.ProcessStatus s) {//end event: End
 BPMNExecProcessUtils.debugOutput("END EVENT End");
-BPMNExecProcessUtils.success();
+BPMNExecProcessUtils.success(s);
 }
 
 public void TASK_InnerParallelTask1(BPMNExecProcessUtils.ProcessStatus s) {//generic task: InnerParallelTask1
@@ -96,7 +94,6 @@ GATEWAY_Parallel1Join(s);
 
 public void init() {
 }public static void main(String[] args) {
-BPMNExecProcessUtils.enableTrueParallel();BPMNExecProcessUtils.start();bpmn_process_diagram_2 process = new bpmn_process_diagram_2();
-process.init();
-process.EVENT_Start(new BPMNExecProcessUtils.ProcessStatus("Main"));
-}}
+BPMNExecProcessUtils.enableTrueParallel();bpmn_process_diagram_2 process = new bpmn_process_diagram_2();
+BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();
+BPMNExecProcessUtils.initProcess(s,process::init);BPMNExecProcessUtils.startProcess(s,process::EVENT_Start);BPMNExecProcessUtils.endProcess(s);}}

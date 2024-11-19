@@ -124,15 +124,23 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
         if (opt.isTrueParallel()) {
             source += "BPMNExecProcessUtils.enableTrueParallel();";
         }
-        source += "BPMNExecProcessUtils.start();";
         source += "bpmn_process_" + sanitizeName(process.getName()) + " process = new " + "bpmn_process_" + sanitizeName(process.getName()) + "();\n";
-        source += "process.init();\n";
+        source += "BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();\n";
+        source += "BPMNExecProcessUtils.initProcess(s,process::init);";        
         if (!process.getStartEventFlowNames().isEmpty()) {
-            source += "process." + sanitizeName(process.getStartEventFlowNames().getFirst()) + "(new BPMNExecProcessUtils.ProcessStatus(\"Main\"));\n";
+            source += "BPMNExecProcessUtils.startProcess(s,process::"+sanitizeName(process.getStartEventFlowNames().getFirst()) +");";
         }
+        source += "BPMNExecProcessUtils.endProcess(s);";
         source += "}";
         return source;
     }
+    
+    /*
+    
+    
+        BPMNExecProcessUtils.startProcess(s, process::EVENT_Start);
+        BPMNExecProcessUtils.endProcess(s);
+    */
 
     /* *********************************************************************************** */
     //////////////////
@@ -300,12 +308,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
                     //code is not a number
                     error_code = 1;
                 }
-                code.append("BPMNExecProcessUtils.error(\"" + error_message + "\", " + error_code + ")");
+                code.append("BPMNExecProcessUtils.error(s,\"" + error_message + "\", " + error_code + ")");
             }
         }
 
         if (code.isEmpty()) {
-            code.append("BPMNExecProcessUtils.success()");
+            code.append("BPMNExecProcessUtils.success(s)");
         }
 
         if (opt.isDebug()) {
@@ -335,7 +343,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
     public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway n, FlowNode joinedflow, Options opt) throws BpmnTranslatorException, FeelTranslatorException {
         Code result = new Code();
         result.append("BPMNExecProcessUtils.join(s, " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
-        result.append("BPMNExecProcessUtils.endCurrentThread()");
+        //result.append("BPMNExecProcessUtils.endCurrentThread()");
         if (opt.isDebug()) {
             result.prepend("BPMNExecProcessUtils.debugOutput(\"PARALLEL JOINING GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
         }
@@ -376,7 +384,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
             branch_functions[o] = "this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep()));
         }
         result.append("BPMNExecProcessUtils.fork(s,\"" + (n.getName() != null ? n.getName() : n.getId()) + "\"," + String.join(",", branch_functions) + ")");
-        result.append("BPMNExecProcessUtils.endCurrentThread()");
+        result.append("BPMNExecProcessUtils.endThread()");
 
         if (opt.isDebug()) {
             result.prepend("BPMNExecProcessUtils.debugOutput(\"PARALLEL GATEWAY " + (n.getName() != null ? n.getName() : n.getId()) + "\")");
@@ -427,7 +435,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
             Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, default_branch.firstStep(), opt);
             source += "{" + generateCodeSource(splitCode) + "}";
         } else {
-            source += "{ BPMNExecProcessUtils.noDefaultCaseError(); }";
+            source += "{ BPMNExecProcessUtils.noDefaultCaseError(s); }";
 
         }
 

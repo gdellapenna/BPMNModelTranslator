@@ -21,7 +21,7 @@ class bpmn_process_loop {
         } else if (BPMNExecTypeUtils.tonumber(a) < BPMNExecTypeUtils.tonumber(10.0)) {
             TASK_Some_task(s);
         } else {
-            BPMNExecProcessUtils.noDefaultCaseError();
+            BPMNExecProcessUtils.noDefaultCaseError(s);
         }
     }
 
@@ -33,7 +33,7 @@ class bpmn_process_loop {
     }
 
     public void EVENT_Successful(BPMNExecProcessUtils.ProcessStatus s) {//end event: Successful
-        BPMNExecProcessUtils.success();
+        BPMNExecProcessUtils.success(s);
     }
 
     public void TASK_Some_task(BPMNExecProcessUtils.ProcessStatus s) {//script task: Some task
@@ -52,9 +52,11 @@ class bpmn_process_loop {
 
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();
-        BPMNExecProcessUtils.start();
+        BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();
         bpmn_process_loop process = new bpmn_process_loop();
         process.init();
-        process.EVENT_Start(new BPMNExecProcessUtils.ProcessStatus("Main"));
+        BPMNExecProcessUtils.startProcess(s,process::EVENT_Start);
+        //process.EVENT_Start(s);
+        BPMNExecProcessUtils.endProcess(s);
     }
 }
