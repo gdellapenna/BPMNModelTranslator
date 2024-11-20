@@ -15,14 +15,13 @@ public class Code {
     };
 
     private final List<String> statements = new ArrayList<>();
-    
 
     public Code() {
+        this.statements.clear();
     }
 
     public Code(List<String> statements) {
         this();
-        this.statements.clear();
         this.statements.addAll(statements);
     }
 
@@ -31,11 +30,14 @@ public class Code {
         Collections.addAll(this.statements, statements);
     }
 
+    public Code(Code other) {
+        this();
+        this.statements.addAll(other.statements);
+    }
+
     public List<String> getStatements() {
         return this.statements;
     }
-
-    
 
     public void append(List<String> statements) {
         this.statements.addAll(statements);
@@ -43,10 +45,6 @@ public class Code {
 
     public void append(Code code) {
         this.statements.addAll(code.statements);
-//        this.globals.putAll(code.globals);
-//        for(ProcType pt : ProcType.values()) {
-//            this.functions.get(pt).putAll(code.functions.get(pt));
-//        }
     }
 
     public void append(String... statements) {
@@ -61,5 +59,4 @@ public class Code {
         return this.statements.isEmpty();
     }
 
-   
 }

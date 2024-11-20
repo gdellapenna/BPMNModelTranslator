@@ -117,6 +117,7 @@ public class BPMNDecodedProcess {
             default ->
                 Code.ProcType.FLOW;
         };
+        //code.prepend("//[node] "+node.getId()+((node.getName()!=null && !node.getName().isBlank())?(" - "+node.getName()):""));
         registerProcedure(getFlowName(node), code, Map.of("s", "BPMNExecProcessUtils.ProcessStatus"), type);
     }
 

@@ -62,8 +62,6 @@ public abstract class AbstractBPMNTranslator {
         flows_to_translate.clear();
     }
 
-    
-
     ////////////////////////
     // Decode a BPMN instance to BPMNDecoded structure
     ////////////////////////
@@ -112,9 +110,6 @@ public abstract class AbstractBPMNTranslator {
         return conditional_subflows;
     }
 
-    
-
-    //EXPERIMENTAL
     private void decodeFlow(BPMNDecodedProcess p, FlowNode start, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
         //if (!generated_flows.contains(start)) {
         FlowNode n = start;
@@ -157,11 +152,11 @@ public abstract class AbstractBPMNTranslator {
 //                n = virtualGateway;
 //            }
             Code code = new Code();
-            //code.prepend("//" + p.getFlowName(n)); //TEMP!!!                    
             BPMNDecodedNode decoded_node = decodeNode(p, n, opt);
             code.append(decoded_node.code());
             generated_flows.add(n);
             p.registerNodeProcedure(n, code);
+            //link to next step/node
             n = decoded_node.nextStep();
             if (n != null) {
                 code.append(generateFlowJointCode(p, n, opt));
@@ -170,7 +165,6 @@ public abstract class AbstractBPMNTranslator {
 
         //}
     }
-
 
     private BPMNDecodedNode decodeNode(BPMNDecodedProcess p, FlowNode n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
         BPMNDecodedNode result;
@@ -205,7 +199,7 @@ public abstract class AbstractBPMNTranslator {
                 return new BPMNDecodedNode(generateEventGatewayCode(p, t, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.ParallelGateway t -> {
-                return new BPMNDecodedNode(generateParallelGatewayCode(p, t, opt), null); 
+                return new BPMNDecodedNode(generateParallelGatewayCode(p, t, opt), null);
             }
             default -> {
                 throw new BpmnTranslatorException("Cannot translate gateway node of type " + n.getClass().getName());
@@ -225,7 +219,7 @@ public abstract class AbstractBPMNTranslator {
                 return new BPMNDecodedNode(generateEventJoiningGatewayCode(p, t, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.ParallelGateway t -> {
-                return new BPMNDecodedNode(generateParallelJoiningGatewayCode(p, t, opt), null); 
+                return new BPMNDecodedNode(generateParallelJoiningGatewayCode(p, t, opt), null);
             }
             default -> {
                 throw new BpmnTranslatorException("Cannot translate gateway node of type " + n.getClass().getName());
@@ -346,7 +340,6 @@ public abstract class AbstractBPMNTranslator {
 
     protected abstract Code generateExclusiveJoiningGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, FlowNode joinedflow, Options opt) throws FeelTranslatorException, BpmnTranslatorException;
 
-    ////
     protected abstract Code generateManualTaskCode(BPMNDecodedProcess p, ManualTask t, Options opt) throws BpmnTranslatorException;
 
     protected abstract Code generateScriptTaskCode(BPMNDecodedProcess p, ScriptTask t, Options opt) throws BpmnTranslatorException;
@@ -406,30 +399,4 @@ public abstract class AbstractBPMNTranslator {
         FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
         return generateExclusiveJoiningGatewayCode(p, n, outgoingFlow, opt);
     }
-
-    ////////////////////
-    //i gateway joining chiamano registerNodeProcedure
-    //gli eventi (almneno start) chiamano registerNodeProcedure
-//    private BPMNDecodedFlow decodeFlowWithName(FlowNode n) throws FeelTranslatorException, BpmnTranslatorException {
-//        //return new BPMNDecodedNamedFlow("flow_" + n.getId(), registerNodeProcedure(n));
-//        return registerNodeProcedure("flow_" + n.getId(), n);
-//    }
-    //translates a linear (until translateNode returns a nextStep, i.e., without gateways) flow
-//    private BPMNDecodedFlow decodeFlow(FlowNode start) throws FeelTranslatorException, BpmnTranslatorException {
-//        return registerNodeProcedure(null, start);
-//        
-//
-//    }
-//    private BPMNDecodedFlow registerNodeProcedure(String name, FlowNode start) throws FeelTranslatorException, BpmnTranslatorException {
-//        List code_sequence = new ArrayList<>();
-//        FlowNode current = start, last = start;
-//        while (current != null) {
-//            BPMNDecodedNode nodeflow = decodeNode(current);
-//            code_sequence.add(nodeflow.code());
-//            last = current;
-//            current = nodeflow.nextStep();
-//        }
-//        return new BPMNDecodedFlow(name, generateCompoundStatementCode(code_sequence), start, last);
-//        //return generateCompoundStatementCode(code_sequence);
-//    }
 }

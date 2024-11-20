@@ -129,123 +129,135 @@ class bpmn_process_shipment {
     Object sMode;
 
 //Process Dynamics
-    public void GATEWAY_Gateway_1tgxmu2(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
-        BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_1tgxmu2");
-        if (BPMNExecTypeUtils.tonumber(pWeight) > BPMNExecTypeUtils.tonumber(10.0)) {
+    public void EVENT_package_received(BPMNExecProcessUtils.ProcessStatus s) {//Start Event package received [StartEvent_1]
+        BPMNExecProcessUtils.debugOutput("Start Event package received [StartEvent_1]");
+        pType = input_PackageType;
+        BPMNExecProcessUtils.debugOutput("\t ASSIGNING pType TO %s", input_PackageType);
+//[outgoing edge] Activity_0h04jo2 - get length
+        TASK_get_length(s);
+    }
+
+    public void EVENT_unsuppoted_weight(BPMNExecProcessUtils.ProcessStatus s) {//End Event unsuppoted weight [Event_0wjo1ye]
+        BPMNExecProcessUtils.debugOutput("End Event unsuppoted weight [Event_0wjo1ye]");
+        BPMNExecProcessUtils.error(s, "Unsupported Weight", 2);
+    }
+
+    public void EVENT_ready_for_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event ready for shipment [Event_1pjc4df]
+        BPMNExecProcessUtils.debugOutput("End Event ready for shipment [Event_1pjc4df]");
+        BPMNExecProcessUtils.success(s);
+    }
+
+    public void EVENT_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//End Event undefined length [Event_06urgzi]
+        BPMNExecProcessUtils.debugOutput("End Event undefined length [Event_06urgzi]");
+        BPMNExecProcessUtils.error(s, "Undefined Length", 1);
+    }
+
+    public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event no shipment [Event_19ylwnc]
+        BPMNExecProcessUtils.debugOutput("End Event no shipment [Event_19ylwnc]");
+        BPMNExecProcessUtils.error(s, "No Shipment", 3);
+    }
+
+    public void GATEWAY_Gateway_1tgxmu2(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_1tgxmu2
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_1tgxmu2");
+        if (BPMNExecTypeUtils.tonumber(pWeight) > BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Event_0wjo1ye - unsuppoted weight
             EVENT_unsuppoted_weight(s);
-        } else {
+        } else {//[outgoing edge] Activity_1ol43bw - determine mode
             TASK_determine_mode(s);
         }
     }
 
-    public void GATEWAY_Gateway_1ocbjca(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
-        BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_1ocbjca");
-        if (sMode.equals("undef")) {
+    public void GATEWAY_Gateway_1ocbjca(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_1ocbjca
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_1ocbjca");
+        if (sMode.equals("undef")) {//[outgoing edge] Event_19ylwnc - no shipment
             EVENT_no_shipment(s);
-        } else {
+        } else {//[outgoing edge] Activity_1cbdv9z - choose consent
             TASK_choose_consent(s);
         }
     }
 
-    public void GATEWAY_Gateway_07f90ke(BPMNExecProcessUtils.ProcessStatus s) {//exclusive joining gateway
+    public void GATEWAY_Gateway_07f90ke(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Joining Gateway Gateway_07f90ke
+        BPMNExecProcessUtils.debugOutput("Exclusive Joining Gateway Gateway_07f90ke");
+//[outgoing edge] Event_1pjc4df - ready for shipment
         EVENT_ready_for_shipment(s);
     }
 
-    public void GATEWAY_Gateway_0i2yujj(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
-        BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_0i2yujj");
-        if (pLength.equals(-(BPMNExecTypeUtils.tonumber(1.0)))) {
+    public void GATEWAY_Gateway_0i2yujj(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_0i2yujj
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_0i2yujj");
+        if (pLength.equals(-(BPMNExecTypeUtils.tonumber(1.0)))) {//[outgoing edge] Event_06urgzi - undefined length
             EVENT_undefined_length(s);
-        } else {
+        } else {//[outgoing edge] Activity_0iafefy - measure weight
             TASK_measure_weight(s);
         }
     }
 
-    public void GATEWAY_Gateway_0u50uj6(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
-        BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Gateway_0u50uj6");
-        if (consent.equals("com")) {
+    public void GATEWAY_Gateway_0u50uj6(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_0u50uj6
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_0u50uj6");
+        if (consent.equals("com")) {//[outgoing edge] Activity_1njskid - sign declaration
             TASK_sign_declaration(s);
-        } else if (consent.equals("owner")) {
+        } else if (consent.equals("owner")) {//[outgoing edge] Activity_1nfni4r - fetch declaration
             TASK_fetch_declaration(s);
-        } else if (consent.equals("none")) {
+        } else if (consent.equals("none")) {//[outgoing edge] Gateway_07f90ke
             GATEWAY_Gateway_07f90ke(s);
         } else {
             BPMNExecProcessUtils.noDefaultCaseError(s);
         }
     }
 
-    public void EVENT_package_received(BPMNExecProcessUtils.ProcessStatus s) {//start event: package received
-        BPMNExecProcessUtils.debugOutput("START EVENT: package received");
-        pType = input_PackageType;
-        BPMNExecProcessUtils.debugOutput("ASSIGNING pType TO %s", input_PackageType);
-        TASK_get_length(s);
-    }
-
-    public void EVENT_unsuppoted_weight(BPMNExecProcessUtils.ProcessStatus s) {//end event: unsuppoted weight
-        BPMNExecProcessUtils.debugOutput("END EVENT unsuppoted weight");
-        BPMNExecProcessUtils.error(s,"Unsupported Weight", 2);
-    }
-
-    public void EVENT_ready_for_shipment(BPMNExecProcessUtils.ProcessStatus s) {//end event: ready for shipment
-        BPMNExecProcessUtils.debugOutput("END EVENT ready for shipment");
-        BPMNExecProcessUtils.success(s);
-    }
-
-    public void EVENT_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//end event: undefined length
-        BPMNExecProcessUtils.debugOutput("END EVENT undefined length");
-        BPMNExecProcessUtils.error(s,"Undefined Length", 1);
-    }
-
-    public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//end event: no shipment
-        BPMNExecProcessUtils.debugOutput("END EVENT no shipment");
-        BPMNExecProcessUtils.error(s,"No Shipment", 3);
-    }
-
-    public void TASK_determine_mode(BPMNExecProcessUtils.ProcessStatus s) {//business rule task: determine mode
-        BPMNExecProcessUtils.debugOutput("EXECUTING DECISION determine mode");
+    public void TASK_determine_mode(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task determine mode [Activity_1ol43bw]
+        BPMNExecProcessUtils.debugOutput("Business Rule Task determine mode [Activity_1ol43bw]");
+        BPMNExecProcessUtils.debugOutput("\t EXECUTING DECISION determine mode");
         dmn_dtable_DetermineModeDT_result determineModeResult = dmn_dtable_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/ pWeight);
-        BPMNExecProcessUtils.debugOutput("DECISION RESULT IS %s", determineModeResult);
+        BPMNExecProcessUtils.debugOutput("\t DECISION RESULT IS %s", determineModeResult);
         sMode = determineModeResult.Mode;
-        BPMNExecProcessUtils.debugOutput("ASSIGNING sMode TO %s", determineModeResult.Mode);
+        BPMNExecProcessUtils.debugOutput("\t ASSIGNING sMode TO %s", determineModeResult.Mode);
+//[outgoing edge] Gateway_1ocbjca
         GATEWAY_Gateway_1ocbjca(s);
     }
 
-    public void TASK_get_length(BPMNExecProcessUtils.ProcessStatus s) {//business rule task: get length
-        BPMNExecProcessUtils.debugOutput("EXECUTING DECISION get length");
+    public void TASK_get_length(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task get length [Activity_0h04jo2]
+        BPMNExecProcessUtils.debugOutput("Business Rule Task get length [Activity_0h04jo2]");
+        BPMNExecProcessUtils.debugOutput("\t EXECUTING DECISION get length");
         dmn_dtable_GetLengthDT_result getLengthResult = dmn_dtable_GetLengthDT.execute(/*Type*/pType);
-        BPMNExecProcessUtils.debugOutput("DECISION RESULT IS %s", getLengthResult);
+        BPMNExecProcessUtils.debugOutput("\t DECISION RESULT IS %s", getLengthResult);
         pLength = getLengthResult.Length;
-        BPMNExecProcessUtils.debugOutput("ASSIGNING pLength TO %s", getLengthResult.Length);
+        BPMNExecProcessUtils.debugOutput("\t ASSIGNING pLength TO %s", getLengthResult.Length);
+//[outgoing edge] Gateway_0i2yujj
         GATEWAY_Gateway_0i2yujj(s);
     }
 
-    public void TASK_measure_weight(BPMNExecProcessUtils.ProcessStatus s) {//user task: measure weight
-        BPMNExecProcessUtils.debugOutput("USER TASK measure weight");
+    public void TASK_measure_weight(BPMNExecProcessUtils.ProcessStatus s) {//User Task measure weight [Activity_0iafefy]
+        BPMNExecProcessUtils.debugOutput("User Task measure weight [Activity_0iafefy]");
         pWeight = input_PackageWeight;
-        BPMNExecProcessUtils.debugOutput("ASSIGNING pWeight TO %s", input_PackageWeight);
+        BPMNExecProcessUtils.debugOutput("\t ASSIGNING pWeight TO %s", input_PackageWeight);
+//[outgoing edge] Gateway_1tgxmu2
         GATEWAY_Gateway_1tgxmu2(s);
     }
 
-    public void TASK_sign_declaration(BPMNExecProcessUtils.ProcessStatus s) {//generic task: sign declaration
-        BPMNExecProcessUtils.debugOutput("TASK sign declaration");
+    public void TASK_sign_declaration(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task sign declaration [Activity_1njskid]
+        BPMNExecProcessUtils.debugOutput("Generic Task sign declaration [Activity_1njskid]");
+//[outgoing edge] Gateway_07f90ke
         GATEWAY_Gateway_07f90ke(s);
     }
 
-    public void TASK_fetch_declaration(BPMNExecProcessUtils.ProcessStatus s) {//generic task: fetch declaration
-        BPMNExecProcessUtils.debugOutput("TASK fetch declaration");
+    public void TASK_fetch_declaration(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task fetch declaration [Activity_1nfni4r]
+        BPMNExecProcessUtils.debugOutput("Generic Task fetch declaration [Activity_1nfni4r]");
+//[outgoing edge] Gateway_07f90ke
         GATEWAY_Gateway_07f90ke(s);
     }
 
-    public void TASK_choose_consent(BPMNExecProcessUtils.ProcessStatus s) {//business rule task: choose consent
-        BPMNExecProcessUtils.debugOutput("EXECUTING DECISION choose consent");
+    public void TASK_choose_consent(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task choose consent [Activity_1cbdv9z]
+        BPMNExecProcessUtils.debugOutput("Business Rule Task choose consent [Activity_1cbdv9z]");
+        BPMNExecProcessUtils.debugOutput("\t EXECUTING DECISION choose consent");
         dmn_dtable_ChooseConsentDT_result chooseConsentResult = dmn_dtable_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/ pWeight);
-        BPMNExecProcessUtils.debugOutput("DECISION RESULT IS %s", chooseConsentResult);
+        BPMNExecProcessUtils.debugOutput("\t DECISION RESULT IS %s", chooseConsentResult);
         consent = chooseConsentResult.Consent;
-        BPMNExecProcessUtils.debugOutput("ASSIGNING consent TO %s", chooseConsentResult.Consent);
+        BPMNExecProcessUtils.debugOutput("\t ASSIGNING consent TO %s", chooseConsentResult.Consent);
+//[outgoing edge] Gateway_0u50uj6
         GATEWAY_Gateway_0u50uj6(s);
     }
 
     public void init() {
-        this.input_PackageWeight = null;	//TODO assign input variable
+        this.input_PackageWeight = 100;	//TODO assign input variable
         this.input_PackageType = null;	//TODO assign input variable
         if (this.input_PackageWeight == null) {
             input_PackageWeight = BPMNExecProcessUtils.inputs.getProperty("input_PackageWeight", null);
@@ -259,12 +271,7 @@ class bpmn_process_shipment {
 
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();
-        //BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();        
         bpmn_process_shipment process = new bpmn_process_shipment();
-        //BPMNExecProcessUtils.initProcess(s, process::init);
-        //BPMNExecProcessUtils.startProcess(s,process::EVENT_package_received);
-        //BPMNExecProcessUtils.endProcess(s);
-        BPMNExecProcessUtils.executeProcess(process::init,process::EVENT_package_received);
-        
+        BPMNExecProcessUtils.executeProcess(process::init, process::EVENT_package_received);
     }
 }

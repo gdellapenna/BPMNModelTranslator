@@ -30,7 +30,7 @@ public class BPMNExecProcessUtils {
 
     static boolean globalSuccess = true;
 
-    static java.io.PrintStream debugChannel = System.out;
+    public static java.io.PrintStream debugChannel = System.out;
     static java.io.PrintStream resultChannel = System.out;
     public static java.util.Properties outputs = new java.util.Properties();
     public static java.util.Properties inputs = new java.util.Properties();
@@ -95,42 +95,41 @@ public class BPMNExecProcessUtils {
         debugOutput("ENDING PROCESS");
     }
 
-    public static void initProcess(ProcessStatus s, Runnable main) {
-        debugOutput("INITIALIZING PROCESS");
-        loadExternalInputs();
-        main.run();
-    }
-
-    public static void startProcess(ProcessStatus s, Consumer<ProcessStatus> main) {
-        debugOutput("STARTING PROCESS");
-        //main.accept(s); //andrebbe lanciato in un thread... indagare perchè si blocca sul sync...
-        startThread(main, s.branchID);
-    }
-
-    public static void endProcess(ProcessStatus s) {
-        //non può essere synchronized altrimenti bloccherebbe tutto... meglio usare un semaforo?        
-        while (active_threads_count > 0) {
-            try {
-                Thread.sleep(10);
+//    public static void initProcess(ProcessStatus s, Runnable main) {
+//        debugOutput("INITIALIZING PROCESS");
+//        loadExternalInputs();
+//        main.run();
+//    }
+//
+//    public static void startProcess(ProcessStatus s, Consumer<ProcessStatus> main) {
+//        debugOutput("STARTING PROCESS");
+//        //main.accept(s); //andrebbe lanciato in un thread... indagare perchè si blocca sul sync...
+//        startThread(main, s.branchID);
+//    }
+//
+//    public static void endProcess(ProcessStatus s) {
+//        //non può essere synchronized altrimenti bloccherebbe tutto... meglio usare un semaforo?        
+//        while (active_threads_count > 0) {
 //            try {
-//                active_threads_count.wait();
+//                Thread.sleep(10);
+////            try {
+////                active_threads_count.wait();
+////            } catch (InterruptedException ex) {
+////                debugOutput("INTERNAL ERROR: THREAD INTERRUPTED");
+////            }
 //            } catch (InterruptedException ex) {
-//                debugOutput("INTERNAL ERROR: THREAD INTERRUPTED");
+//                //
 //            }
-            } catch (InterruptedException ex) {
-                //
-            }
-        }
-
-        logResult(s, globalSuccess, null, 0);
-        saveExternalOutputs();
-        if (executor != null) {
-            executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
-        }
-        debugOutput("ENDING PROCESS");
-        //System.exit(Integer.parseInt(outputs.getProperty("code", "0")));
-    }
-
+//        }
+//
+//        logResult(s, globalSuccess, null, 0);
+//        saveExternalOutputs();
+//        if (executor != null) {
+//            executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
+//        }
+//        debugOutput("ENDING PROCESS");
+//        //System.exit(Integer.parseInt(outputs.getProperty("code", "0")));
+//    }
     public static void startThread(Consumer<ProcessStatus> branch, String branch_id) {
         synchronized (BPMNExecProcessUtils.class) {
             active_threads_count++;
@@ -181,7 +180,7 @@ public class BPMNExecProcessUtils {
             }
         }
         for (int i = 0; i < branches.length; ++i) {
-            debugOutput("** FORKING BRANCH: %s FROM PARALLEL %s", branch_ids[i], parallel_id);
+            debugOutput("\t FORKING BRANCH: %s FROM PARALLEL %s", branch_ids[i], parallel_id);
             final Consumer<ProcessStatus> branch = branches[i];
             final String branch_id = branch_ids[i];
             startThread(branch, branch_id);
@@ -194,7 +193,7 @@ public class BPMNExecProcessUtils {
         String branch_id = s.branchID;
         String parallel_gateway_id = parallel_id.substring(parallel_id.lastIndexOf("-") + 1);
 
-        debugOutput("** JOINING BRANCH: %s OF PARALLEL %s STARTED FROM GATEWAY %s", branch_id, parallel_id, parallel_gateway_id);
+        debugOutput("\t JOINING BRANCH: %s OF PARALLEL %s STARTED FROM GATEWAY %s", branch_id, parallel_id, parallel_gateway_id);
         synchronized (BPMNExecProcessUtils.class) {
             parallels.get(parallel_id).remove(branch_id);
             if (parallels.get(parallel_id).isEmpty()) {
@@ -211,7 +210,7 @@ public class BPMNExecProcessUtils {
 //        stopThread();
 //    }
     public static void error(ProcessStatus s, String m, int c) {
-        debugOutput("** ERROR %s ON BRANCH %s", m, s.branchID);
+        debugOutput("\t ERROR %s ON BRANCH %s", m, s.branchID);
         globalSuccess &= false;
         logResult(s, false, m, c);
         //endCurrentBranch();
@@ -224,9 +223,9 @@ public class BPMNExecProcessUtils {
 
     public static void success(ProcessStatus s, String m, int c) {
         if (m != null) {
-            debugOutput("** SUCCESS %s ON BRANCH %s", m, s.branchID);
+            debugOutput("\t SUCCESS %s ON BRANCH %s", m, s.branchID);
         } else {
-            debugOutput("** SUCCESS ON BRANCH %s", s.branchID);
+            debugOutput("\t SUCCESS ON BRANCH %s", s.branchID);
         }
         globalSuccess &= true;
         logResult(s, true, m, c);
@@ -244,7 +243,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void logInput(String name, Object value) {
-        resultChannel.println(name + "=" + value);
+        resultChannel.println("\t " + name + "=" + value);
         outputs.setProperty(name, (value != null ? value.toString() : "<NULL>"));
     }
 

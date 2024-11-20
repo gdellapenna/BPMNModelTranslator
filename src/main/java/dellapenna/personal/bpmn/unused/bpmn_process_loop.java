@@ -14,31 +14,34 @@ class bpmn_process_loop {
     Object a;
 
 //Process Dynamics
-    public void GATEWAY_Decision(BPMNExecProcessUtils.ProcessStatus s) {//exclusive gateway
-        BPMNExecProcessUtils.debugOutput("EXCLUSIVE GATEWAY Decision");
-        if (BPMNExecTypeUtils.tonumber(a) >= BPMNExecTypeUtils.tonumber(10.0)) {
+    public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Start [StartEvent_1]
+        BPMNExecProcessUtils.debugOutput("Start Event Start [StartEvent_1]");
+        a = input_a;
+        BPMNExecProcessUtils.debugOutput("	 ASSIGNING a TO %s", input_a);
+//[outgoing edge] Activity_1k1rd56 - Some task
+        TASK_Some_task(s);
+    }
+
+    public void EVENT_Successful(BPMNExecProcessUtils.ProcessStatus s) {//End Event Successful [Event_053oyzy]
+        BPMNExecProcessUtils.debugOutput("End Event Successful [Event_053oyzy]");
+        BPMNExecProcessUtils.success(s);
+    }
+
+    public void GATEWAY_Decision(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Decision [Gateway_0x6sgvb]
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Decision [Gateway_0x6sgvb]");
+        if (BPMNExecTypeUtils.tonumber(a) >= BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Event_053oyzy - Successful
             EVENT_Successful(s);
-        } else if (BPMNExecTypeUtils.tonumber(a) < BPMNExecTypeUtils.tonumber(10.0)) {
+        } else if (BPMNExecTypeUtils.tonumber(a) < BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Activity_1k1rd56 - Some task
             TASK_Some_task(s);
         } else {
             BPMNExecProcessUtils.noDefaultCaseError(s);
         }
     }
 
-    public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//start event: Start
-        BPMNExecProcessUtils.debugOutput("START EVENT: Start");
-        a = input_a;
-        BPMNExecProcessUtils.debugOutput("ASSIGNING a TO %s", input_a);
-        TASK_Some_task(s);
-    }
-
-    public void EVENT_Successful(BPMNExecProcessUtils.ProcessStatus s) {//end event: Successful
-        BPMNExecProcessUtils.success(s);
-    }
-
-    public void TASK_Some_task(BPMNExecProcessUtils.ProcessStatus s) {//script task: Some task
-        BPMNExecProcessUtils.debugOutput("SCRIPT TASK Some task");
+    public void TASK_Some_task(BPMNExecProcessUtils.ProcessStatus s) {//Script Task Some task [Activity_1k1rd56]
+        BPMNExecProcessUtils.debugOutput("Script Task Some task [Activity_1k1rd56]");
         a = (BPMNExecTypeUtils.tonumber(a) + BPMNExecTypeUtils.tonumber(1.0));
+//[outgoing edge] Gateway_0x6sgvb - Decision
         GATEWAY_Decision(s);
     }
 
@@ -52,11 +55,7 @@ class bpmn_process_loop {
 
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();
-        BPMNExecProcessUtils.ProcessStatus s = new BPMNExecProcessUtils.ProcessStatus();
         bpmn_process_loop process = new bpmn_process_loop();
-        process.init();
-        BPMNExecProcessUtils.startProcess(s,process::EVENT_Start);
-        //process.EVENT_Start(s);
-        BPMNExecProcessUtils.endProcess(s);
+        BPMNExecProcessUtils.executeProcess(process::init, process::EVENT_Start);
     }
 }
