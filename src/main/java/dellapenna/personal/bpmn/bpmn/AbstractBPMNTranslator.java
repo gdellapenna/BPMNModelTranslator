@@ -50,6 +50,7 @@ public abstract class AbstractBPMNTranslator {
 
     Set<FlowNode> generated_flows = new HashSet<>();
     Deque<FlowNode> flows_to_translate = new ArrayDeque<>();
+    Set<ParallelGateway> parallel_joining = new HashSet<>();
 
     ///
     //protected abstract T generateProcessSource(String name, List flows_code);
@@ -112,25 +113,25 @@ public abstract class AbstractBPMNTranslator {
 
     private void decodeFlow(BPMNDecodedProcess p, FlowNode start, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
         //if (!generated_flows.contains(start)) {
-        FlowNode n = start;
-        while (n != null && !generated_flows.contains(n)) {
-            if (n.getOutgoing().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
+        FlowNode current = start;
+        while (current != null && !generated_flows.contains(current)) {
+            if (current.getOutgoing().size() > 1 && !(current instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
                 //se un nodo ha più n.getOutgoing(), posporre un inclusive virtuale
-                org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
-                SequenceFlow virtualSequence = n.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
-                virtualGateway.setName(n.getName() + " SPLIT GATEWAY");
-                virtualGateway.setId(n.getId() + "XVG");
-                n.getParentElement().addChildElement(virtualGateway);
-                n.getParentElement().addChildElement(virtualSequence);
-                virtualSequence.setSource(n);
-                for (SequenceFlow seq : n.getOutgoing()) {
+                org.camunda.bpm.model.bpmn.instance.InclusiveGateway virtualGateway = current.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.InclusiveGateway.class);
+                SequenceFlow virtualSequence = current.getModelInstance().newInstance(org.camunda.bpm.model.bpmn.instance.SequenceFlow.class);
+                virtualGateway.setName(current.getName() + " SPLIT GATEWAY");
+                virtualGateway.setId(current.getId() + "XVG");
+                current.getParentElement().addChildElement(virtualGateway);
+                current.getParentElement().addChildElement(virtualSequence);
+                virtualSequence.setSource(current);
+                for (SequenceFlow seq : current.getOutgoing()) {
                     seq.setSource(virtualGateway);
                 }
-                virtualGateway.getOutgoing().addAll(n.getOutgoing());
+                virtualGateway.getOutgoing().addAll(current.getOutgoing());
                 virtualGateway.getIncoming().add(virtualSequence);
                 virtualSequence.setTarget(virtualGateway);
-                n.getOutgoing().clear();
-                n.getOutgoing().add(virtualSequence);
+                current.getOutgoing().clear();
+                current.getOutgoing().add(virtualSequence);
             }
 //            if (n.getIncoming().size() > 1 && !(n instanceof org.camunda.bpm.model.bpmn.instance.Gateway)) {
 //                //se un nodo ha più ingoing, premettere un inclusive virtuale
@@ -152,15 +153,16 @@ public abstract class AbstractBPMNTranslator {
 //                n = virtualGateway;
 //            }
             Code code = new Code();
-            BPMNDecodedNode decoded_node = decodeNode(p, n, opt);
+            BPMNDecodedNode decoded_node = decodeNode(p, current, opt);
             code.append(decoded_node.code());
-            generated_flows.add(n);
-            p.registerNodeProcedure(n, code);
+            generated_flows.add(current);
+            p.registerNodeProcedure(current, code);
             //link to next step/node
-            n = decoded_node.nextStep();
-            if (n != null) {
-                code.append(generateFlowJointCode(p, n, opt));
+            FlowNode next = decoded_node.nextStep();
+            if (next != null) {
+                code.append(generateFlowJointCode(p, current, next, opt));
             }
+            current = next;
         }
 
         //}
@@ -187,19 +189,19 @@ public abstract class AbstractBPMNTranslator {
     }
 
     private BPMNDecodedNode decodeSplittingGatewayNode(BPMNDecodedProcess p, Gateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-
+        List<BPMNDecodedConditionalFlow> outgoing = decodeOutgoingGatewayFlows(p, n, opt);
         switch (n) {
             case org.camunda.bpm.model.bpmn.instance.ExclusiveGateway t -> {
-                return new BPMNDecodedNode(generateExclusiveGatewayCode(p, t, opt), null);
+                return new BPMNDecodedNode(generateExclusiveGatewayCode(p, t, outgoing, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.InclusiveGateway t -> {
-                return new BPMNDecodedNode(generateInclusiveGatewayCode(p, t, opt), null);
+                return new BPMNDecodedNode(generateInclusiveGatewayCode(p, t, outgoing, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.EventBasedGateway t -> {
-                return new BPMNDecodedNode(generateEventGatewayCode(p, t, opt), null);
+                return new BPMNDecodedNode(generateEventGatewayCode(p, t, outgoing, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.ParallelGateway t -> {
-                return new BPMNDecodedNode(generateParallelGatewayCode(p, t, opt), null);
+                return new BPMNDecodedNode(generateParallelGatewayCode(p, t, outgoing, opt), null);
             }
             default -> {
                 throw new BpmnTranslatorException("Cannot translate gateway node of type " + n.getClass().getName());
@@ -208,18 +210,21 @@ public abstract class AbstractBPMNTranslator {
     }
 
     private BPMNDecodedNode decodeJoiningGatewayNode(BPMNDecodedProcess p, Gateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+        FlowNode joiningStep = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();
+
         switch (n) {
             case org.camunda.bpm.model.bpmn.instance.ExclusiveGateway t -> {
-                return new BPMNDecodedNode(generateExclusiveJoiningGatewayCode(p, t, opt), null);
+                return new BPMNDecodedNode(generateExclusiveJoiningGatewayCode(p, t, joiningStep, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.InclusiveGateway t -> {
-                return new BPMNDecodedNode(generateInclusiveJoiningGatewayCode(p, t, opt), null);
+                return new BPMNDecodedNode(generateInclusiveJoiningGatewayCode(p, t, joiningStep, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.EventBasedGateway t -> {
-                return new BPMNDecodedNode(generateEventJoiningGatewayCode(p, t, opt), null);
+                return new BPMNDecodedNode(generateEventJoiningGatewayCode(p, t, joiningStep, opt), null);
             }
             case org.camunda.bpm.model.bpmn.instance.ParallelGateway t -> {
-                return new BPMNDecodedNode(generateParallelJoiningGatewayCode(p, t, opt), null);
+                parallel_joining.add(t);
+                return new BPMNDecodedNode(generateParallelJoiningGatewayCode(p, t, joiningStep, opt), null);
             }
             default -> {
                 throw new BpmnTranslatorException("Cannot translate gateway node of type " + n.getClass().getName());
@@ -322,7 +327,7 @@ public abstract class AbstractBPMNTranslator {
     //////////////////
     // Generate code for specific BPMN nodes
     //////////////////
-    protected abstract Code generateFlowJointCode(BPMNDecodedProcess p, FlowNode start, Options opt);
+    protected abstract Code generateFlowJointCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, Options opt);
 
     protected abstract Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, List<BPMNDecodedConditionalFlow> splitFlows, Options opt) throws FeelTranslatorException, BpmnTranslatorException;
 
@@ -361,42 +366,40 @@ public abstract class AbstractBPMNTranslator {
     protected abstract Code generateStartEventCode(BPMNDecodedProcess p, StartEvent t, Options opt) throws BpmnTranslatorException;
 
     ////
-    public Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        return generateParallelGatewayCode(p, n, decodeOutgoingGatewayFlows(p, n, opt), opt);
-    }
-
-    public Code generateEventGatewayCode(BPMNDecodedProcess p, EventBasedGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        return generateEventGatewayCode(p, n, decodeOutgoingGatewayFlows(p, n, opt), opt);
-    }
-
-    public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        return generateInclusiveGatewayCode(p, n, decodeOutgoingGatewayFlows(p, n, opt), opt);
-    }
-
-    public Code generateExclusiveGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        return generateExclusiveGatewayCode(p, n, decodeOutgoingGatewayFlows(p, n, opt), opt);
-    }
-
-    public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
-        //enumerare gli step entranti
-        n.getIncoming().stream().map(m -> p.getFlowName(m.getSource()) + "_trigger").toList();
-        return generateParallelJoiningGatewayCode(p, n, outgoingFlow, opt);
-    }
-
-    public Code generateEventJoiningGatewayCode(BPMNDecodedProcess p, EventBasedGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
-        return generateEventJoiningGatewayCode(p, n, outgoingFlow, opt);
-    }
-
-    public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
-        return generateInclusiveJoiningGatewayCode(p, n, outgoingFlow, opt);
-
-    }
-
-    public Code generateExclusiveJoiningGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
-        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
-        return generateExclusiveJoiningGatewayCode(p, n, outgoingFlow, opt);
-    }
+//    public Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        return generateParallelGatewayCode(p, n, decodeOutgoingGatewayFlows(p, n, opt), opt);
+//    }
+//
+//    public Code generateEventGatewayCode(BPMNDecodedProcess p, EventBasedGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        return generateEventGatewayCode(p, n, decodeOutgoingGatewayFlows(p, n, opt), opt);
+//    }
+//
+//    public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        return generateInclusiveGatewayCode(p, n,  decodeOutgoingGatewayFlows(p, n, opt), opt);
+//    }
+//
+//    public Code generateExclusiveGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        return generateExclusiveGatewayCode(p, n, decodeOutgoingGatewayFlows(p, n, opt), opt);
+//    }
+//    public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
+//        //enumerare gli step entranti
+//        return generateParallelJoiningGatewayCode(p, n, outgoingFlow, opt);
+//    }
+//
+//    public Code generateEventJoiningGatewayCode(BPMNDecodedProcess p, EventBasedGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
+//        return generateEventJoiningGatewayCode(p, n, outgoingFlow, opt);
+//    }
+//
+//    public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
+//        return generateInclusiveJoiningGatewayCode(p, n, outgoingFlow, opt);
+//
+//    }
+//
+//    public Code generateExclusiveJoiningGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, Options opt) throws FeelTranslatorException, BpmnTranslatorException {
+//        FlowNode outgoingFlow = decodeOutgoingGatewayFlows(p, n, opt).get(0).firstStep();//HYP: ce n'è solo uno
+//        return generateExclusiveJoiningGatewayCode(p, n, outgoingFlow, opt);
+//    }
 }
