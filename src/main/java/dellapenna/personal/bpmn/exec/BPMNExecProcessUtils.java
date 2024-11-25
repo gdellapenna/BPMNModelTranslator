@@ -269,7 +269,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void logTransition(String source, String target) {
-        traceChannel.println("\""+source + "\" -> \"" + target+"\"");
+        //traceChannel.println("\""+source + "\" -> \"" + target+"\"");
     }
 
     public static void logResult(ProcessStatus s, boolean success, String message, int code) {

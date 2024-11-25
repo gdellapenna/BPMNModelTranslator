@@ -19,7 +19,8 @@ class bpmn_process_loop {
         a = input_a;
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING a TO %s", input_a);
 //[outgoing edge] Activity_1k1rd56 - Some task
-        TASK_Some_task(s);
+        BPMNExecProcessUtils.logTransition("StartEvent_1", "Activity_1k1rd56");
+        TASK_Some_task(s.withCurrent("StartEvent_1"));
     }
 
     public void EVENT_Successful(BPMNExecProcessUtils.ProcessStatus s) {//End Event Successful [Event_053oyzy]
@@ -30,9 +31,11 @@ class bpmn_process_loop {
     public void GATEWAY_Decision(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Decision [Gateway_0x6sgvb]
         BPMNExecProcessUtils.debugOutput("Exclusive Gateway Decision [Gateway_0x6sgvb]");
         if (BPMNExecTypeUtils.tonumber(a) >= BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Event_053oyzy - Successful
-            EVENT_Successful(s);
+            BPMNExecProcessUtils.logTransition("Gateway_0x6sgvb", "Event_053oyzy");
+            EVENT_Successful(s.withCurrent("Gateway_0x6sgvb"));
         } else if (BPMNExecTypeUtils.tonumber(a) < BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Activity_1k1rd56 - Some task
-            TASK_Some_task(s);
+            BPMNExecProcessUtils.logTransition("Gateway_0x6sgvb", "Activity_1k1rd56");
+            TASK_Some_task(s.withCurrent("Gateway_0x6sgvb"));
         } else {
             BPMNExecProcessUtils.noDefaultCaseError(s);
         }
@@ -42,15 +45,18 @@ class bpmn_process_loop {
         BPMNExecProcessUtils.debugOutput("Script Task Some task [Activity_1k1rd56]");
         a = (BPMNExecTypeUtils.tonumber(a) + BPMNExecTypeUtils.tonumber(1.0));
 //[outgoing edge] Gateway_0x6sgvb - Decision
-        GATEWAY_Decision(s);
+        BPMNExecProcessUtils.logTransition("Activity_1k1rd56", "Gateway_0x6sgvb");
+        GATEWAY_Decision(s.withCurrent("Activity_1k1rd56"));
     }
 
     public void init() {
-        this.input_a = 0;	//TODO assign input variable
+        this.input_a = 8;	//TODO assign input variable
         if (this.input_a == null) {
             input_a = BPMNExecProcessUtils.inputs.getProperty("input_a", null);
         }
         BPMNExecProcessUtils.logInput("input_a", this.input_a);
+//parallel join initializers
+
     }
 
     public static void main(String[] args) {
