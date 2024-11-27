@@ -49,7 +49,6 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
     @Override
     public T translateExp(Exp input, Exp e) throws FeelTranslatorException {
         T result;
-
         switch (e) {
             case null -> {
                 result = null;
@@ -168,6 +167,7 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
 
     @Override
     public T translate(String input, String expression) throws FeelTranslatorException {
+        initTranslation();
         ParseResult input_parsing = input != null ? api.parseExpression(input) : null;
         if (input_parsing == null || input_parsing.isSuccess()) {
             ParseResult expression_parsing = api.parseExpression(expression);

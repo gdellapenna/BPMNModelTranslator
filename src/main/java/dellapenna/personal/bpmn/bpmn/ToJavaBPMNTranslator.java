@@ -124,6 +124,9 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator {
 
     //generates the source code for a complete BPMN process
     protected String generateProcessSource(BPMNDecodedProcess process, Options opt) {
+        //input variables should be deduced by differencing declared globals from
+        //variables referenced by feel expressions
+        
         String global_variables = process.getVariables().values().stream()
                 .map(gd -> "Object " + gd.name())
                 .collect(Collectors.joining(";\n", "\n\n//Process Variables\n", ";\n\n"));

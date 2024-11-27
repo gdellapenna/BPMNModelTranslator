@@ -9,12 +9,14 @@ import org.camunda.feel.syntaxtree.Exp;
  */
 public interface FeelTranslator<T> {
 
+    void initTranslation();
+
     T translate(String expression) throws FeelTranslatorException;
 
     T translateChecked(String expression);
 
     T translate(String input, String expression) throws FeelTranslatorException;
-    
+
     T translateChecked(String input, String expression);
 
     T translateExp(Exp e) throws FeelTranslatorException;

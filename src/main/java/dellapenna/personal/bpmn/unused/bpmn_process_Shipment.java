@@ -115,7 +115,7 @@ class dmn_dtable_ChooseConsentDT {
 /*
  * ****************************** BPMN Generated Code *************************
  */
-class bpmn_process_shipment {
+class bpmn_process_Shipment {
 
 //Input Variables
     Object input_PackageWeight;
@@ -290,7 +290,7 @@ class bpmn_process_shipment {
 
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();
-        bpmn_process_shipment process = new bpmn_process_shipment();
+        bpmn_process_Shipment process = new bpmn_process_Shipment();
         BPMNExecProcessUtils.executeProcess(process::init, process::EVENT_package_received);
     }
 }

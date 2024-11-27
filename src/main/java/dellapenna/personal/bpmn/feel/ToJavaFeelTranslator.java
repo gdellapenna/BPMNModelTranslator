@@ -1,6 +1,7 @@
 package dellapenna.personal.bpmn.feel;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,12 @@ import java.util.stream.Collectors;
  * @author giuse
  */
 public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
+
+    private final List<List<String>> usedVariableNames = new ArrayList<>();
+
+    public List<List<String>> getUsedVariableNames() {
+        return usedVariableNames;
+    }
 
     private String castToNumber(String a) {
         return "BPMNExecTypeUtils.tonumber(" + a + ")";
@@ -20,6 +27,11 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     private String castToBoolean(String a) {
         return "BPMNExecTypeUtils.toboolean(" + a + ")";
+    }
+
+    @Override
+    public void initTranslation() {
+        usedVariableNames.clear();
     }
 
     @Override
@@ -148,6 +160,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateVariableReference(List<String> names) {
+        usedVariableNames.add(names);
         return names.stream().collect(Collectors.joining("."));
     }
 
