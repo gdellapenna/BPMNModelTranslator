@@ -1,10 +1,10 @@
 package dellapenna.personal.bpmn;
 
-import dellapenna.personal.bpmn.bpmn.AbstractBPMNTranslator;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
-import dellapenna.personal.bpmn.bpmn.Options;
+import dellapenna.personal.bpmn.bpmn.BPMNTranslator.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
+import dellapenna.personal.bpmn.dmn.DMNTranslator.DMNTranslationInfo;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.FeelTranslator;
@@ -33,7 +33,7 @@ public class BPMNModelTest {
     public static void testFeel(String expression) throws FeelTranslatorException {
         FeelTranslator t = new ToJavaFeelTranslator();
 
-        System.out.println(t.translate(expression));
+        System.out.println(t.translate(expression, null));
 
         //////
         FeelEngine engine = new FeelEngine.Builder()
@@ -58,16 +58,16 @@ public class BPMNModelTest {
     }
 
     ////////////////////////////////////////
-    
-    public static final String PRE_CODE= "import dellapenna.personal.bpmn.exec.*;";
-    public static final String POST_CODE= "";
-    
+    public static final String PRE_CODE = "import dellapenna.personal.bpmn.exec.*;";
+    public static final String POST_CODE = "";
 
     public static void compile(Path[] dmn_files, Path bpmn_file)
             throws IOException, FeelTranslatorException, BpmnTranslatorException {
-        Options opt = new Options();
-        opt.setDebug(true);
-        opt.setTrueParallel(true);
+        BPMNTranslationInfo b_info = new BPMNTranslationInfo();
+        b_info.setDebug(true);
+        b_info.setTrueParallel(true);
+
+        DMNTranslationInfo d_info = new DMNTranslationInfo();
 
         Path output_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
 
@@ -78,17 +78,17 @@ public class BPMNModelTest {
             out.newLine();
 
             DMNTranslator<String> dt = new ToJavaDMNTranslator();
-            AbstractBPMNTranslator bt = new ToJavaBPMNTranslator();
+            ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
 
             for (Path dmn_file : dmn_files) {
                 DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_file.toFile());
-                out.write(dt.translate(dmnInstance));
+                out.write(dt.translate(dmnInstance, d_info));
             }
             out.newLine();
             out.newLine();
 
             BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
-            out.write(bt.generateBpmnSource(bt.decodeBpmn(bpmnInstance, opt), opt));
+            out.write(bt.translate(bpmnInstance, b_info));
 
             out.newLine();
             out.write(POST_CODE);
@@ -103,7 +103,7 @@ public class BPMNModelTest {
         compile(new Path[0], Path.of("diagram_loop.bpmn"));
 
         compile(new Path[0], Path.of("diagram_parallel.bpmn"));
-        
+
         compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();

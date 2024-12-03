@@ -291,5 +291,21 @@ class bpmn_process_Shipment {
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_Shipment process = new bpmn_process_Shipment();
         BPMNExecProcessUtils.executeProcess(process::init, process::EVENT_package_received);
+//READ VAR: input_PackageType
+//READ VAR: pType
+//READ VAR: getLengthResult.Length
+//READ VAR: pLength
+//READ VAR: input_PackageWeight
+//READ VAR: pWeight
+//READ VAR: pLength
+//READ VAR: pWeight
+//READ VAR: determineModeResult.Mode
+//READ VAR: sMode
+//READ VAR: sMode
+//READ VAR: pWeight
+//READ VAR: chooseConsentResult.Consent
+//READ VAR: consent
+//READ VAR: consent
+//READ VAR: consent
     }
 }

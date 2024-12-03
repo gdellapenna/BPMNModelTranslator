@@ -1,5 +1,7 @@
 package dellapenna.personal.bpmn.dmn;
 
+import dellapenna.personal.bpmn.feel.FeelTranslator;
+import dellapenna.personal.bpmn.feel.FeelTranslator.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.List;
@@ -17,12 +19,15 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
     }
 
     @Override
-    public String translateExpression(String input, String exp) throws FeelTranslatorException {
-        return feel.translate(input, exp);
+    public String translateExpression(String input, String exp, DMNTranslationInfo info) throws FeelTranslatorException {
+        FeelTranslationInfo f_info = new FeelTranslator.FeelTranslationInfo();
+        String translation = feel.translate(input, exp, f_info);
+        info.getReadVariables().addAll(f_info.getUsedVariableNames());
+        return translation;
     }
 
     @Override
-    public String translateRules(List<DMNDecisionRule<String>> decoded_rules, String output_record_name) {
+    public String generateRulesSource(List<DMNDecisionRule<String>> decoded_rules, String output_record_name, DMNTranslationInfo info) {
         return decoded_rules.stream().map(r -> {
             String cond = r.conditions().stream().map(c -> (c.testExpression())).filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(" && "));
             String rs = "";
@@ -39,7 +44,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
     }
 
     @Override
-    protected String translateDecisionTable(String id, List<Input> inputs, List<Output> outputs, List<DMNDecisionRule<String>> decoded_rules) {
+    protected String generateDecisionTableSource(String id, List<Input> inputs, List<Output> outputs, List<DMNDecisionRule<String>> decoded_rules, DMNTranslationInfo info) {
         String procName = sanitizeName("dmn_dtable_" + id);
         String output_record_name = procName + "_result";
 
@@ -56,10 +61,10 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + outputs.stream()
                         .map(o -> "this." + o.getName() + "=" + o.getName())
                         .collect(Collectors.joining(";\n", "", ";\n"))
-                + "}\n"                
+                + "}\n"
                 + "public String toString() { String result=\"{\"; "
                 + outputs.stream()
-                        .map(o -> "result+=\""+o.getName() + "=\"+this." + o.getName()+ " ")
+                        .map(o -> "result+=\"" + o.getName() + "=\"+this." + o.getName() + " ")
                         .collect(Collectors.joining(";\n", "", ";\n"))
                 + "return result+\"}\";"
                 + "}\n"
@@ -81,14 +86,14 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                         .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent())
                         + " = BPMNExecTypeUtils.to" + i.getInputExpression().getTypeRef() + "(_" + sanitizeName(i.getInputExpression().getTextContent()) + ")")
                         .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
-                + translateRules(decoded_rules, output_record_name)
+                + generateRulesSource(decoded_rules, output_record_name, info)
                 + "\n}"
                 + "\n}";
 
     }
 
     @Override
-    protected String translateDecisionModel(Map<String, String> decoded_tables) {
+    protected String generateDecisionModelSource(Map<String, String> decoded_tables, DMNTranslationInfo info) {
         return """
                /*
                 * ****************************** DMN Generated Code *************************

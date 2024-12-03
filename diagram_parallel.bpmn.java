@@ -130,7 +130,8 @@ GATEWAY_Parallel1Join(s.withCurrent("Activity_09oefmk"));
 
 public void init() {
 //parallel join initializers
-BPMNExecProcessUtils.initJoin("Gateway_02100g2","Activity_0pfa4n5","Activity_09oefmk","Gateway_1iv1tvb");BPMNExecProcessUtils.initJoin("Gateway_1iv1tvb","Activity_0svmpy2","Activity_1otvmx2");
+BPMNExecProcessUtils.initJoin("Gateway_1iv1tvb","Activity_0svmpy2","Activity_1otvmx2");BPMNExecProcessUtils.initJoin("Gateway_02100g2","Activity_0pfa4n5","Activity_09oefmk","Gateway_1iv1tvb");
 }public static void main(String[] args) {
 BPMNExecProcessUtils.enableTrueParallel();bpmn_process_diagram_2 process = new bpmn_process_diagram_2();
-BPMNExecProcessUtils.executeProcess(process::init,process::EVENT_Start);}}
+BPMNExecProcessUtils.executeProcess(process::init,process::EVENT_Start);
+}}

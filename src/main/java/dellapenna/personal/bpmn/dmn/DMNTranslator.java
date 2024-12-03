@@ -5,6 +5,8 @@
 package dellapenna.personal.bpmn.dmn;
 
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
+import java.util.ArrayList;
+import java.util.List;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.camunda.bpm.model.dmn.instance.DecisionTable;
 
@@ -15,8 +17,31 @@ import org.camunda.bpm.model.dmn.instance.DecisionTable;
  */
 public interface DMNTranslator<T> {
 
-    T translate(DmnModelInstance dmn) throws FeelTranslatorException;
+    public static class DMNTranslationInfo {
 
-    T translate(DecisionTable t) throws FeelTranslatorException;
+        private final List<List<String>> readVariables = new ArrayList<>();
+        private final List<List<String>> writtenVariables = new ArrayList<>();
+
+        public DMNTranslationInfo() {
+
+        }
+
+        public DMNTranslationInfo(DMNTranslationInfo other) {
+            this.readVariables.addAll(other.readVariables);
+            this.writtenVariables.addAll(other.writtenVariables);
+        }
+
+        public List<List<String>> getReadVariables() {
+            return readVariables;
+        }
+
+        public List<List<String>> getWrittenVariables() {
+            return writtenVariables;
+        }
+    };
+
+    T translate(DmnModelInstance dmn, DMNTranslationInfo info) throws FeelTranslatorException;
+
+    T translate(DecisionTable t, DMNTranslationInfo info) throws FeelTranslatorException;
 
 }

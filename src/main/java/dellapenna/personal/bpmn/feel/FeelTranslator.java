@@ -1,6 +1,8 @@
 package dellapenna.personal.bpmn.feel;
 
-import org.camunda.feel.syntaxtree.Exp;
+//import org.camunda.feel.syntaxtree.Exp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -9,18 +11,24 @@ import org.camunda.feel.syntaxtree.Exp;
  */
 public interface FeelTranslator<T> {
 
-    void initTranslation();
+    public static class FeelTranslationInfo {
 
-    T translate(String expression) throws FeelTranslatorException;
+        private final List<List<String>> usedVariableNames = new ArrayList<>();
 
-    T translateChecked(String expression);
+        public List<List<String>> getUsedVariableNames() {
+            return usedVariableNames;
+        }
+    };
 
-    T translate(String input, String expression) throws FeelTranslatorException;
+    T translate(String expression, FeelTranslationInfo info) throws FeelTranslatorException;
 
-    T translateChecked(String input, String expression);
+    T translateChecked(String expression, FeelTranslationInfo info);
 
-    T translateExp(Exp e) throws FeelTranslatorException;
+    T translate(String input, String expression, FeelTranslationInfo info) throws FeelTranslatorException;
 
-    T translateExp(Exp input, Exp e) throws FeelTranslatorException;
+    T translateChecked(String input, String expression, FeelTranslationInfo info);
 
+//    T translateExp(Exp e) throws FeelTranslatorException;
+//
+//    T translateExp(Exp input, Exp e) throws FeelTranslatorException;
 }

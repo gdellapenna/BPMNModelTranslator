@@ -22,7 +22,7 @@ import org.camunda.bpm.model.dmn.instance.Rule;
 public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
 
     @Override
-    public T translate(DecisionTable t) throws FeelTranslatorException {
+    public T translate(DecisionTable t, DMNTranslationInfo info) throws FeelTranslatorException {
 //        System.out.println("[" + t.getElementType().getTypeName() + "] " + t.getAttributeValue("name"));
 //        System.out.println("* Inputs:");
         List<Input> inputs = new ArrayList(t.getInputs());
@@ -38,20 +38,26 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
 //        //
         List<DMNDecisionRule<T>> decoded_rules = new ArrayList<>();
         Collection<Rule> rules = t.getRules();
+        DMNTranslationInfo lhsinfo = new DMNTranslationInfo(info);
+        DMNTranslationInfo rhsinfo = new DMNTranslationInfo(info);
+        lhsinfo.getReadVariables().clear(); //ignored
+        rhsinfo.getReadVariables().clear();
+
         for (Rule r : rules) {
             String rule_comment = r.getDescription() != null ? r.getDescription().getTextContent() : "";
             int ref_counter = 0;
             List<DMNCondition<T>> rule_conditions = new ArrayList<>();
             Collection<InputEntry> inputEntries = r.getInputEntries();
+
             for (InputEntry i : inputEntries) {
                 if (!i.getTextContent().isBlank()) { //blank significa "don't care"
                     rule_conditions.add(new DMNCondition<>(
-                            translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent()),
-                            translateExpression(inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent())
+                            translateExpression(null, inputs.get(ref_counter).getInputExpression().getTextContent(), lhsinfo),
+                            translateExpression(inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent(), lhsinfo)
                     ));
                 } else {
                     rule_conditions.add(new DMNCondition<>(
-                            translateExpression(null, inputs.get(ref_counter++).getInputExpression().getTextContent()),
+                            translateExpression(null, inputs.get(ref_counter++).getInputExpression().getTextContent(), lhsinfo),
                             null));
                 }
             }
@@ -61,35 +67,36 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
             for (OutputEntry o : outputEntries) {
                 rule_assignments.add(new DMNAssignment<>(
                         outputs.get(ref_counter++).getAttributeValue("name"),
-                        translateExpression(null, o.getTextContent())
+                        translateExpression(null, o.getTextContent(), rhsinfo)
                 ));
             }
             decoded_rules.add(new DMNDecisionRule<>(rule_conditions, rule_assignments, rule_comment));
         }
-        return translateDecisionTable(t.getParentElement().getAttributeValue("id"), inputs, outputs, decoded_rules);
+
+        info.getReadVariables().addAll(rhsinfo.getReadVariables());
+        return generateDecisionTableSource(t.getParentElement().getAttributeValue("id"), inputs, outputs, decoded_rules, info);
     }
 
     @Override
-    public T translate(DmnModelInstance dmn) throws FeelTranslatorException {
+    public T translate(DmnModelInstance dmn, DMNTranslationInfo info) throws FeelTranslatorException {
         Map<String, T> decoded_tables = new HashMap<>();
         Collection<DecisionTable> tables = dmn.getModelElementsByType(DecisionTable.class);
         for (DecisionTable t : tables) {
-            decoded_tables.put(t.getParentElement().getAttributeValue("id"), translate(t));
+            decoded_tables.put(t.getParentElement().getAttributeValue("id"), translate(t, info));
         }
-        return translateDecisionModel(decoded_tables);
+        return generateDecisionModelSource(decoded_tables, info);
     }
 
     protected abstract T mapType(String typeRef);
-    
+
     //protected abstract T getTrueExpression();
+    protected abstract T translateExpression(String input, String exp, DMNTranslationInfo info) throws FeelTranslatorException;
 
-    protected abstract T translateExpression(String input, String exp) throws FeelTranslatorException;
+    protected abstract T generateRulesSource(List<DMNDecisionRule<T>> decoded_rules, String output_record_name, DMNTranslationInfo info);
 
-    protected abstract T translateRules(List<DMNDecisionRule<T>> decoded_rules, String output_record_name);
+    protected abstract T generateDecisionTableSource(String id, List<Input> inputs, List<Output> outputs, List<DMNDecisionRule<T>> decoded_rules, DMNTranslationInfo info);
 
-    protected abstract T translateDecisionTable(String id, List<Input> inputs, List<Output> outputs, List<DMNDecisionRule<T>> decoded_rules);
-
-    protected abstract T translateDecisionModel(Map<String, T> decoded_tables);
+    protected abstract T generateDecisionModelSource(Map<String, T> decoded_tables, DMNTranslationInfo info);
 
     //////////////
     public void dump(DecisionTable t) {

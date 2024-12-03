@@ -1,23 +1,10 @@
 package dellapenna.personal.bpmn.bpmn;
 
+import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
+import java.util.ArrayList;
 import java.util.List;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
-import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask;
-import org.camunda.bpm.model.bpmn.instance.EndEvent;
-import org.camunda.bpm.model.bpmn.instance.InclusiveGateway;
-import org.camunda.bpm.model.bpmn.instance.ManualTask;
-import org.camunda.bpm.model.bpmn.instance.ParallelGateway;
-import org.camunda.bpm.model.bpmn.instance.EventBasedGateway;
-import org.camunda.bpm.model.bpmn.instance.ExclusiveGateway;
-import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
-import org.camunda.bpm.model.bpmn.instance.ScriptTask;
-import org.camunda.bpm.model.bpmn.instance.SendTask;
-import org.camunda.bpm.model.bpmn.instance.ServiceTask;
-import org.camunda.bpm.model.bpmn.instance.StartEvent;
-import org.camunda.bpm.model.bpmn.instance.Task;
-import org.camunda.bpm.model.bpmn.instance.UserTask;
-import org.camunda.bpm.model.bpmn.instance.Process;
 
 /**
  *
@@ -26,46 +13,74 @@ import org.camunda.bpm.model.bpmn.instance.Process;
  */
 public interface BPMNTranslator<T> {
 
-    public T generateBpmnSource(BPMNDecoded bpmn);
+    public static class BPMNTranslationInfo {
 
-    public BPMNDecoded decodeBpmn(BpmnModelInstance dmn) throws FeelTranslatorException, BpmnTranslatorException;
+        private boolean debug;
+        private boolean trueParallel;
+        private String inputsFile;
+        private String outputsFile;
 
-    public BPMNDecodedProcess decodeProcessNode(Process p) throws FeelTranslatorException, BpmnTranslatorException;
+        private final List<List<String>> readVariables = new ArrayList<>();
+        private final List<List<String>> writtenVariables = new ArrayList<>();
 
-    public Code generateManualTaskCode(ManualTask t) throws BpmnTranslatorException;
+        public BPMNTranslationInfo() {
+            debug = false;
+            trueParallel = false;
+            inputsFile = "inputs.properties";
+            outputsFile = "outputs.properties";
+        }
 
-    public Code generateScriptTaskCode(ScriptTask t) throws BpmnTranslatorException;
+        public BPMNTranslationInfo(BPMNTranslator.BPMNTranslationInfo other) {
+            this.readVariables.addAll(other.readVariables);
+            this.writtenVariables.addAll(other.writtenVariables);
+            this.debug = other.debug;
+            this.trueParallel = other.trueParallel;
+            this.inputsFile = other.inputsFile;
+            this.outputsFile = other.outputsFile;
+        }
 
-    public Code generateUserTaskCode(UserTask t) throws BpmnTranslatorException;
+        public List<List<String>> getReadVariables() {
+            return readVariables;
+        }
 
-    public Code generateServiceTaskCode(ServiceTask t) throws BpmnTranslatorException;
+        public List<List<String>> getWrittenVariables() {
+            return writtenVariables;
+        }
 
-    public Code generateSendTaskCode(SendTask t) throws BpmnTranslatorException;
+        public boolean isDebug() {
+            return debug;
+        }
 
-    public Code generateReceiveTaskCode(ReceiveTask t) throws BpmnTranslatorException;
+        public void setDebug(boolean debug) {
+            this.debug = debug;
+        }
 
-    public Code generateBusinessRuleTaskCode(BusinessRuleTask t) throws BpmnTranslatorException;
+        public String getInputsFile() {
+            return inputsFile;
+        }
 
-    public Code generateGenericTaskCode(Task t) throws BpmnTranslatorException;
+        public void setInputsFile(String inputsFile) {
+            this.inputsFile = inputsFile;
+        }
 
-    public Code generateEndEventCode(EndEvent t) throws BpmnTranslatorException;
+        public String getOutputsFile() {
+            return outputsFile;
+        }
 
-    public Code generateStartEventCode(StartEvent t) throws BpmnTranslatorException;
+        public void setOutputsFile(String outputsFile) {
+            this.outputsFile = outputsFile;
+        }
 
-    public Code generateParallelGatewayCode(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+        public boolean isTrueParallel() {
+            return trueParallel;
+        }
 
-    public Code generateEventGatewayCode(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+        public void setTrueParallel(boolean trueParallel) {
+            this.trueParallel = trueParallel;
+        }
 
-    public Code generateInclusiveGatewayCode(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    }
 
-    public Code generateExclusiveGatewayCode(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
-
-    public Code generateParallelJoiningGatewayCode(ParallelGateway n) throws FeelTranslatorException, BpmnTranslatorException;
-
-    public Code generateEventJoiningGatewayCode(EventBasedGateway n) throws FeelTranslatorException, BpmnTranslatorException;
-
-    public Code generateInclusiveJoiningGatewayCode(InclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
-
-    public Code generateExclusiveJoiningGatewayCode(ExclusiveGateway n) throws FeelTranslatorException, BpmnTranslatorException;
+    T translate(BpmnModelInstance bpmn, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
 
 }

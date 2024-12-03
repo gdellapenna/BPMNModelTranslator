@@ -8,24 +8,24 @@ import java.util.List;
  *
  * @author giuse
  */
-public class Code {
+public class Code<T> {
 
     public enum ProcType {
         GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
     };
 
-    private final List<String> statements = new ArrayList<>();
+    private final List<T> statements = new ArrayList<>();
 
     public Code() {
         this.statements.clear();
     }
 
-    public Code(List<String> statements) {
+    public Code(List<T> statements) {
         this();
         this.statements.addAll(statements);
     }
 
-    public Code(String... statements) {
+    public Code(T... statements) {
         this();
         Collections.addAll(this.statements, statements);
     }
@@ -35,11 +35,11 @@ public class Code {
         this.statements.addAll(other.statements);
     }
 
-    public List<String> getStatements() {
+    public List<T> getStatements() {
         return this.statements;
     }
 
-    public void append(List<String> statements) {
+    public void append(List<T> statements) {
         this.statements.addAll(statements);
     }
 
@@ -47,11 +47,11 @@ public class Code {
         this.statements.addAll(code.statements);
     }
 
-    public void append(String... statements) {
+    public void append(T... statements) {
         Collections.addAll(this.statements, statements);
     }
 
-    public void prepend(String statement) {
+    public void prepend(T statement) {
         this.statements.add(0, statement);
     }
 
