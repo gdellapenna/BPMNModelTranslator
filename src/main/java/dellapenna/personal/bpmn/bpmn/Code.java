@@ -10,9 +10,7 @@ import java.util.List;
  */
 public class Code<T> {
 
-    public enum ProcType {
-        GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
-    };
+   
 
     private final List<T> statements = new ArrayList<>();
 

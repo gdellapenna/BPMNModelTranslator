@@ -35,17 +35,6 @@ BPMNExecProcessUtils.debugOutput("End Event Ok1 [Event_0aq6tzc]");
 BPMNExecProcessUtils.success(s);
 }
 
-public void GATEWAY_UnclosedParallel(BPMNExecProcessUtils.ProcessStatus s) {//Parallel Gateway UnclosedParallel [Gateway_02uz50m]
-BPMNExecProcessUtils.debugOutput("Parallel Gateway UnclosedParallel [Gateway_02uz50m]");
-//[outgoing edge] Activity_0qvix8b - Task1
-BPMNExecProcessUtils.logTransition("Gateway_02uz50m","Activity_0qvix8b");
-//[outgoing edge] Activity_1uu1n8a - Task2
-BPMNExecProcessUtils.logTransition("Gateway_02uz50m","Activity_1uu1n8a");
-//FORKS: Activity_0qvix8b,Activity_1uu1n8a
-BPMNExecProcessUtils.fork(s,"UnclosedParallel",this::TASK_Task1,this::TASK_Task2);
-BPMNExecProcessUtils.stopThread();
-}
-
 public void TASK_Task1(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Task1 [Activity_0qvix8b]
 BPMNExecProcessUtils.debugOutput("Generic Task Task1 [Activity_0qvix8b]");
 //[outgoing edge] Event_0aq6tzc - Ok1
@@ -58,6 +47,17 @@ BPMNExecProcessUtils.debugOutput("Generic Task Task2 [Activity_1uu1n8a]");
 //[outgoing edge] Event_0ftzlyc - Ok2
 BPMNExecProcessUtils.logTransition("Activity_1uu1n8a","Event_0ftzlyc");
 EVENT_Ok2(s.withCurrent("Activity_1uu1n8a"));
+}
+
+public void GATEWAY_UnclosedParallel(BPMNExecProcessUtils.ProcessStatus s) {//Parallel Gateway UnclosedParallel [Gateway_02uz50m]
+BPMNExecProcessUtils.debugOutput("Parallel Gateway UnclosedParallel [Gateway_02uz50m]");
+//[outgoing edge] Activity_0qvix8b - Task1
+BPMNExecProcessUtils.logTransition("Gateway_02uz50m","Activity_0qvix8b");
+//[outgoing edge] Activity_1uu1n8a - Task2
+BPMNExecProcessUtils.logTransition("Gateway_02uz50m","Activity_1uu1n8a");
+//FORKS: Activity_0qvix8b,Activity_1uu1n8a
+BPMNExecProcessUtils.fork(s,"UnclosedParallel",this::TASK_Task1,this::TASK_Task2);
+BPMNExecProcessUtils.stopThread();
 }
 
 public void init() {

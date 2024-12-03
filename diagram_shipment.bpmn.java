@@ -117,8 +117,8 @@ class dmn_dtable_ChooseConsentDT {
 class bpmn_process_Shipment {
 
 //Input Variables
-    Object input_PackageWeight;
     Object input_PackageType;
+    Object input_PackageWeight;
 
 //Process Variables
     Object pType;
@@ -155,62 +155,6 @@ class bpmn_process_Shipment {
     public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event no shipment [Event_19ylwnc]
         BPMNExecProcessUtils.debugOutput("End Event no shipment [Event_19ylwnc]");
         BPMNExecProcessUtils.error(s, "No Shipment", 3);
-    }
-
-    public void GATEWAY_Gateway_1tgxmu2(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_1tgxmu2
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_1tgxmu2");
-        if (BPMNExecTypeUtils.tonumber(pWeight) > BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Event_0wjo1ye - unsuppoted weight
-            BPMNExecProcessUtils.logTransition("Gateway_1tgxmu2", "Event_0wjo1ye");
-            EVENT_unsuppoted_weight(s.withCurrent("Gateway_1tgxmu2"));
-        } else {//[outgoing edge] Activity_1ol43bw - determine mode
-            BPMNExecProcessUtils.logTransition("Gateway_1tgxmu2", "Activity_1ol43bw");
-            TASK_determine_mode(s.withCurrent("Gateway_1tgxmu2"));
-        }
-    }
-
-    public void GATEWAY_Gateway_1ocbjca(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_1ocbjca
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_1ocbjca");
-        if (sMode.equals("undef")) {//[outgoing edge] Event_19ylwnc - no shipment
-            BPMNExecProcessUtils.logTransition("Gateway_1ocbjca", "Event_19ylwnc");
-            EVENT_no_shipment(s.withCurrent("Gateway_1ocbjca"));
-        } else {//[outgoing edge] Activity_1cbdv9z - choose consent
-            BPMNExecProcessUtils.logTransition("Gateway_1ocbjca", "Activity_1cbdv9z");
-            TASK_choose_consent(s.withCurrent("Gateway_1ocbjca"));
-        }
-    }
-
-    public void GATEWAY_Gateway_07f90ke(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Joining Gateway Gateway_07f90ke
-        BPMNExecProcessUtils.debugOutput("Exclusive Joining Gateway Gateway_07f90ke");
-//[outgoing edge] Event_1pjc4df - ready for shipment
-        BPMNExecProcessUtils.logTransition("Gateway_07f90ke", "Event_1pjc4df");
-        EVENT_ready_for_shipment(s.withCurrent("Gateway_07f90ke"));
-    }
-
-    public void GATEWAY_Gateway_0i2yujj(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_0i2yujj
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_0i2yujj");
-        if (pLength.equals(-(BPMNExecTypeUtils.tonumber(1.0)))) {//[outgoing edge] Event_06urgzi - undefined length
-            BPMNExecProcessUtils.logTransition("Gateway_0i2yujj", "Event_06urgzi");
-            EVENT_undefined_length(s.withCurrent("Gateway_0i2yujj"));
-        } else {//[outgoing edge] Activity_0iafefy - measure weight
-            BPMNExecProcessUtils.logTransition("Gateway_0i2yujj", "Activity_0iafefy");
-            TASK_measure_weight(s.withCurrent("Gateway_0i2yujj"));
-        }
-    }
-
-    public void GATEWAY_Gateway_0u50uj6(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_0u50uj6
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_0u50uj6");
-        if (consent.equals("com")) {//[outgoing edge] Activity_1njskid - sign declaration
-            BPMNExecProcessUtils.logTransition("Gateway_0u50uj6", "Activity_1njskid");
-            TASK_sign_declaration(s.withCurrent("Gateway_0u50uj6"));
-        } else if (consent.equals("owner")) {//[outgoing edge] Activity_1nfni4r - fetch declaration
-            BPMNExecProcessUtils.logTransition("Gateway_0u50uj6", "Activity_1nfni4r");
-            TASK_fetch_declaration(s.withCurrent("Gateway_0u50uj6"));
-        } else if (consent.equals("none")) {//[outgoing edge] Gateway_07f90ke
-            BPMNExecProcessUtils.logTransition("Gateway_0u50uj6", "Gateway_07f90ke");
-            GATEWAY_Gateway_07f90ke(s.withCurrent("Gateway_0u50uj6"));
-        } else {
-            BPMNExecProcessUtils.noDefaultCaseError(s);
-        }
     }
 
     public void TASK_determine_mode(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task determine mode [Activity_1ol43bw]
@@ -272,17 +216,73 @@ class bpmn_process_Shipment {
         GATEWAY_Gateway_0u50uj6(s.withCurrent("Activity_1cbdv9z"));
     }
 
-    public void init() {
-        this.input_PackageWeight = null;	//TODO assign input variable
-        this.input_PackageType = null;	//TODO assign input variable
-        if (this.input_PackageWeight == null) {
-            input_PackageWeight = BPMNExecProcessUtils.inputs.getProperty("input_PackageWeight", null);
+    public void GATEWAY_Gateway_1tgxmu2(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_1tgxmu2
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_1tgxmu2");
+        if (BPMNExecTypeUtils.tonumber(pWeight) > BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Event_0wjo1ye - unsuppoted weight
+            BPMNExecProcessUtils.logTransition("Gateway_1tgxmu2", "Event_0wjo1ye");
+            EVENT_unsuppoted_weight(s.withCurrent("Gateway_1tgxmu2"));
+        } else {//[outgoing edge] Activity_1ol43bw - determine mode
+            BPMNExecProcessUtils.logTransition("Gateway_1tgxmu2", "Activity_1ol43bw");
+            TASK_determine_mode(s.withCurrent("Gateway_1tgxmu2"));
         }
+    }
+
+    public void GATEWAY_Gateway_1ocbjca(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_1ocbjca
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_1ocbjca");
+        if (sMode.equals("undef")) {//[outgoing edge] Event_19ylwnc - no shipment
+            BPMNExecProcessUtils.logTransition("Gateway_1ocbjca", "Event_19ylwnc");
+            EVENT_no_shipment(s.withCurrent("Gateway_1ocbjca"));
+        } else {//[outgoing edge] Activity_1cbdv9z - choose consent
+            BPMNExecProcessUtils.logTransition("Gateway_1ocbjca", "Activity_1cbdv9z");
+            TASK_choose_consent(s.withCurrent("Gateway_1ocbjca"));
+        }
+    }
+
+    public void GATEWAY_Gateway_07f90ke(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Joining Gateway Gateway_07f90ke
+        BPMNExecProcessUtils.debugOutput("Exclusive Joining Gateway Gateway_07f90ke");
+//[outgoing edge] Event_1pjc4df - ready for shipment
+        BPMNExecProcessUtils.logTransition("Gateway_07f90ke", "Event_1pjc4df");
+        EVENT_ready_for_shipment(s.withCurrent("Gateway_07f90ke"));
+    }
+
+    public void GATEWAY_Gateway_0i2yujj(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_0i2yujj
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_0i2yujj");
+        if (pLength.equals(-(BPMNExecTypeUtils.tonumber(1.0)))) {//[outgoing edge] Event_06urgzi - undefined length
+            BPMNExecProcessUtils.logTransition("Gateway_0i2yujj", "Event_06urgzi");
+            EVENT_undefined_length(s.withCurrent("Gateway_0i2yujj"));
+        } else {//[outgoing edge] Activity_0iafefy - measure weight
+            BPMNExecProcessUtils.logTransition("Gateway_0i2yujj", "Activity_0iafefy");
+            TASK_measure_weight(s.withCurrent("Gateway_0i2yujj"));
+        }
+    }
+
+    public void GATEWAY_Gateway_0u50uj6(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Gateway_0u50uj6
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Gateway_0u50uj6");
+        if (consent.equals("com")) {//[outgoing edge] Activity_1njskid - sign declaration
+            BPMNExecProcessUtils.logTransition("Gateway_0u50uj6", "Activity_1njskid");
+            TASK_sign_declaration(s.withCurrent("Gateway_0u50uj6"));
+        } else if (consent.equals("owner")) {//[outgoing edge] Activity_1nfni4r - fetch declaration
+            BPMNExecProcessUtils.logTransition("Gateway_0u50uj6", "Activity_1nfni4r");
+            TASK_fetch_declaration(s.withCurrent("Gateway_0u50uj6"));
+        } else if (consent.equals("none")) {//[outgoing edge] Gateway_07f90ke
+            BPMNExecProcessUtils.logTransition("Gateway_0u50uj6", "Gateway_07f90ke");
+            GATEWAY_Gateway_07f90ke(s.withCurrent("Gateway_0u50uj6"));
+        } else {
+            BPMNExecProcessUtils.noDefaultCaseError(s);
+        }
+    }
+
+    public void init() {
+        this.input_PackageType = null;	//TODO assign input variable
+        this.input_PackageWeight = null;	//TODO assign input variable
         if (this.input_PackageType == null) {
             input_PackageType = BPMNExecProcessUtils.inputs.getProperty("input_PackageType", null);
         }
-        BPMNExecProcessUtils.logInput("input_PackageWeight", this.input_PackageWeight);
+        if (this.input_PackageWeight == null) {
+            input_PackageWeight = BPMNExecProcessUtils.inputs.getProperty("input_PackageWeight", null);
+        }
         BPMNExecProcessUtils.logInput("input_PackageType", this.input_PackageType);
+        BPMNExecProcessUtils.logInput("input_PackageWeight", this.input_PackageWeight);
 //parallel join initializers
 
     }
@@ -291,21 +291,5 @@ class bpmn_process_Shipment {
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_Shipment process = new bpmn_process_Shipment();
         BPMNExecProcessUtils.executeProcess(process::init, process::EVENT_package_received);
-//READ VAR: input_PackageType
-//READ VAR: pType
-//READ VAR: getLengthResult.Length
-//READ VAR: pLength
-//READ VAR: input_PackageWeight
-//READ VAR: pWeight
-//READ VAR: pLength
-//READ VAR: pWeight
-//READ VAR: determineModeResult.Mode
-//READ VAR: sMode
-//READ VAR: sMode
-//READ VAR: pWeight
-//READ VAR: chooseConsentResult.Consent
-//READ VAR: consent
-//READ VAR: consent
-//READ VAR: consent
     }
 }

@@ -1,7 +1,6 @@
 package dellapenna.personal.bpmn.bpmn;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,24 +15,32 @@ import org.camunda.bpm.model.bpmn.instance.Task;
  */
 public class BPMNDecodedProcess {
 
-    private String name;
-    private List<BPMNDecodedFlow> rawFlows = new ArrayList<>();
-    private final Map<Code.ProcType, Map<String, FunctionDefinition>> functions = new HashMap<>();
-    private final Map<String, VariableDefinition> globals = new HashMap<>();
-    private final Map<String, VariableDefinition> inputs = new HashMap<>();
+    public enum NodeProcedureType {
+        GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
+    };
+
+    public enum VariableDirection {
+        READ, WRITE, READWRITE
+    };
+
+    private final String name;
+    private final List<BPMNDecodedFlow> rawFlows = new ArrayList<>();
+    private final Map<NodeProcedureType, Map<String, FunctionDefinition>> functions = new HashMap<>();
+    private final Map<String, VariableDefinition> readProcessVariables = new HashMap<>();
+    private final Map<String, VariableDefinition> writtenProcessVariables = new HashMap<>();
     private final List<String> startEventFlowNames = new ArrayList<>();
 
     public String getFlowName(FlowNode start) {
         //return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
-        Code.ProcType type = switch (start) {
+        NodeProcedureType type = switch (start) {
             case Gateway g ->
-                Code.ProcType.GATEWAY;
+                NodeProcedureType.GATEWAY;
             case Task t ->
-                Code.ProcType.TASK;
+                NodeProcedureType.TASK;
             case Event e ->
-                Code.ProcType.EVENT;
+                NodeProcedureType.EVENT;
             default ->
-                Code.ProcType.FLOW;
+                NodeProcedureType.FLOW;
         };
         return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
     }
@@ -42,42 +49,89 @@ public class BPMNDecodedProcess {
         this.name = name;
     }
 
-    public Map<Code.ProcType, Map<String, FunctionDefinition>> getFunctions() {
+    public Map<NodeProcedureType, Map<String, FunctionDefinition>> getFunctions() {
         return this.functions;
     }
 
-    public Map<String, VariableDefinition> getVariables() {
-        return this.globals;
+    public Map<String, VariableDefinition> getReadVariables() {
+        return this.readProcessVariables;
+    }
+
+    //written variables are automatically created at global scope
+    public Map<String, VariableDefinition> getWrittenVariables() {
+        return this.writtenProcessVariables;
+    }
+
+    //read but never written
+    public Map<String, VariableDefinition> getFreeVariables() {
+        Map<String, VariableDefinition> copy = new HashMap(readProcessVariables);
+        copy.keySet().retainAll(
+                readProcessVariables.keySet().stream()
+                        .filter(v -> {
+                            String wv = "";
+                            String[] wvss = v.split("\\.");
+                            for (String wvs : wvss) {
+                                wv += wvs;
+                                if (writtenProcessVariables.containsKey(wv)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                        ).toList());
+        return copy;
     }
 
     public List<String> getStartEventFlowNames() {
         return this.startEventFlowNames;
     }
 
-    public Map<String, VariableDefinition> getInputs() {
-        return this.inputs;
-    }
-
+//    public Map<String, VariableDefinition> getInputs() {
+//        return this.inputs;
+//    }
     ////
-    //registers a new global class variable for the process and returns its internal definition
-    public VariableDefinition registerProcessVariable(String name) {
+    //registers a new global variable for the process and returns its internal definition
+    public VariableDefinition registerProcessVariable(String name, VariableDirection d) {
         VariableDefinition g;
-        if (!globals.containsKey(name)) {
+        Map<String, VariableDefinition> t = (d.equals(VariableDirection.READ)) ? readProcessVariables : writtenProcessVariables;
+        if (!t.containsKey(name)) {
             g = new VariableDefinition(name);
-            globals.put(name, g);
+            t.put(name, g);
         } else {
-            g = globals.get(name);
+            g = t.get(name);
         }
         return g;
     }
 
+    public VariableDefinition registerProcessVariables(List names, VariableDirection d) {
+        VariableDefinition v = null;
+        for (Object composite_name : names) {
+            if (composite_name instanceof List l) {
+                composite_name = String.join(".", l);
+            }
+            v = registerProcessVariable(composite_name.toString(), d);
+        }
+        return v;
+    }
+
+    //registers a new input variable (from start events or user tasks)
+//    public VariableDefinition registerInputVariable(String name) {
+//        VariableDefinition i;
+//        if (!inputs.containsKey(name)) {
+//            i = new VariableDefinition(name);
+//            inputs.put(name, i);
+//        } else {
+//            i = inputs.get(name);
+//        }
+//        return i;
+//    }
     //creates a new function to output, assigned to the specified function class, and returns its internal definition
-    public FunctionDefinition registerFunction(String name, Code code, Map<String, String> parameters, String returnType, Code.ProcType type) {
+    private FunctionDefinition registerFunction(String name, Code code, Map<String, String> parameters, String returnType, NodeProcedureType type) {
         return registerFunction(name, code, new ArrayList<>(List.of()), parameters, returnType, type);
     }
 
     //creates a new possibly constrained function to output, assigned to the specified function class, and returns its internal definition
-    public FunctionDefinition registerFunction(String name, Code code, List<String> triggers, Map<String, String> parameters, String returnType, Code.ProcType type) {
+    private FunctionDefinition registerFunction(String name, Code code, List<String> triggers, Map<String, String> parameters, String returnType, NodeProcedureType type) {
         FunctionDefinition f;
         if (!functions.containsKey(type)) {
             functions.put(type, new HashMap<>());
@@ -93,29 +147,23 @@ public class BPMNDecodedProcess {
     }
 
     //creates a new procedure to output, assigned to the specified function class, and returns its internal definition
-    public FunctionDefinition registerProcedure(String name, Code code, Map<String, String> parameters, Code.ProcType type) {
-//        if (code == null || code.getStatements().isEmpty()) {
-//            code = new Code("System.out.println(\"" + name + "\")");
-//        }
+    private FunctionDefinition registerProcedure(String name, Code code, Map<String, String> parameters, NodeProcedureType type) {
         if (code == null) {
             code = new Code();
         }
         return registerFunction(name, code, parameters, "void", type);
     }
 
-//    public void registerNodeProcedure(String name, Code code) {
-//        registerProcedure(name, code, Code.ProcType.FLOW);
-//    }
     public void registerNodeProcedure(FlowNode node, Code code) {
-        Code.ProcType type = switch (node) {
+        NodeProcedureType type = switch (node) {
             case Gateway g ->
-                Code.ProcType.GATEWAY;
+                NodeProcedureType.GATEWAY;
             case Task t ->
-                Code.ProcType.TASK;
+                NodeProcedureType.TASK;
             case Event e ->
-                Code.ProcType.EVENT;
+                NodeProcedureType.EVENT;
             default ->
-                Code.ProcType.FLOW;
+                NodeProcedureType.FLOW;
         };
         //code.prepend("//[node] "+node.getId()+((node.getName()!=null && !node.getName().isBlank())?(" - "+node.getName()):""));
         registerProcedure(getFlowName(node), code, Map.of("s", "BPMNExecProcessUtils.ProcessStatus"), type);
@@ -123,18 +171,6 @@ public class BPMNDecodedProcess {
 
     public void registerStartEventFlowName(String name) {
         this.startEventFlowNames.add(name);
-    }
-
-    //registers a new input variable (from start events or user tasks)
-    public VariableDefinition registerInput(String name) {
-        VariableDefinition i;
-        if (!inputs.containsKey(name)) {
-            i = new VariableDefinition(name);
-            inputs.put(name, i);
-        } else {
-            i = inputs.get(name);
-        }
-        return i;
     }
 
     /**

@@ -20,8 +20,8 @@ public interface BPMNTranslator<T> {
         private String inputsFile;
         private String outputsFile;
 
-        private final List<List<String>> readVariables = new ArrayList<>();
-        private final List<List<String>> writtenVariables = new ArrayList<>();
+//        private final List<List<String>> readVariables = new ArrayList<>();
+//        private final List<List<String>> writtenVariables = new ArrayList<>();
 
         public BPMNTranslationInfo() {
             debug = false;
@@ -31,21 +31,21 @@ public interface BPMNTranslator<T> {
         }
 
         public BPMNTranslationInfo(BPMNTranslator.BPMNTranslationInfo other) {
-            this.readVariables.addAll(other.readVariables);
-            this.writtenVariables.addAll(other.writtenVariables);
+//            this.readVariables.addAll(other.readVariables);
+//            this.writtenVariables.addAll(other.writtenVariables);
             this.debug = other.debug;
             this.trueParallel = other.trueParallel;
             this.inputsFile = other.inputsFile;
             this.outputsFile = other.outputsFile;
         }
 
-        public List<List<String>> getReadVariables() {
-            return readVariables;
-        }
-
-        public List<List<String>> getWrittenVariables() {
-            return writtenVariables;
-        }
+//        public List<List<String>> getReadVariables() {
+//            return readVariables;
+//        }
+//
+//        public List<List<String>> getWrittenVariables() {
+//            return writtenVariables;
+//        }
 
         public boolean isDebug() {
             return debug;
