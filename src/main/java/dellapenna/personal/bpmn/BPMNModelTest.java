@@ -116,16 +116,5 @@ public class BPMNModelTest {
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
         //System.out.println(ft.generateBpmnSource("a.b=c"));        
-//
-//        DmnModelInstance dmnInstance = Dmn.readModelFromFile(new File("diagram_1.dmn"));
-//        DMNTranslator<String> dt = new ToJavaDMNTranslator();
-//        //((AbstractDMNTranslator) dt).dump(dmnInstance);
-//        out.write(dt.translate(dmnInstance));
-//
-//        out.newLine();
-//        out.newLine();
-//
-        //((AbstractBPMNTranslator) bt).dump(bpmnInstance);
-//Bpmn.writeModelToFile(new File("compile.bpmn"), modelInstance);
     }
 }
