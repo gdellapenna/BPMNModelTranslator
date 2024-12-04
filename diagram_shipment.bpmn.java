@@ -20,12 +20,18 @@ class dmn_dtable_GetLengthDT_result {
     }
 }
 
+// wrapper class for the input of DMN table GetLengthDT
+class dmn_dtable_GetLengthDT_arguments {
+
+    public Object Type;
+}
+
 // decision code for DMN table GetLengthDT
 class dmn_dtable_GetLengthDT {
 
-    public static dmn_dtable_GetLengthDT_result execute(Object _Type) {
+    public static dmn_dtable_GetLengthDT_result execute(dmn_dtable_GetLengthDT_arguments args) {
 
-        String Type = BPMNExecTypeUtils.tostring(_Type);
+        Object Type = args.Type;
 
         if (BPMNExecTypeUtils.tostring(Type).equals("std")) {
             return new dmn_dtable_GetLengthDT_result(/*Length*/0.5);
@@ -56,13 +62,20 @@ class dmn_dtable_DetermineModeDT_result {
     }
 }
 
+// wrapper class for the input of DMN table DetermineModeDT
+class dmn_dtable_DetermineModeDT_arguments {
+
+    public Object Length;
+    public Object Weight;
+}
+
 // decision code for DMN table DetermineModeDT
 class dmn_dtable_DetermineModeDT {
 
-    public static dmn_dtable_DetermineModeDT_result execute(Object _Length, Object _Weight) {
+    public static dmn_dtable_DetermineModeDT_result execute(dmn_dtable_DetermineModeDT_arguments args) {
 
-        Double Length = BPMNExecTypeUtils.tonumber(_Length);
-        Double Weight = BPMNExecTypeUtils.tonumber(_Weight);
+        Object Length = args.Length;
+        Object Weight = args.Weight;
 
         if ((BPMNExecTypeUtils.tonumber(Length) > 0.0 && BPMNExecTypeUtils.tonumber(Length) <= 1.0) && (BPMNExecTypeUtils.tonumber(Weight) > 0.0 && BPMNExecTypeUtils.tonumber(Weight) <= 5.0)) {
             return new dmn_dtable_DetermineModeDT_result(/*Mode*/"car");
@@ -93,13 +106,20 @@ class dmn_dtable_ChooseConsentDT_result {
     }
 }
 
+// wrapper class for the input of DMN table ChooseConsentDT
+class dmn_dtable_ChooseConsentDT_arguments {
+
+    public Object Mode;
+    public Object Weight;
+}
+
 // decision code for DMN table ChooseConsentDT
 class dmn_dtable_ChooseConsentDT {
 
-    public static dmn_dtable_ChooseConsentDT_result execute(Object _Mode, Object _Weight) {
+    public static dmn_dtable_ChooseConsentDT_result execute(dmn_dtable_ChooseConsentDT_arguments args) {
 
-        String Mode = BPMNExecTypeUtils.tostring(_Mode);
-        Double Weight = BPMNExecTypeUtils.tonumber(_Weight);
+        Object Mode = args.Mode;
+        Object Weight = args.Weight;
 
         if (BPMNExecTypeUtils.tostring(Mode).equals("car") && BPMNExecTypeUtils.tonumber(Weight) > BPMNExecTypeUtils.tonumber(6.0)) {
             return new dmn_dtable_ChooseConsentDT_result(/*Consent*/"owner");
@@ -128,39 +148,13 @@ class bpmn_process_Shipment {
     Object sMode;
 
 //Process Dynamics
-    public void EVENT_package_received(BPMNExecProcessUtils.ProcessStatus s) {//Start Event package received [StartEvent_1]
-        BPMNExecProcessUtils.debugOutput("Start Event package received [StartEvent_1]");
-        pType = input_PackageType;
-        BPMNExecProcessUtils.debugOutput("	 ASSIGNING pType TO %s", input_PackageType);
-//[outgoing edge] Activity_0h04jo2 - get length
-        BPMNExecProcessUtils.logTransition("StartEvent_1", "Activity_0h04jo2");
-        TASK_get_length(s.withCurrent("StartEvent_1"));
-    }
-
-    public void EVENT_unsuppoted_weight(BPMNExecProcessUtils.ProcessStatus s) {//End Event unsuppoted weight [Event_0wjo1ye]
-        BPMNExecProcessUtils.debugOutput("End Event unsuppoted weight [Event_0wjo1ye]");
-        BPMNExecProcessUtils.error(s, "Unsupported Weight", 2);
-    }
-
-    public void EVENT_ready_for_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event ready for shipment [Event_1pjc4df]
-        BPMNExecProcessUtils.debugOutput("End Event ready for shipment [Event_1pjc4df]");
-        BPMNExecProcessUtils.success(s);
-    }
-
-    public void EVENT_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//End Event undefined length [Event_06urgzi]
-        BPMNExecProcessUtils.debugOutput("End Event undefined length [Event_06urgzi]");
-        BPMNExecProcessUtils.error(s, "Undefined Length", 1);
-    }
-
-    public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event no shipment [Event_19ylwnc]
-        BPMNExecProcessUtils.debugOutput("End Event no shipment [Event_19ylwnc]");
-        BPMNExecProcessUtils.error(s, "No Shipment", 3);
-    }
-
     public void TASK_determine_mode(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task determine mode [Activity_1ol43bw]
         BPMNExecProcessUtils.debugOutput("Business Rule Task determine mode [Activity_1ol43bw]");
         BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION determine mode");
-        dmn_dtable_DetermineModeDT_result determineModeResult = dmn_dtable_DetermineModeDT.execute(/*Length*/pLength, /*Weight*/ pWeight);
+        dmn_dtable_DetermineModeDT_arguments args = new dmn_dtable_DetermineModeDT_arguments();
+        args.Length = pLength;
+        args.Weight = pWeight;
+        dmn_dtable_DetermineModeDT_result determineModeResult = dmn_dtable_DetermineModeDT.execute(args);
         BPMNExecProcessUtils.debugOutput("	 DECISION RESULT IS %s", determineModeResult);
         sMode = determineModeResult.Mode;
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING sMode TO %s", determineModeResult.Mode);
@@ -172,7 +166,9 @@ class bpmn_process_Shipment {
     public void TASK_get_length(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task get length [Activity_0h04jo2]
         BPMNExecProcessUtils.debugOutput("Business Rule Task get length [Activity_0h04jo2]");
         BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION get length");
-        dmn_dtable_GetLengthDT_result getLengthResult = dmn_dtable_GetLengthDT.execute(/*Type*/pType);
+        dmn_dtable_GetLengthDT_arguments args = new dmn_dtable_GetLengthDT_arguments();
+        args.Type = pType;
+        dmn_dtable_GetLengthDT_result getLengthResult = dmn_dtable_GetLengthDT.execute(args);
         BPMNExecProcessUtils.debugOutput("	 DECISION RESULT IS %s", getLengthResult);
         pLength = getLengthResult.Length;
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING pLength TO %s", getLengthResult.Length);
@@ -207,7 +203,10 @@ class bpmn_process_Shipment {
     public void TASK_choose_consent(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task choose consent [Activity_1cbdv9z]
         BPMNExecProcessUtils.debugOutput("Business Rule Task choose consent [Activity_1cbdv9z]");
         BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION choose consent");
-        dmn_dtable_ChooseConsentDT_result chooseConsentResult = dmn_dtable_ChooseConsentDT.execute(/*Mode*/sMode, /*Weight*/ pWeight);
+        dmn_dtable_ChooseConsentDT_arguments args = new dmn_dtable_ChooseConsentDT_arguments();
+        args.Mode = sMode;
+        args.Weight = pWeight;
+        dmn_dtable_ChooseConsentDT_result chooseConsentResult = dmn_dtable_ChooseConsentDT.execute(args);
         BPMNExecProcessUtils.debugOutput("	 DECISION RESULT IS %s", chooseConsentResult);
         consent = chooseConsentResult.Consent;
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING consent TO %s", chooseConsentResult.Consent);
@@ -270,6 +269,35 @@ class bpmn_process_Shipment {
         } else {
             BPMNExecProcessUtils.noDefaultCaseError(s);
         }
+    }
+
+    public void EVENT_package_received(BPMNExecProcessUtils.ProcessStatus s) {//Start Event package received [StartEvent_1]
+        BPMNExecProcessUtils.debugOutput("Start Event package received [StartEvent_1]");
+        pType = input_PackageType;
+        BPMNExecProcessUtils.debugOutput("	 ASSIGNING pType TO %s", input_PackageType);
+//[outgoing edge] Activity_0h04jo2 - get length
+        BPMNExecProcessUtils.logTransition("StartEvent_1", "Activity_0h04jo2");
+        TASK_get_length(s.withCurrent("StartEvent_1"));
+    }
+
+    public void EVENT_unsuppoted_weight(BPMNExecProcessUtils.ProcessStatus s) {//End Event unsuppoted weight [Event_0wjo1ye]
+        BPMNExecProcessUtils.debugOutput("End Event unsuppoted weight [Event_0wjo1ye]");
+        BPMNExecProcessUtils.error(s, "Unsupported Weight", 2);
+    }
+
+    public void EVENT_ready_for_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event ready for shipment [Event_1pjc4df]
+        BPMNExecProcessUtils.debugOutput("End Event ready for shipment [Event_1pjc4df]");
+        BPMNExecProcessUtils.success(s);
+    }
+
+    public void EVENT_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//End Event undefined length [Event_06urgzi]
+        BPMNExecProcessUtils.debugOutput("End Event undefined length [Event_06urgzi]");
+        BPMNExecProcessUtils.error(s, "Undefined Length", 1);
+    }
+
+    public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event no shipment [Event_19ylwnc]
+        BPMNExecProcessUtils.debugOutput("End Event no shipment [Event_19ylwnc]");
+        BPMNExecProcessUtils.error(s, "No Shipment", 3);
     }
 
     public void init() {

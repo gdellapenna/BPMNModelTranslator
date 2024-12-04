@@ -45,15 +45,16 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
     @Override
     protected String generateDecisionTableSource(String id, List<Input> inputs, List<Output> outputs, List<DMNDecisionRule<String>> decoded_rules, DMNTranslationInfo info) {
-        String procName = sanitizeName("dmn_dtable_" + id);
-        String output_record_name = procName + "_result";
+        String tableClassName = sanitizeName("dmn_dtable_" + id);
+        String resultClassName = tableClassName + "_result";
+        String argumentsClassName = tableClassName + "_arguments";
 
         return "// wrapper class for the output of DMN table " + id + "\n"
-                + "class " + output_record_name + "{"
+                + "class " + resultClassName + "{"
                 + outputs.stream()
                         .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
                         .collect(Collectors.joining(";\n", "", ";\n"))
-                + "public " + output_record_name + "("
+                + "public " + resultClassName + "("
                 + outputs.stream()
                         .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
                         .collect(Collectors.joining(","))
@@ -70,23 +71,34 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + "}\n"
                 + "}"
                 + "\n\n"
-                + "// decision code for DMN table " + id + "\n"
-                + "class " + procName + " {\n\n"
-                //+ "public " + output_record_name + " " + procName + "("
-                + "public static " + output_record_name + " execute("
-                //                + inputs.stream()
-                //                        .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent()))
-                //                        .collect(Collectors.joining(", "))
-
+                //
+                + "// wrapper class for the input of DMN table " + id + "\n"
+                + "class " + argumentsClassName + "{"
                 + inputs.stream()
-                        .map(i -> "Object _" + sanitizeName(i.getInputExpression().getTextContent()))
+                        .map(i -> "public Object" /*+ mapType(i.getInputExpression().getTypeRef())*/ + " " + sanitizeName(i.getInputExpression().getTextContent()))
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "}"
+                + "\n\n"
+                //
+                + "// decision code for DMN table " + id + "\n"
+                + "class " + tableClassName + " {\n\n"
+                //+ "public " + output_record_name + " " + procName + "("
+                + "public static " + resultClassName + " execute("
+                + argumentsClassName + " args"
+                /*
+                + inputs.stream()
+                        .map(i -> "Object " + sanitizeName(i.getInputExpression().getTextContent()))
                         .collect(Collectors.joining(", "))
+                 */
                 + ") {\n\n"
                 + inputs.stream()
+                        .map(i -> /*mapType(i.getInputExpression().getTypeRef())*/ "Object" + " " + sanitizeName(i.getInputExpression().getTextContent()) + " = args." + sanitizeName(i.getInputExpression().getTextContent()))
+                        .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
+                /*+ inputs.stream()
                         .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent())
                         + " = BPMNExecTypeUtils.to" + i.getInputExpression().getTypeRef() + "(_" + sanitizeName(i.getInputExpression().getTextContent()) + ")")
-                        .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
-                + generateRulesSource(decoded_rules, output_record_name, info)
+                        .collect(Collectors.joining(";\n", "", ";\n")) + "\n"*/
+                + generateRulesSource(decoded_rules, resultClassName, info)
                 + "\n}"
                 + "\n}";
 
@@ -102,7 +114,6 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + decoded_tables.values().stream().collect(Collectors.joining("\n\n"));
     }
 
-    @Override
     public String mapType(String typeRef) {
         return switch (typeRef.toLowerCase()) {
             case "number" ->

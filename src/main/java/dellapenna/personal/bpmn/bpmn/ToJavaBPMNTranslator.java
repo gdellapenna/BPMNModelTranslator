@@ -288,15 +288,19 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         ModelElementInstance ioMapping = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping");
         ModelElementInstance calledDecision = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "calledDecision");
 
-        String procName = sanitizeName("dmn_dtable_" + calledDecision.getAttributeValue("decisionId"));
-        String output_record_name = procName + "_result";
+        String tableClassName = sanitizeName("dmn_dtable_" + calledDecision.getAttributeValue("decisionId"));
+        String resultClassName = tableClassName + "_result";
+        String argumentsClassName = tableClassName + "_arguments";
 
         FeelTranslationInfo f_info = new FeelTranslationInfo();
-        code.append(
-                output_record_name + " " + calledDecision.getAttributeValue("resultVariable")
-                + "=" + procName + ".execute"
-                + "(" + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
-                        .map(e -> "/*" + e.getAttribute("target") + "*/" + feel.translateChecked(e.getAttribute("source").substring(1), f_info)).collect(Collectors.joining(", "))
+        code.append(argumentsClassName + " args = new " + argumentsClassName + "();\n"
+                + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
+                        .map(e -> "args." + e.getAttribute("target") + " = " + feel.translateChecked(e.getAttribute("source").substring(1), f_info)).collect(Collectors.joining(";\n"))
+        );
+        code.append(resultClassName + " " + calledDecision.getAttributeValue("resultVariable")
+                + "=" + tableClassName + ".execute(args"
+                //                + ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream()
+                //                .map(e -> "/*" + e.getAttribute("target") + "*/" + feel.translateChecked(e.getAttribute("source").substring(1), f_info)).collect(Collectors.joining(", "))"                
                 + ")");
 
         //p.registerProcessVariable(calledDecision.getAttributeValue("resultVariable"), BPMNDecodedProcess.VariableDirection.WRITE); //locale
@@ -494,7 +498,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                             .map(l -> String.join(".", l))
                             .filter(v -> !isVariableIncluded(v, localVariables))
                             .toList(),
-                     BPMNDecodedProcess.VariableDirection.READ);
+                    BPMNDecodedProcess.VariableDirection.READ);
 
             if (info != null && info.isDebug()) {
                 result.append(ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "output").stream()

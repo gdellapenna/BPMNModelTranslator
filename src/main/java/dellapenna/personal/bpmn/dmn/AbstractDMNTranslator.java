@@ -23,19 +23,8 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
 
     @Override
     public T translate(DecisionTable t, DMNTranslationInfo info) throws FeelTranslatorException {
-//        System.out.println("[" + t.getElementType().getTypeName() + "] " + t.getAttributeValue("name"));
-//        System.out.println("* Inputs:");
         List<Input> inputs = new ArrayList(t.getInputs());
-//        for (Input i : inputs) {
-//            System.out.println("** [" + i.getInputExpression().getAttributeValue("typeRef") + "] " + i.getInputExpression().getText().getTextContent());
-//        }
-//        //
-//        System.out.println("* Outputs:");
         List<Output> outputs = new ArrayList(t.getOutputs());
-//        for (Output o : outputs) {
-//            System.out.println("** [" + o.getAttributeValue("typeRef") + "] " + o.getAttributeValue("name"));
-//        }
-//        //
         List<DMNDecisionRule<T>> decoded_rules = new ArrayList<>();
         Collection<Rule> rules = t.getRules();
         DMNTranslationInfo lhsinfo = new DMNTranslationInfo(info);
@@ -87,9 +76,6 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         return generateDecisionModelSource(decoded_tables, info);
     }
 
-    protected abstract T mapType(String typeRef);
-
-    //protected abstract T getTrueExpression();
     protected abstract T translateExpression(String input, String exp, DMNTranslationInfo info) throws FeelTranslatorException;
 
     protected abstract T generateRulesSource(List<DMNDecisionRule<T>> decoded_rules, String output_record_name, DMNTranslationInfo info);
