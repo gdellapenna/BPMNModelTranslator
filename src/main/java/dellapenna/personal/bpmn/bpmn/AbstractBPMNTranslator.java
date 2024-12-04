@@ -12,6 +12,7 @@ non parallel flow splits
 3) when the liear flow decoding reached a parallel join gw, in some way we must preepend the wait to the joined flow (getOutgoing?)  code
 
  */
+import dellapenna.personal.bpmn.dmn.DMNDecisionModel;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -65,14 +66,15 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     }
 
     @Override
-    public T translate(BpmnModelInstance bpmn, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
-        return generateBpmnSource(decodeBpmn(bpmn, info), info);
+    public T translate(BpmnModelInstance bpmn, DMNDecisionModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
+        return generateBpmnSource(decodeBpmn(bpmn, dmns, info), info);
     }
 
     ////////////////////////
     // Decode a BPMN instance to BPMNDecoded structure
     ////////////////////////
-    public BPMNDecoded decodeBpmn(BpmnModelInstance bpmn, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
+    @Override
+    public BPMNDecoded decodeBpmn(BpmnModelInstance bpmn, DMNDecisionModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
         List<BPMNDecodedProcess> process_definitions = new ArrayList<>();
         Collection<Process> processes = bpmn.getModelElementsByType(Process.class);
         for (Process process : processes) {
@@ -327,8 +329,6 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             dump(t, indent + 3);
         }
     }
-
-    public abstract T generateBpmnSource(BPMNDecoded bpmn, BPMNTranslationInfo info);
 
     //////////////////
     // Generate code for specific BPMN nodes

@@ -70,7 +70,11 @@
     <bpmn:sequenceFlow id="Flow_1v509eo" sourceRef="Gateway_07f90ke" targetRef="Event_1pjc4df" />
     <bpmn:sequenceFlow id="Flow_0dc0zmh" sourceRef="Activity_1ol43bw" targetRef="Gateway_1ocbjca" />
     <bpmn:startEvent id="StartEvent_1" name="package received">
-      <bpmn:extensionElements />
+      <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=input_PackageType" target="pType" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
       <bpmn:outgoing>Flow_1asd4kl</bpmn:outgoing>
       <bpmn:dataOutputAssociation id="DataOutputAssociation_1x7guu5">
         <bpmn:targetRef>DataObjectReference_1kwxzmf</bpmn:targetRef>
@@ -132,6 +136,9 @@
     <bpmn:dataObject id="DataObject_053nob6" />
     <bpmn:userTask id="Activity_0iafefy" name="measure weight">
       <bpmn:extensionElements>
+        <zeebe:ioMapping>
+          <zeebe:output source="=input_PackageWeight" target="pWeight" />
+        </zeebe:ioMapping>
         <zeebe:formDefinition formKey="WeightInputForm" />
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1sswihv</bpmn:incoming>

@@ -1,7 +1,6 @@
 import dellapenna.personal.bpmn.exec.*;
 
 
-
 /*
  * ****************************** BPMN Generated Code *************************
  */
@@ -18,6 +17,18 @@ import dellapenna.personal.bpmn.exec.*;
 
 
 //Process Dynamics
+public void EVENT_End(BPMNExecProcessUtils.ProcessStatus s) {//End Event End [Event_0zv9hfo]
+BPMNExecProcessUtils.debugOutput("End Event End [Event_0zv9hfo]");
+BPMNExecProcessUtils.success(s);
+}
+
+public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Start [StartEvent_1]
+BPMNExecProcessUtils.debugOutput("Start Event Start [StartEvent_1]");
+//[outgoing edge] Gateway_1gapucr - Parallel1Split
+BPMNExecProcessUtils.logTransition("StartEvent_1","Gateway_1gapucr");
+GATEWAY_Parallel1Split(s.withCurrent("StartEvent_1"));
+}
+
 public void GATEWAY_Exclusive1(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Exclusive1 [Gateway_1c7340a]
 BPMNExecProcessUtils.debugOutput("Exclusive Gateway Exclusive1 [Gateway_1c7340a]");
 if ("a".equals(1.0)){//[outgoing edge] Activity_09oefmk - Task2Branch1
@@ -48,6 +59,14 @@ BPMNExecProcessUtils.fork(s,"Parallel1Split",this::TASK_Parallel_Task_2,this::TA
 BPMNExecProcessUtils.stopThread();
 }
 
+public void GATEWAY_Parallel2Join(BPMNExecProcessUtils.ProcessStatus s) {//Parallel Joining Gateway Parallel2Join [Gateway_1iv1tvb]
+BPMNExecProcessUtils.debugOutput("Parallel Joining Gateway Parallel2Join [Gateway_1iv1tvb]");
+//[outgoing edge] Gateway_02100g2 - Parallel1Join
+BPMNExecProcessUtils.logTransition("Gateway_1iv1tvb","Gateway_02100g2");
+//JOINS: Activity_0svmpy2,Activity_1otvmx2
+BPMNExecProcessUtils.join(s,"Gateway_1iv1tvb", this::GATEWAY_Parallel1Join);
+}
+
 public void GATEWAY_Parallel2Split(BPMNExecProcessUtils.ProcessStatus s) {//Parallel Gateway Parallel2Split [Gateway_0fm3ji9]
 BPMNExecProcessUtils.debugOutput("Parallel Gateway Parallel2Split [Gateway_0fm3ji9]");
 //[outgoing edge] Activity_0svmpy2 - InnerParallelTask1
@@ -59,12 +78,11 @@ BPMNExecProcessUtils.fork(s,"Parallel2Split",this::TASK_InnerParallelTask1,this:
 BPMNExecProcessUtils.stopThread();
 }
 
-public void GATEWAY_Parallel2Join(BPMNExecProcessUtils.ProcessStatus s) {//Parallel Joining Gateway Parallel2Join [Gateway_1iv1tvb]
-BPMNExecProcessUtils.debugOutput("Parallel Joining Gateway Parallel2Join [Gateway_1iv1tvb]");
-//[outgoing edge] Gateway_02100g2 - Parallel1Join
-BPMNExecProcessUtils.logTransition("Gateway_1iv1tvb","Gateway_02100g2");
-//JOINS: Activity_0svmpy2,Activity_1otvmx2
-BPMNExecProcessUtils.join(s,"Gateway_1iv1tvb", this::GATEWAY_Parallel1Join);
+public void TASK_Final_Task(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Final Task [Activity_16zc6e7]
+BPMNExecProcessUtils.debugOutput("Generic Task Final Task [Activity_16zc6e7]");
+//[outgoing edge] Event_0zv9hfo - End
+BPMNExecProcessUtils.logTransition("Activity_16zc6e7","Event_0zv9hfo");
+EVENT_End(s.withCurrent("Activity_16zc6e7"));
 }
 
 public void TASK_InnerParallelTask1(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task InnerParallelTask1 [Activity_0svmpy2]
@@ -74,25 +92,11 @@ BPMNExecProcessUtils.logTransition("Activity_0svmpy2","Gateway_1iv1tvb");
 GATEWAY_Parallel2Join(s.withCurrent("Activity_0svmpy2"));
 }
 
-public void TASK_Task2DefaultBranch(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Task2DefaultBranch [Activity_0sbgnmb]
-BPMNExecProcessUtils.debugOutput("Generic Task Task2DefaultBranch [Activity_0sbgnmb]");
-//[outgoing edge] Gateway_0fm3ji9 - Parallel2Split
-BPMNExecProcessUtils.logTransition("Activity_0sbgnmb","Gateway_0fm3ji9");
-GATEWAY_Parallel2Split(s.withCurrent("Activity_0sbgnmb"));
-}
-
 public void TASK_InnerParallelTask2(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task InnerParallelTask2 [Activity_1otvmx2]
 BPMNExecProcessUtils.debugOutput("Generic Task InnerParallelTask2 [Activity_1otvmx2]");
 //[outgoing edge] Gateway_1iv1tvb - Parallel2Join
 BPMNExecProcessUtils.logTransition("Activity_1otvmx2","Gateway_1iv1tvb");
 GATEWAY_Parallel2Join(s.withCurrent("Activity_1otvmx2"));
-}
-
-public void TASK_Parallel_Task_2(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Parallel Task 2 [Activity_0veq5io]
-BPMNExecProcessUtils.debugOutput("Generic Task Parallel Task 2 [Activity_0veq5io]");
-//[outgoing edge] Gateway_1c7340a - Exclusive1
-BPMNExecProcessUtils.logTransition("Activity_0veq5io","Gateway_1c7340a");
-GATEWAY_Exclusive1(s.withCurrent("Activity_0veq5io"));
 }
 
 public void TASK_Parallel_Task_1(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Parallel Task 1 [Activity_0pfa4n5]
@@ -102,11 +106,11 @@ BPMNExecProcessUtils.logTransition("Activity_0pfa4n5","Gateway_02100g2");
 GATEWAY_Parallel1Join(s.withCurrent("Activity_0pfa4n5"));
 }
 
-public void TASK_Final_Task(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Final Task [Activity_16zc6e7]
-BPMNExecProcessUtils.debugOutput("Generic Task Final Task [Activity_16zc6e7]");
-//[outgoing edge] Event_0zv9hfo - End
-BPMNExecProcessUtils.logTransition("Activity_16zc6e7","Event_0zv9hfo");
-EVENT_End(s.withCurrent("Activity_16zc6e7"));
+public void TASK_Parallel_Task_2(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Parallel Task 2 [Activity_0veq5io]
+BPMNExecProcessUtils.debugOutput("Generic Task Parallel Task 2 [Activity_0veq5io]");
+//[outgoing edge] Gateway_1c7340a - Exclusive1
+BPMNExecProcessUtils.logTransition("Activity_0veq5io","Gateway_1c7340a");
+GATEWAY_Exclusive1(s.withCurrent("Activity_0veq5io"));
 }
 
 public void TASK_Task2Branch1(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Task2Branch1 [Activity_09oefmk]
@@ -116,16 +120,11 @@ BPMNExecProcessUtils.logTransition("Activity_09oefmk","Gateway_02100g2");
 GATEWAY_Parallel1Join(s.withCurrent("Activity_09oefmk"));
 }
 
-public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Start [StartEvent_1]
-BPMNExecProcessUtils.debugOutput("Start Event Start [StartEvent_1]");
-//[outgoing edge] Gateway_1gapucr - Parallel1Split
-BPMNExecProcessUtils.logTransition("StartEvent_1","Gateway_1gapucr");
-GATEWAY_Parallel1Split(s.withCurrent("StartEvent_1"));
-}
-
-public void EVENT_End(BPMNExecProcessUtils.ProcessStatus s) {//End Event End [Event_0zv9hfo]
-BPMNExecProcessUtils.debugOutput("End Event End [Event_0zv9hfo]");
-BPMNExecProcessUtils.success(s);
+public void TASK_Task2DefaultBranch(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Task2DefaultBranch [Activity_0sbgnmb]
+BPMNExecProcessUtils.debugOutput("Generic Task Task2DefaultBranch [Activity_0sbgnmb]");
+//[outgoing edge] Gateway_0fm3ji9 - Parallel2Split
+BPMNExecProcessUtils.logTransition("Activity_0sbgnmb","Gateway_0fm3ji9");
+GATEWAY_Parallel2Split(s.withCurrent("Activity_0sbgnmb"));
 }
 
 public void init() {
@@ -135,3 +134,4 @@ BPMNExecProcessUtils.initJoin("Gateway_02100g2","Activity_0pfa4n5","Activity_09o
 BPMNExecProcessUtils.enableTrueParallel();bpmn_process_diagram_2 process = new bpmn_process_diagram_2();
 BPMNExecProcessUtils.executeProcess(process::init,process::EVENT_Start);
 }}
+

@@ -1,9 +1,7 @@
 package dellapenna.personal.bpmn.bpmn;
 
-import dellapenna.personal.bpmn.dmn.DMNTranslator;
+import dellapenna.personal.bpmn.dmn.DMNDecisionModel;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
-import java.util.ArrayList;
-import java.util.List;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 
 /**
@@ -22,7 +20,6 @@ public interface BPMNTranslator<T> {
 
 //        private final List<List<String>> readVariables = new ArrayList<>();
 //        private final List<List<String>> writtenVariables = new ArrayList<>();
-
         public BPMNTranslationInfo() {
             debug = false;
             trueParallel = false;
@@ -46,7 +43,6 @@ public interface BPMNTranslator<T> {
 //        public List<List<String>> getWrittenVariables() {
 //            return writtenVariables;
 //        }
-
         public boolean isDebug() {
             return debug;
         }
@@ -81,6 +77,10 @@ public interface BPMNTranslator<T> {
 
     }
 
-    T translate(BpmnModelInstance bpmn, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
+    T translate(BpmnModelInstance bpmn, DMNDecisionModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
+
+    T generateBpmnSource(BPMNDecoded bpmn, BPMNTranslationInfo info);
+
+    BPMNDecoded decodeBpmn(BpmnModelInstance bpmn, DMNDecisionModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
 
 }

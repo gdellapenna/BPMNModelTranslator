@@ -42,6 +42,8 @@ public interface DMNTranslator<T> {
 
     T translate(DmnModelInstance dmn, DMNTranslationInfo info) throws FeelTranslatorException;
 
-    T translate(DecisionTable t, DMNTranslationInfo info) throws FeelTranslatorException;
+    T generateDecisionModelSource(DMNDecisionModel<T> model, DMNTranslationInfo info);
+
+    DMNDecisionModel<T> decodeDecisionModel(DmnModelInstance dmn, DMNTranslationInfo info) throws FeelTranslatorException;
 
 }

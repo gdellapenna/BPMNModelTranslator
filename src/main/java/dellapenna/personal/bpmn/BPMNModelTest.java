@@ -1,8 +1,10 @@
 package dellapenna.personal.bpmn;
 
+import dellapenna.personal.bpmn.bpmn.BPMNDecoded;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslator.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
+import dellapenna.personal.bpmn.dmn.DMNDecisionModel;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslator.DMNTranslationInfo;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
@@ -63,6 +65,10 @@ public class BPMNModelTest {
 
     public static void compile(Path[] dmn_files, Path bpmn_file)
             throws IOException, FeelTranslatorException, BpmnTranslatorException {
+
+        DMNTranslator<String> dt = new ToJavaDMNTranslator();
+        ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
+
         BPMNTranslationInfo b_info = new BPMNTranslationInfo();
         b_info.setDebug(true);
         b_info.setTrueParallel(true);
@@ -72,24 +78,25 @@ public class BPMNModelTest {
         Path output_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
 
         try (BufferedWriter out = new BufferedWriter(new FileWriter(output_file.toFile()))) {
-
             out.write(PRE_CODE);
             out.newLine();
             out.newLine();
-
-            DMNTranslator<String> dt = new ToJavaDMNTranslator();
-            ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
-
+//
+            DMNDecisionModel<String>[] dmns = new DMNDecisionModel[dmn_files.length];
+            int i = 0;
             for (Path dmn_file : dmn_files) {
                 DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_file.toFile());
-                out.write(dt.translate(dmnInstance, d_info));
+                dmns[i] = dt.decodeDecisionModel(dmnInstance, d_info);
+                out.write(dt.generateDecisionModelSource(dmns[i++], d_info));
             }
+//
             out.newLine();
-            out.newLine();
-
+//
             BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
-            out.write(bt.translate(bpmnInstance, b_info));
-
+            BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance,dmns, b_info);
+            out.write(bt.generateBpmnSource(bpmn, b_info));
+//
+            out.newLine();
             out.newLine();
             out.write(POST_CODE);
         }

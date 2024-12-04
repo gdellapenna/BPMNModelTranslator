@@ -1,7 +1,6 @@
 import dellapenna.personal.bpmn.exec.*;
 
 
-
 /*
  * ****************************** BPMN Generated Code *************************
  */
@@ -18,6 +17,23 @@ import dellapenna.personal.bpmn.exec.*;
 
 
 //Process Dynamics
+public void EVENT_Ok1(BPMNExecProcessUtils.ProcessStatus s) {//End Event Ok1 [Event_0aq6tzc]
+BPMNExecProcessUtils.debugOutput("End Event Ok1 [Event_0aq6tzc]");
+BPMNExecProcessUtils.success(s);
+}
+
+public void EVENT_Ok2(BPMNExecProcessUtils.ProcessStatus s) {//End Event Ok2 [Event_0ftzlyc]
+BPMNExecProcessUtils.debugOutput("End Event Ok2 [Event_0ftzlyc]");
+BPMNExecProcessUtils.success(s);
+}
+
+public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Start [StartEvent_1]
+BPMNExecProcessUtils.debugOutput("Start Event Start [StartEvent_1]");
+//[outgoing edge] Gateway_02uz50m - UnclosedParallel
+BPMNExecProcessUtils.logTransition("StartEvent_1","Gateway_02uz50m");
+GATEWAY_UnclosedParallel(s.withCurrent("StartEvent_1"));
+}
+
 public void GATEWAY_UnclosedParallel(BPMNExecProcessUtils.ProcessStatus s) {//Parallel Gateway UnclosedParallel [Gateway_02uz50m]
 BPMNExecProcessUtils.debugOutput("Parallel Gateway UnclosedParallel [Gateway_02uz50m]");
 //[outgoing edge] Activity_0qvix8b - Task1
@@ -43,23 +59,6 @@ BPMNExecProcessUtils.logTransition("Activity_1uu1n8a","Event_0ftzlyc");
 EVENT_Ok2(s.withCurrent("Activity_1uu1n8a"));
 }
 
-public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Start [StartEvent_1]
-BPMNExecProcessUtils.debugOutput("Start Event Start [StartEvent_1]");
-//[outgoing edge] Gateway_02uz50m - UnclosedParallel
-BPMNExecProcessUtils.logTransition("StartEvent_1","Gateway_02uz50m");
-GATEWAY_UnclosedParallel(s.withCurrent("StartEvent_1"));
-}
-
-public void EVENT_Ok2(BPMNExecProcessUtils.ProcessStatus s) {//End Event Ok2 [Event_0ftzlyc]
-BPMNExecProcessUtils.debugOutput("End Event Ok2 [Event_0ftzlyc]");
-BPMNExecProcessUtils.success(s);
-}
-
-public void EVENT_Ok1(BPMNExecProcessUtils.ProcessStatus s) {//End Event Ok1 [Event_0aq6tzc]
-BPMNExecProcessUtils.debugOutput("End Event Ok1 [Event_0aq6tzc]");
-BPMNExecProcessUtils.success(s);
-}
-
 public void init() {
 //parallel join initializers
 
@@ -67,3 +66,4 @@ public void init() {
 BPMNExecProcessUtils.enableTrueParallel();bpmn_process_Process_1ai2j0m process = new bpmn_process_Process_1ai2j0m();
 BPMNExecProcessUtils.executeProcess(process::init,process::EVENT_Start);
 }}
+

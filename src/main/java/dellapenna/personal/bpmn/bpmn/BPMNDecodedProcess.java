@@ -14,22 +14,23 @@ import org.camunda.bpm.model.bpmn.instance.Task;
  * @author giuse
  */
 public class BPMNDecodedProcess {
-
+    
     public enum NodeProcedureType {
         GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
     };
-
+    
     public enum VariableDirection {
         READ, WRITE, READWRITE
     };
-
+    
     private final String name;
     private final List<BPMNDecodedFlow> rawFlows = new ArrayList<>();
     private final Map<NodeProcedureType, Map<String, FunctionDefinition>> functions = new HashMap<>();
-    private final Map<String, VariableDefinition> readProcessVariables = new HashMap<>();
-    private final Map<String, VariableDefinition> writtenProcessVariables = new HashMap<>();
-    private final List<String> startEventFlowNames = new ArrayList<>();
+    private final List<VariableDefinition> processVariables = new ArrayList<>();
 
+    //private final Map<String, Map<VariableDirection, List<String>>> variableUsages = new HashMap<>();
+    private final List<String> startEventFlowNames = new ArrayList<>();
+    
     public String getFlowName(FlowNode start) {
         //return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
         NodeProcedureType type = switch (start) {
@@ -44,44 +45,49 @@ public class BPMNDecodedProcess {
         };
         return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
     }
-
+    
     public BPMNDecodedProcess(String name) {
         this.name = name;
+        //this.processVariables.put(VariableDirection.READ, new HashMap<>());
+        //this.processVariables.put(VariableDirection.WRITE, new HashMap<>());
     }
-
+    
     public Map<NodeProcedureType, Map<String, FunctionDefinition>> getFunctions() {
         return this.functions;
     }
-
-    public Map<String, VariableDefinition> getReadVariables() {
-        return this.readProcessVariables;
+    
+    public List<VariableDefinition> getReadVariables() {
+        return this.processVariables.stream()
+                .filter(v -> v.isRead())
+                .toList();
     }
 
     //written variables are automatically created at global scope
-    public Map<String, VariableDefinition> getWrittenVariables() {
-        return this.writtenProcessVariables;
+    public List<VariableDefinition> getWrittenVariables() {
+        return this.processVariables.stream()
+                .filter(v -> v.isWritten())
+                .toList();
     }
 
     //read but never written
-    public Map<String, VariableDefinition> getFreeVariables() {
-        Map<String, VariableDefinition> copy = new HashMap(readProcessVariables);
-        copy.keySet().retainAll(
-                readProcessVariables.keySet().stream()
-                        .filter(v -> {
-                            String wv = "";
-                            String[] wvss = v.split("\\.");
-                            for (String wvs : wvss) {
-                                wv += wvs;
-                                if (writtenProcessVariables.containsKey(wv)) {
-                                    return false;
-                                }
-                            }
-                            return true;
+    public List<VariableDefinition> getFreeVariables() {
+        List<String> writtenVariableNames = getWrittenVariables().stream().map(v -> v.getName()).toList();
+        return getReadVariables().stream()
+                .filter(v -> {
+                    String wv = "";
+                    String[] wvss = v.getName().split("\\.");
+                    for (String wvs : wvss) {
+                        wv += wvs;
+                        if (writtenVariableNames.contains(wv)) {
+                            return false;
                         }
-                        ).toList());
-        return copy;
+                    }
+                    return true;
+                }
+                ).toList();
+        
     }
-
+    
     public List<String> getStartEventFlowNames() {
         return this.startEventFlowNames;
     }
@@ -91,29 +97,52 @@ public class BPMNDecodedProcess {
 //    }
     ////
     //registers a new global variable for the process and returns its internal definition
-    public VariableDefinition registerProcessVariable(String name, VariableDirection d) {
-        VariableDefinition g;
-        Map<String, VariableDefinition> t = (d.equals(VariableDirection.READ)) ? readProcessVariables : writtenProcessVariables;
-        if (!t.containsKey(name)) {
+    public VariableDefinition registerProcessVariable(String name, VariableDirection d, String whereUsed) {
+        VariableDefinition g = processVariables.stream().filter(v -> v.getName().equals(name)).findFirst().orElse(null);
+        if (g == null) {
             g = new VariableDefinition(name);
-            t.put(name, g);
-        } else {
-            g = t.get(name);
+            processVariables.add(g);
+        }        
+        if (whereUsed != null) {
+            g.getUsages(d).add(whereUsed);
         }
         return g;
     }
-
-    public VariableDefinition registerProcessVariables(List names, VariableDirection d) {
+    
+    public VariableDefinition registerProcessVariables(List names, VariableDirection d, String whereUsed) {
         VariableDefinition v = null;
         for (Object composite_name : names) {
             if (composite_name instanceof List l) {
                 composite_name = String.join(".", l);
             }
-            v = registerProcessVariable(composite_name.toString(), d);
+            v = registerProcessVariable(composite_name.toString(), d, whereUsed);
         }
         return v;
     }
 
+//    private void registerVariableUsage(Object name, VariableDirection d, String where) {
+//        if (name instanceof List l) {
+//            name = String.join(".", l);
+//        }
+//        VariableDefinition g;
+//        Map<String, VariableDefinition> t = processVariables.get(d);
+//        
+//        Map<VariableDirection, List<String>> g;
+//        if (!variableUsages.containsKey(name.toString())) {
+//            g = new HashMap<>();
+//            variableUsages.put(name.toString(), g);
+//        } else {
+//            g = variableUsages.get(name.toString());
+//        }
+//        List<String> h;
+//        if (!g.containsKey(d)) {
+//            h = new ArrayList<>();
+//            g.put(d, h);
+//        } else {
+//            h = g.get(d);
+//        }
+//        h.add(where);
+//    }
     //registers a new input variable (from start events or user tasks)
 //    public VariableDefinition registerInputVariable(String name) {
 //        VariableDefinition i;
@@ -153,7 +182,7 @@ public class BPMNDecodedProcess {
         }
         return registerFunction(name, code, parameters, "void", type);
     }
-
+    
     public void registerNodeProcedure(FlowNode node, Code code) {
         NodeProcedureType type = switch (node) {
             case Gateway g ->
@@ -168,7 +197,7 @@ public class BPMNDecodedProcess {
         //code.prepend("//[node] "+node.getId()+((node.getName()!=null && !node.getName().isBlank())?(" - "+node.getName()):""));
         registerProcedure(getFlowName(node), code, Map.of("s", "BPMNExecProcessUtils.ProcessStatus"), type);
     }
-
+    
     public void registerStartEventFlowName(String name) {
         this.startEventFlowNames.add(name);
     }
