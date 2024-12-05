@@ -12,7 +12,7 @@ non parallel flow splits
 3) when the liear flow decoding reached a parallel join gw, in some way we must preepend the wait to the joined flow (getOutgoing?)  code
 
  */
-import dellapenna.personal.bpmn.dmn.DMNDecisionModel;
+import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     }
 
     @Override
-    public T translate(BpmnModelInstance bpmn, DMNDecisionModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
+    public T translate(BpmnModelInstance bpmn, DMNDecodedModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
         return generateBpmnSource(decodeBpmn(bpmn, dmns, info), info);
     }
 
@@ -74,7 +74,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     // Decode a BPMN instance to BPMNDecoded structure
     ////////////////////////
     @Override
-    public BPMNDecoded decodeBpmn(BpmnModelInstance bpmn, DMNDecisionModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
+    public BPMNDecoded decodeBpmn(BpmnModelInstance bpmn, DMNDecodedModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
         List<BPMNDecodedProcess> process_definitions = new ArrayList<>();
         Collection<Process> processes = bpmn.getModelElementsByType(Process.class);
         for (Process process : processes) {

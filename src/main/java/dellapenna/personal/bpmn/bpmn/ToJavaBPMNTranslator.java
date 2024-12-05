@@ -1,7 +1,8 @@
 package dellapenna.personal.bpmn.bpmn;
 
+import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslator;
-import dellapenna.personal.bpmn.feel.FeelTranslator.FeelTranslationInfo;
+import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.Collection;
@@ -142,18 +143,18 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         //variables referenced by feel expressions
 
         String global_variables = process.getWrittenVariables().stream()
-                .sorted((v1,v2)-> v1.getName().compareTo(v2.getName()))
+                .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
                 .map(v
                         -> "// READ: " + v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().collect(Collectors.joining(", "))
                 + "\n// WRITTEN: " + v.getUsages(BPMNDecodedProcess.VariableDirection.WRITE).stream().collect(Collectors.joining(", "))
-                + "\nObject " + v.getName())
+                + "\nObject " + v.getName() + "=null")
                 .collect(Collectors.joining(";\n", "\n\n//Process Variables\n", ";\n\n"));
         String input_variables = process.getFreeVariables().stream()
-                .sorted((v1,v2)-> v1.getName().compareTo(v2.getName()))
+                .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
                 .map(v
                         -> "// READ: " + v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().collect(Collectors.joining(", "))
                 //+ "\n// WRITTEN: " + process.getVariableUsages().get(id.name()).getOrDefault(BPMNDecodedProcess.VariableDirection.WRITE, Collections.EMPTY_LIST).stream().collect(Collectors.joining(", "))
-                + "\nObject " + v.getName()
+                + "\nObject " + v.getName() + "=null"
                 )
                 .collect(Collectors.joining(";\n", "\n\n//Input Variables\n", ";\n\n"));
         String functions = process.getFunctions().values().stream()
@@ -166,6 +167,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 + global_variables
                 + functions
                 + generateProcessInitSource(process, info)
+                + generateProcessEntryMethod(process, info)
                 + generateProcessMainSource(process, info)
                 + "}";
     }
@@ -194,12 +196,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     //generates the input variables initialization code
     public String generateProcessInitSource(BPMNDecodedProcess process, BPMNTranslationInfo info) {
         String source = "";
-        source += process.getFreeVariables().stream().map(v -> "this." + v.getName() + " = null;\t//TODO assign input variable\n").collect(Collectors.joining());
-        source += process.getFreeVariables().stream()
-                .map(v -> "if (this." + v.getName() + "==null) " + v.getName() + "=BPMNExecProcessUtils.inputs.getProperty(\"" + v.getName() + "\", null);\n")
-                .collect(Collectors.joining());
 
-        source += process.getFreeVariables().stream().map(v -> "BPMNExecProcessUtils.logInput(\"" + v.getName() + "\",this." + v.getName() + ");\n").collect(Collectors.joining());
+        source += process.getFreeVariables().stream()
+                .map(v
+                        -> //"this." + v.getName() + " = null;\t//TODO assign input variable\n"+
+                        "if (this." + v.getName() + "==null) " + v.getName() + "=BPMNExecProcessUtils.inputs.getProperty(\"" + v.getName() + "\", null);\n"
+                + "BPMNExecProcessUtils.logInput(\"" + v.getName() + "\",this." + v.getName() + ");\n")
+                .collect(Collectors.joining());
 
         source += "//parallel join initializers\n";
         for (ParallelGateway g : parallel_joining) {
@@ -220,8 +223,31 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             source += "BPMNExecProcessUtils.enableTrueParallel();";
         }
         source += "bpmn_process_" + sanitizeName(process.getName()) + " process = new " + "bpmn_process_" + sanitizeName(process.getName()) + "();\n";
+        source += "process.execute("
+                + process.getFreeVariables().stream().map(v -> "null" + "/*" + v.getName() + "*/").collect(Collectors.joining(","))
+                + ");";
+//        if (!process.getStartEventFlowNames().isEmpty()) {
+//            source += "BPMNExecProcessUtils.executeProcess(process::init,process::" + sanitizeName(process.getStartEventFlowNames().getFirst()) + ");\n";
+//        }
+        source += "}";
+        return source;
+    }
+
+    //generates the text source for the process main function
+    public String generateProcessEntryMethod(BPMNDecodedProcess process, BPMNTranslationInfo info) {
+        String source = "public void execute(";
+
+        source += process.getFreeVariables().stream().map(v -> "Object _" + v.getName()).collect(Collectors.joining(","));
+        source += ") {";
+
+        source += process.getFreeVariables().stream()
+                .map(v -> "this." + v.getName() + "=_" + v.getName() + ";\n")
+                .collect(Collectors.joining());
+
+        
+
         if (!process.getStartEventFlowNames().isEmpty()) {
-            source += "BPMNExecProcessUtils.executeProcess(process::init,process::" + sanitizeName(process.getStartEventFlowNames().getFirst()) + ");\n";
+            source += "BPMNExecProcessUtils.executeProcess(this::init,this::" + sanitizeName(process.getStartEventFlowNames().getFirst()) + ");\n";
         }
         source += "}";
         return source;
@@ -254,7 +280,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (script != null) {
             String resultVariable = script.getAttributeValue("resultVariable");
             String expression = script.getAttributeValue("expression");
-            FeelTranslationInfo f_info = new FeelTranslator.FeelTranslationInfo();
+            FeelTranslationInfo f_info = new FeelTranslationInfo();
             code.append(resultVariable + "=" + feel.translate(expression.substring(1), f_info));
             p.registerProcessVariable(resultVariable, BPMNDecodedProcess.VariableDirection.WRITE, t.getId());
             //in questo modo, però, una variabile di input, se viene riassegnata nel codice, non sarà più considerata tale, non potendo capire staticamente

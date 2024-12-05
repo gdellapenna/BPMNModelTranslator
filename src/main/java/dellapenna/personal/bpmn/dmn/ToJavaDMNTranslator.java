@@ -1,7 +1,8 @@
 package dellapenna.personal.bpmn.dmn;
 
+import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslator;
-import dellapenna.personal.bpmn.feel.FeelTranslator.FeelTranslationInfo;
+import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.List;
@@ -24,7 +25,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         };
     }
 
-    private String generateRulesSource(List<DMNDecisionRule<String>> decoded_rules, String output_record_name, DMNTranslationInfo info) {
+    private String generateRulesSource(List<DMNDecodedRule<String>> decoded_rules, String output_record_name, DMNTranslationInfo info) {
         return decoded_rules.stream().map(r -> {
             String cond = r.conditions().stream().map(c -> (c.testExpression())).filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(" && "));
             String rs = "";
@@ -40,27 +41,27 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         }).collect(Collectors.joining(" else "));
     }
 
-    private String generateDecisionTableSource(DMNDecisionTable<String> table, DMNTranslationInfo info) {
+    private String generateDecisionTableSource(DMNDecodedTable<String> table, DMNTranslationInfo info) {
         String tableClassName = sanitizeName("dmn_dtable_" + table.id());
         String resultClassName = tableClassName + "_result";
         String argumentsClassName = tableClassName + "_arguments";
 
         return "// wrapper class for the output of DMN table " + table.id() + "\n"
                 + "class " + resultClassName + "{"
-                + table.outputs().entrySet().stream()
+                + table.outputs().stream()
                         .map(o -> mapType(o.getValue()) + " " + o.getKey())
                         .collect(Collectors.joining(";\n", "", ";\n"))
                 + "public " + resultClassName + "("
-                + table.outputs().entrySet().stream()
+                + table.outputs().stream()
                         .map(o -> mapType(o.getValue()) + " " + o.getKey())
                         .collect(Collectors.joining(","))
                 + ") {"
-                + table.outputs().entrySet().stream()
+                + table.outputs().stream()
                         .map(o -> "this." + o.getKey() + "=" + o.getKey())
                         .collect(Collectors.joining(";\n", "", ";\n"))
                 + "}\n"
                 + "public String toString() { String result=\"{\"; "
-                + table.outputs().entrySet().stream()
+                + table.outputs().stream()
                         .map(o -> "result+=\"" + o.getKey() + "=\"+this." + o.getKey() + " ")
                         .collect(Collectors.joining(";\n", "", ";\n"))
                 //                + table.outputs().stream()
@@ -86,7 +87,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 //
                 + "// wrapper class for the input of DMN table " + table.id() + "\n"
                 + "class " + argumentsClassName + "{"
-                + table.inputs().entrySet().stream()
+                + table.inputs().stream()
                         .map(i -> "public Object" /*+ mapType(i.getInputExpression().getTypeRef())*/ + " " + sanitizeName(i.getKey()))
                         .collect(Collectors.joining(";\n", "", ";\n"))
                 //                + inputs.stream()
@@ -106,7 +107,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                         .collect(Collectors.joining(", "))
                  */
                 + ") {\n\n"
-                + table.inputs().entrySet().stream()
+                + table.inputs().stream()
                         .map(i -> /*mapType(i.getInputExpression().getTypeRef())*/ "Object" + " " + sanitizeName(i.getKey()) + " = args." + sanitizeName(i.getKey()))
                         .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
                 /*+ inputs.stream()
@@ -121,14 +122,14 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
     @Override
     public String translateExpression(String input, String exp, DMNTranslationInfo info) throws FeelTranslatorException {
-        FeelTranslationInfo f_info = new FeelTranslator.FeelTranslationInfo();
+        FeelTranslationInfo f_info = new FeelTranslationInfo();
         String translation = feel.translate(input, exp, f_info);
         info.getReadVariables().addAll(f_info.getUsedVariableNames());
         return translation;
     }
 
     @Override
-    public String generateDecisionModelSource(DMNDecisionModel<String> model, DMNTranslationInfo info) {
+    public String generateDecisionModelSource(DMNDecodedModel<String> model, DMNTranslationInfo info) {
         return """
                /*
                 * ****************************** DMN Generated Code *************************

@@ -2,15 +2,16 @@ package dellapenna.personal.bpmn;
 
 import dellapenna.personal.bpmn.bpmn.BPMNDecoded;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
-import dellapenna.personal.bpmn.bpmn.BPMNTranslator.BPMNTranslationInfo;
+import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
-import dellapenna.personal.bpmn.dmn.DMNDecisionModel;
+import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
-import dellapenna.personal.bpmn.dmn.DMNTranslator.DMNTranslationInfo;
+import dellapenna.personal.bpmn.dmn.DMNTranslationInfo;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.FeelTranslator;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
+import dellapenna.personal.bpmn.versim.ToJavaMainMaker;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -68,6 +69,7 @@ public class BPMNModelTest {
 
         DMNTranslator<String> dt = new ToJavaDMNTranslator();
         ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
+        ToJavaMainMaker mm = new ToJavaMainMaker();
 
         BPMNTranslationInfo b_info = new BPMNTranslationInfo();
         b_info.setDebug(true);
@@ -82,7 +84,7 @@ public class BPMNModelTest {
             out.newLine();
             out.newLine();
 //
-            DMNDecisionModel<String>[] dmns = new DMNDecisionModel[dmn_files.length];
+            DMNDecodedModel<String>[] dmns = new DMNDecodedModel[dmn_files.length];
             int i = 0;
             for (Path dmn_file : dmn_files) {
                 DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_file.toFile());
@@ -93,14 +95,21 @@ public class BPMNModelTest {
             out.newLine();
 //
             BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
-            BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance,dmns, b_info);
+            BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance, dmns, b_info);
             out.write(bt.generateBpmnSource(bpmn, b_info));
+//
+            out.newLine();
+//
+            out.write(mm.generateProcessLauncher(bpmn, dmns, b_info));
 //
             out.newLine();
             out.newLine();
             out.write(POST_CODE);
+            
+            mm.findDMNConstraints(dmns, "GetLengthDT", "Type");
         }
 
+        
     }
 
     public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException {

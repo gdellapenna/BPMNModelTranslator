@@ -1,12 +1,12 @@
 package dellapenna.personal.bpmn.dmn;
 
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.camunda.bpm.model.dmn.instance.DecisionTable;
 import org.camunda.bpm.model.dmn.instance.Input;
@@ -26,12 +26,12 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         return n.replaceAll("[^A-Za-z0-9_]", "_");
     }
 
-    private DMNDecisionTable<T> decodeDecisionTable(DecisionTable t, DMNTranslationInfo info) throws FeelTranslatorException {
+    private DMNDecodedTable<T> decodeDecisionTable(DecisionTable t, DMNTranslationInfo info) throws FeelTranslatorException {
         List<Input> raw_inputs = new ArrayList(t.getInputs());
         List<Output> raw_outputs = new ArrayList(t.getOutputs());
         Collection<Rule> raw_rules = t.getRules();
 
-        List<DMNDecisionRule<T>> rules = new ArrayList<>();
+        List<DMNDecodedRule<T>> rules = new ArrayList<>();
         DMNTranslationInfo lhsinfo = new DMNTranslationInfo(info);
         DMNTranslationInfo rhsinfo = new DMNTranslationInfo(info);
         lhsinfo.getReadVariables().clear(); //ignored
@@ -40,57 +40,53 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         for (Rule r : raw_rules) {
             String rule_comment = r.getDescription() != null ? r.getDescription().getTextContent() : "";
             int ref_counter = 0;
-            List<DMNCondition<T>> rule_conditions = new ArrayList<>();
+            List<DMNDecodedCondition<T>> rule_conditions = new ArrayList<>();
             Collection<InputEntry> inputEntries = r.getInputEntries();
 
             for (InputEntry i : inputEntries) {
                 if (!i.getTextContent().isBlank()) { //blank significa "don't care"
-                    rule_conditions.add(new DMNCondition<>(
+                    rule_conditions.add(new DMNDecodedCondition<>(
                             translateExpression(null, raw_inputs.get(ref_counter).getInputExpression().getTextContent(), lhsinfo),
                             translateExpression(raw_inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent(), lhsinfo)
                     ));
                 } else {
-                    rule_conditions.add(new DMNCondition<>(
+                    rule_conditions.add(new DMNDecodedCondition<>(
                             translateExpression(null, raw_inputs.get(ref_counter++).getInputExpression().getTextContent(), lhsinfo),
                             null));
                 }
             }
             ref_counter = 0;
-            List<DMNAssignment<T>> rule_assignments = new ArrayList<>();
+            List<DMNDecodedAssignment<T>> rule_assignments = new ArrayList<>();
             Collection<OutputEntry> outputEntries = r.getOutputEntries();
             for (OutputEntry o : outputEntries) {
-                rule_assignments.add(new DMNAssignment<>(
+                rule_assignments.add(new DMNDecodedAssignment<>(
                         raw_outputs.get(ref_counter++).getAttributeValue("name"),
                         translateExpression(null, o.getTextContent(), rhsinfo)
                 ));
             }
-            rules.add(new DMNDecisionRule<>(rule_conditions, rule_assignments, rule_comment));
+            rules.add(new DMNDecodedRule<>(rule_conditions, rule_assignments, rule_comment));
         }
 
-        Map<String, String> inputs = t.getInputs().stream()
-                .collect(Collectors.toMap(
-                        (i -> sanitizeName(i.getInputExpression().getTextContent())),
-                        (i -> i.getInputExpression().getTypeRef()))
-                );
+        List<SimpleImmutableEntry<String, String>> inputs = t.getInputs().stream()
+                .map(i -> new SimpleImmutableEntry<>(sanitizeName(i.getInputExpression().getTextContent()), i.getInputExpression().getTypeRef()))
+                .toList();
 
-        Map<String, String> outputs = t.getOutputs().stream()
-                .collect(Collectors.toMap(
-                        (o -> sanitizeName(o.getName())),
-                        (o -> o.getTypeRef()))
-                );
-
+        List<SimpleImmutableEntry<String, String>> outputs = t.getOutputs().stream()
+                .map(o -> new SimpleImmutableEntry<>(sanitizeName(o.getName()), o.getTypeRef()))
+                .toList();
+        
         info.getReadVariables().addAll(rhsinfo.getReadVariables());
-        return new DMNDecisionTable<>(t.getParentElement().getAttributeValue("id"), rules, inputs, outputs);
+        return new DMNDecodedTable<>(t.getParentElement().getAttributeValue("id"), rules, inputs, outputs);
     }
 
     @Override
-    public DMNDecisionModel<T> decodeDecisionModel(DmnModelInstance dmn, DMNTranslationInfo info) throws FeelTranslatorException {
-        Map<String, DMNDecisionTable<T>> tables = new HashMap<>();
+    public DMNDecodedModel<T> decodeDecisionModel(DmnModelInstance dmn, DMNTranslationInfo info) throws FeelTranslatorException {
+        Map<String, DMNDecodedTable<T>> tables = new HashMap<>();
         Collection<DecisionTable> raw_tables = dmn.getModelElementsByType(DecisionTable.class);
         for (DecisionTable t : raw_tables) {
             tables.put(t.getId(), decodeDecisionTable(t, info));
         }
-        return new DMNDecisionModel(dmn.getDocumentElement().getAttributeValue("id"), tables);
+        return new DMNDecodedModel(dmn.getDocumentElement().getAttributeValue("id"), tables);
     }
 
     @Override
@@ -99,8 +95,6 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
     }
 
     protected abstract T translateExpression(String input, String exp, DMNTranslationInfo info) throws FeelTranslatorException;
-
-    
 
     //////////////
     public void dump(DecisionTable t) {

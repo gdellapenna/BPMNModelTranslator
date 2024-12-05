@@ -139,20 +139,20 @@ class bpmn_process_Shipment {
 
 //Input Variables
 // READ: dmn_dtable_GetLengthDT
-    Object pType;
-// READ: Gateway_1tgxmu2, dmn_dtable_DetermineModeDT, dmn_dtable_ChooseConsentDT
-    Object pWeight;
+    Object pType = null;
+// READ: Gateway_1tgxmu2, dmn_dtable_ChooseConsentDT, dmn_dtable_DetermineModeDT
+    Object pWeight = null;
 
 //Process Variables
-// READ: Gateway_0u50uj6, Gateway_0u50uj6, Gateway_0u50uj6
+// READ: Gateway_0u50uj6
 // WRITTEN: Activity_1cbdv9z
-    Object consent;
+    Object consent = null;
 // READ: Gateway_0i2yujj, dmn_dtable_DetermineModeDT
 // WRITTEN: Activity_0h04jo2
-    Object pLength;
+    Object pLength = null;
 // READ: Gateway_1ocbjca, dmn_dtable_ChooseConsentDT
 // WRITTEN: Activity_1ol43bw
-    Object sMode;
+    Object sMode = null;
 
 //Process Dynamics
     public void EVENT_no_shipment(BPMNExecProcessUtils.ProcessStatus s) {//End Event no shipment [Event_19ylwnc]
@@ -304,23 +304,36 @@ class bpmn_process_Shipment {
     }
 
     public void init() {
-        this.pType = null;	//TODO assign input variable
-        this.pWeight = null;	//TODO assign input variable
         if (this.pType == null) {
             pType = BPMNExecProcessUtils.inputs.getProperty("pType", null);
         }
+        BPMNExecProcessUtils.logInput("pType", this.pType);
         if (this.pWeight == null) {
             pWeight = BPMNExecProcessUtils.inputs.getProperty("pWeight", null);
         }
-        BPMNExecProcessUtils.logInput("pType", this.pType);
         BPMNExecProcessUtils.logInput("pWeight", this.pWeight);
 //parallel join initializers
 
     }
 
+    public void execute(Object _pType, Object _pWeight) {
+        this.pType = _pType;
+        this.pWeight = _pWeight;
+        BPMNExecProcessUtils.executeProcess(this::init, this::EVENT_package_received);
+    }
+
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_Shipment process = new bpmn_process_Shipment();
-        BPMNExecProcessUtils.executeProcess(process::init, process::EVENT_package_received);
+        process.execute(null/*pType*/, null/*pWeight*/);
+    }
+}
+
+class Executor {
+
+    public static void main(String[] args) {
+        BPMNExecProcessUtils.enableTrueParallel();
+        bpmn_process_Shipment process = new bpmn_process_Shipment();
+        process.execute(null/*pType*/, null/*pWeight*/);
     }
 }

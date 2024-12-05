@@ -11,14 +11,6 @@ import java.util.List;
  */
 public interface FeelTranslator<T> {
 
-    public static class FeelTranslationInfo {
-
-        private final List<List<String>> usedVariableNames = new ArrayList<>();
-
-        public List<List<String>> getUsedVariableNames() {
-            return usedVariableNames;
-        }
-    };
 
     T translate(String expression, FeelTranslationInfo info) throws FeelTranslatorException;
 
