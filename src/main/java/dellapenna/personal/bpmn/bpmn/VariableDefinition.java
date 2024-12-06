@@ -1,7 +1,6 @@
 package dellapenna.personal.bpmn.bpmn;
 
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess.VariableDirection;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,10 +8,13 @@ import java.util.Map;
 import java.util.Set;
 
 public class VariableDefinition {
+    
+    
+    public static record UsageData(String sourceId, String sourceExpression){};
 
     String name;
     String type = null;
-    Map<VariableDirection, Set<String>> usages = new HashMap<>();
+    Map<VariableDirection, Set<UsageData>> usages = new HashMap<>();
 
     public String getName() {
         return name;
@@ -22,7 +24,7 @@ public class VariableDefinition {
         return type;
     }
 
-    public Collection<String> getUsages(VariableDirection d) {
+    public Collection<UsageData> getUsages(VariableDirection d) {
         return usages.get(d);
     }
 

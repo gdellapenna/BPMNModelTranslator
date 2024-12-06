@@ -129,7 +129,7 @@ GATEWAY_Parallel2Split(s.withCurrent("Activity_0sbgnmb"));
 
 public void init() {
 //parallel join initializers
-BPMNExecProcessUtils.initJoin("Gateway_02100g2","Activity_0pfa4n5","Activity_09oefmk","Gateway_1iv1tvb");BPMNExecProcessUtils.initJoin("Gateway_1iv1tvb","Activity_0svmpy2","Activity_1otvmx2");
+BPMNExecProcessUtils.initJoin("Gateway_1iv1tvb","Activity_0svmpy2","Activity_1otvmx2");BPMNExecProcessUtils.initJoin("Gateway_02100g2","Activity_0pfa4n5","Activity_09oefmk","Gateway_1iv1tvb");
 }public void execute() {BPMNExecProcessUtils.executeProcess(this::init,this::EVENT_Start);
 }public static void main(String[] args) {
 BPMNExecProcessUtils.enableTrueParallel();bpmn_process_diagram_2 process = new bpmn_process_diagram_2();

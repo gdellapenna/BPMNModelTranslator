@@ -14,15 +14,15 @@ import org.camunda.bpm.model.bpmn.instance.Task;
  * @author giuse
  */
 public class BPMNDecodedProcess {
-    
+
     public enum NodeProcedureType {
         GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
     };
-    
+
     public enum VariableDirection {
         READ, WRITE, READWRITE
     };
-    
+
     private final String name;
     private final List<BPMNDecodedFlow> rawFlows = new ArrayList<>();
     private final Map<NodeProcedureType, Map<String, FunctionDefinition>> functions = new HashMap<>();
@@ -30,7 +30,7 @@ public class BPMNDecodedProcess {
 
     //private final Map<String, Map<VariableDirection, List<String>>> variableUsages = new HashMap<>();
     private final List<String> startEventFlowNames = new ArrayList<>();
-    
+
     public String getFlowName(FlowNode start) {
         //return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
         NodeProcedureType type = switch (start) {
@@ -45,17 +45,17 @@ public class BPMNDecodedProcess {
         };
         return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
     }
-    
+
     public BPMNDecodedProcess(String name) {
         this.name = name;
         //this.processVariables.put(VariableDirection.READ, new HashMap<>());
         //this.processVariables.put(VariableDirection.WRITE, new HashMap<>());
     }
-    
+
     public Map<NodeProcedureType, Map<String, FunctionDefinition>> getFunctions() {
         return this.functions;
     }
-    
+
     public List<VariableDefinition> getReadVariables() {
         return this.processVariables.stream()
                 .filter(v -> v.isRead())
@@ -85,9 +85,9 @@ public class BPMNDecodedProcess {
                     return true;
                 }
                 ).toList();
-        
+
     }
-    
+
     public List<String> getStartEventFlowNames() {
         return this.startEventFlowNames;
     }
@@ -97,25 +97,25 @@ public class BPMNDecodedProcess {
 //    }
     ////
     //registers a new global variable for the process and returns its internal definition
-    public VariableDefinition registerProcessVariable(String name, VariableDirection d, String whereUsed) {
+    public VariableDefinition registerProcessVariable(String name, VariableDirection d, String sourceId, String sourceExpression) {
         VariableDefinition g = processVariables.stream().filter(v -> v.getName().equals(name)).findFirst().orElse(null);
         if (g == null) {
             g = new VariableDefinition(name);
             processVariables.add(g);
-        }        
-        if (whereUsed != null) {
-            g.getUsages(d).add(whereUsed);
+        }
+        if (sourceId != null) {
+            g.getUsages(d).add(new VariableDefinition.UsageData(sourceId, sourceExpression));
         }
         return g;
     }
-    
-    public VariableDefinition registerProcessVariables(List names, VariableDirection d, String whereUsed) {
+
+    public VariableDefinition registerProcessVariables(List names, VariableDirection d, String sourceId, String sourceExpression) {
         VariableDefinition v = null;
         for (Object composite_name : names) {
             if (composite_name instanceof List l) {
                 composite_name = String.join(".", l);
             }
-            v = registerProcessVariable(composite_name.toString(), d, whereUsed);
+            v = registerProcessVariable(composite_name.toString(), d, sourceId, sourceExpression);
         }
         return v;
     }
@@ -182,7 +182,7 @@ public class BPMNDecodedProcess {
         }
         return registerFunction(name, code, parameters, "void", type);
     }
-    
+
     public void registerNodeProcedure(FlowNode node, Code code) {
         NodeProcedureType type = switch (node) {
             case Gateway g ->
@@ -197,7 +197,7 @@ public class BPMNDecodedProcess {
         //code.prepend("//[node] "+node.getId()+((node.getName()!=null && !node.getName().isBlank())?(" - "+node.getName()):""));
         registerProcedure(getFlowName(node), code, Map.of("s", "BPMNExecProcessUtils.ProcessStatus"), type);
     }
-    
+
     public void registerStartEventFlowName(String name) {
         this.startEventFlowNames.add(name);
     }

@@ -105,8 +105,6 @@ public class BPMNModelTest {
             out.newLine();
             out.newLine();
             out.write(POST_CODE);
-            
-            mm.findDMNConstraints(dmns, "GetLengthDT", "Type");
         }
 
         

@@ -22,8 +22,15 @@ public class ToJavaMainMaker {
         DMNDecodedTable<String> table = Arrays.stream(dmns).flatMap(dmn -> dmn.tables().values().stream()).filter(t -> t.id().equals(table_id)).findFirst().orElse(null);
         if (table != null) {
             List<String> conditions = table.rules().stream().flatMap(r -> r.conditions().stream()).filter(c -> c.inputExpression().equals(input_name)).map(c -> c.testExpression()).toList();
-            conditions.stream().forEach(c -> System.out.println(c)); //DEBUG
+            //conditions.stream().forEach(c -> System.out.println(c)); //DEBUG
         }
+    }
+
+    public void lookupDMNConstriantsOnInputs(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        process.getFreeVariables().stream().forEach(v -> {
+            System.out.println("* INPUT " + v.getName() + " USATO IN ");
+            System.out.println("-- " + v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().map(u -> u.sourceId() + " (" + u.sourceExpression() + ")").collect(Collectors.joining(", ")));
+        });
 
     }
 
@@ -45,6 +52,8 @@ public class ToJavaMainMaker {
 
         mainMethod += "}";
 
+        lookupDMNConstriantsOnInputs(process, dmns, info);
+        
         return " class Executor" + " { " + mainMethod + "}";
     }
 

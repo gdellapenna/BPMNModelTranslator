@@ -13,8 +13,8 @@ Object input_a=null;
 
 
 //Process Variables
-// READ: Gateway_0x6sgvb, Activity_1k1rd56
-// WRITTEN: Activity_1k1rd56, StartEvent_1
+// READ: Activity_1k1rd56, Gateway_0x6sgvb
+// WRITTEN: StartEvent_1, Activity_1k1rd56
 Object a=null;
 
 
