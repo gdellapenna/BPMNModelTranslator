@@ -47,12 +47,14 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
                 if (!i.getTextContent().isBlank()) { //blank significa "don't care"
                     rule_conditions.add(new DMNDecodedCondition<>(
                             translateExpression(null, raw_inputs.get(ref_counter).getInputExpression().getTextContent(), lhsinfo),
-                            translateExpression(raw_inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent(), lhsinfo)
+                            translateExpression(raw_inputs.get(ref_counter++).getInputExpression().getTextContent(), i.getTextContent(), lhsinfo),
+                            i.getTextContent()
                     ));
                 } else {
                     rule_conditions.add(new DMNDecodedCondition<>(
                             translateExpression(null, raw_inputs.get(ref_counter++).getInputExpression().getTextContent(), lhsinfo),
-                            null));
+                            null,
+                            i.getTextContent()));
                 }
             }
             ref_counter = 0;
@@ -61,7 +63,8 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
             for (OutputEntry o : outputEntries) {
                 rule_assignments.add(new DMNDecodedAssignment<>(
                         raw_outputs.get(ref_counter++).getAttributeValue("name"),
-                        translateExpression(null, o.getTextContent(), rhsinfo)
+                        translateExpression(null, o.getTextContent(), rhsinfo),
+                        o.getTextContent()
                 ));
             }
             rules.add(new DMNDecodedRule<>(rule_conditions, rule_assignments, rule_comment));
@@ -74,7 +77,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         List<SimpleImmutableEntry<String, String>> outputs = t.getOutputs().stream()
                 .map(o -> new SimpleImmutableEntry<>(sanitizeName(o.getName()), o.getTypeRef()))
                 .toList();
-        
+
         info.getReadVariables().addAll(rhsinfo.getReadVariables());
         return new DMNDecodedTable<>(t.getParentElement().getAttributeValue("id"), rules, inputs, outputs);
     }

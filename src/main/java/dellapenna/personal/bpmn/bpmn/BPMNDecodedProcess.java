@@ -104,7 +104,7 @@ public class BPMNDecodedProcess {
             processVariables.add(g);
         }
         if (sourceId != null) {
-            g.getUsages(d).add(new VariableDefinition.UsageData(sourceId, sourceExpression));
+            g.getUsages(d).add(new VariableDefinition.VariableUsageData(sourceId, sourceExpression));
         }
         return g;
     }

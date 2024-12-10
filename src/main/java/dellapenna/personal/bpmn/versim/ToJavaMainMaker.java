@@ -4,10 +4,8 @@ import dellapenna.personal.bpmn.bpmn.BPMNDecoded;
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import static dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator.sanitizeName;
+import dellapenna.personal.bpmn.bpmn.VariableDefinition;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
-import dellapenna.personal.bpmn.dmn.DMNDecodedTable;
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -15,24 +13,6 @@ import java.util.stream.Collectors;
  * @author giuse
  */
 public class ToJavaMainMaker {
-
-    //dovremmo memorizzare il nome del parametro target quando effetuiamo la chiamata alla DMN per capire che colonna estrarre
-    //servirebbe l'espressione feel originale per poter capire se ci sono range
-    public void findDMNConstraints(DMNDecodedModel<String>[] dmns, String table_id, String input_name) {
-        DMNDecodedTable<String> table = Arrays.stream(dmns).flatMap(dmn -> dmn.tables().values().stream()).filter(t -> t.id().equals(table_id)).findFirst().orElse(null);
-        if (table != null) {
-            List<String> conditions = table.rules().stream().flatMap(r -> r.conditions().stream()).filter(c -> c.inputExpression().equals(input_name)).map(c -> c.testExpression()).toList();
-            //conditions.stream().forEach(c -> System.out.println(c)); //DEBUG
-        }
-    }
-
-    public void lookupDMNConstriantsOnInputs(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-        process.getFreeVariables().stream().forEach(v -> {
-            System.out.println("* INPUT " + v.getName() + " USATO IN ");
-            System.out.println("-- " + v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().map(u -> u.sourceId() + " (" + u.sourceExpression() + ")").collect(Collectors.joining(", ")));
-        });
-
-    }
 
     public String generateProcessLauncher(BPMNDecoded bpmn, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         String mainMethod = "public static void main(String[] args) {\n";
@@ -52,9 +32,17 @@ public class ToJavaMainMaker {
 
         mainMethod += "}";
 
-        lookupDMNConstriantsOnInputs(process, dmns, info);
-        
         return " class Executor" + " { " + mainMethod + "}";
+    }
+
+    public String generateInputCostraintNotes(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        String result = "";
+        VariableUtils vu = new VariableUtils();
+        for (VariableDefinition v : process.getFreeVariables()) {
+            vu.analyzeInputConstraints(v, dmns, info);
+            result += "//" + v.getName() + ":" + v.getBounds() + "\n";
+        }
+        return result;
     }
 
 }

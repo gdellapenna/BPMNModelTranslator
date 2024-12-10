@@ -335,4 +335,6 @@ class Executor {
         bpmn_process_Shipment process = new bpmn_process_Shipment();
         process.execute(null/*pType*/, null/*pWeight*/);
     }
-}
+}//pType:VariableBounds{cases=[std, large, xl], expressions=null, min=null, max=null}
+//pWeight:VariableBounds{cases=null, expressions=null, min=0.0, max=10.0}
+

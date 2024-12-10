@@ -1,9 +1,9 @@
 package dellapenna.personal.bpmn.feel;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.camunda.feel.api.ParseResult;
 
 /**
  *
@@ -169,5 +169,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     protected String translatePath(String key, String path, FeelTranslationInfo info) {
         return key + "." + path;
     }
+
+    
 
 }

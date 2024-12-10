@@ -101,6 +101,9 @@ public class BPMNModelTest {
             out.newLine();
 //
             out.write(mm.generateProcessLauncher(bpmn, dmns, b_info));
+            
+            //deve essere per-processo?!?
+            out.write(mm.generateInputCostraintNotes(bpmn.processes().get(0), dmns, b_info));
 //
             out.newLine();
             out.newLine();

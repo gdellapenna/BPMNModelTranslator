@@ -168,20 +168,17 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
 
     @Override
     public T translate(String input, String expression, FeelTranslationInfo info) throws FeelTranslatorException {
-        ParseResult input_parsing = input != null ? api.parseExpression(input) : null;
-        if (input_parsing == null || input_parsing.isSuccess()) {
-            ParseResult expression_parsing = api.parseExpression(expression);
-            if (expression_parsing.isSuccess() && (input_parsing == null || input_parsing.isSuccess())) {
-                return translateExp(
-                        input_parsing != null ? input_parsing.parsedExpression().expression() : null,
-                        expression_parsing.parsedExpression().expression(),
-                        info);
-            } else {
-                throw new FeelTranslatorException("Parsing error: " + expression_parsing.failure().message());
-            }
-        } else {
-            throw new FeelTranslatorException("Parsing error: " + input_parsing.failure().message());
-        }
+        Exp input_parsing = input != null ? parse(input) : null;
+        //if (input_parsing == null || input_parsing.isSuccess()) {
+        Exp expression_parsing = parse(expression);
+        //if (expression_parsing.isSuccess() && (input_parsing == null || input_parsing.isSuccess())) {
+        return translateExp(input_parsing != null ? input_parsing : null, expression_parsing, info);
+        //} else {
+        //    throw new FeelTranslatorException("Parsing error: " + expression_parsing.failure().message());
+        //}
+        //} else {
+        //    throw new FeelTranslatorException("Parsing error: " + input_parsing.failure().message());
+        //}
     }
 
     @Override
@@ -201,6 +198,17 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
     @Override
     public T translateChecked(String expression, FeelTranslationInfo info) {
         return translateChecked(null, expression, info);
+    }
+
+    @Override
+    public Exp parse(String expression) throws FeelTranslatorException {
+        ParseResult expression_parsing = api.parseExpression(expression);
+        if (expression_parsing.isSuccess()) {
+            return expression_parsing.parsedExpression().expression();
+        } else {
+            throw new FeelTranslatorException("Parsing error: " + expression_parsing.failure().message());
+        }
+
     }
 
     protected abstract T translateGreaterThan(T arg1, T arg2, FeelTranslationInfo info);

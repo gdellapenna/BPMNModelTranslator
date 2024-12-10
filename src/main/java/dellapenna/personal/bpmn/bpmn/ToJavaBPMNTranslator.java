@@ -3,6 +3,7 @@ package dellapenna.personal.bpmn.bpmn;
 import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
+import dellapenna.personal.bpmn.versim.VariableUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -140,6 +141,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         //input variables should be deduced by differencing declared globals from
         //variables referenced by feel expressions
 
+        VariableUtils vu = new VariableUtils();
+
         String global_variables = process.getWrittenVariables().stream()
                 .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
                 .map(v
@@ -147,11 +150,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 + "\n// WRITTEN: " + v.getUsages(BPMNDecodedProcess.VariableDirection.WRITE).stream().map(u -> u.sourceId()).distinct().collect(Collectors.joining(", "))
                 + "\nObject " + v.getName() + "=null")
                 .collect(Collectors.joining(";\n", "\n\n//Process Variables\n", ";\n\n"));
+
+        //process.getFreeVariables().stream().forEach(v->vu.analyzeInputConstraints(v, dmns, info));
         String input_variables = process.getFreeVariables().stream()
                 .sorted((v1, v2) -> v1.getName().compareTo(v2.getName()))
                 .map(v
                         -> "// READ: " + v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().map(u -> u.sourceId()).distinct().collect(Collectors.joining(", "))
-                //+ "\n// WRITTEN: " + process.getVariableUsages().get(id.name()).getOrDefault(BPMNDecodedProcess.VariableDirection.WRITE, Collections.EMPTY_LIST).stream().collect(Collectors.joining(", "))
+                //+ "\n// CONSTRAINTS: " + v.getBounds()
                 + "\nObject " + v.getName() + "=null"
                 )
                 .collect(Collectors.joining(";\n", "\n\n//Input Variables\n", ";\n\n"));
