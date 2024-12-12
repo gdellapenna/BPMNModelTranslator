@@ -272,6 +272,10 @@ public class BPMNExecProcessUtils {
         //traceChannel.println("\""+source + "\" -> \"" + target+"\"");
     }
 
+    public static void logCurrentNode(String id, String description) {
+        //traceChannel.println(">" + id + (description != null && !description.isBlank() ? ("(" + description + ")") : ""));
+    }
+
     public static void logResult(ProcessStatus s, boolean success, String message, int code) {
         resultChannel.println(s.branchID + ":" + (success ? "SUCCESS" : "FAILURE" + "," + code + "," + message));
         outputs.setProperty(s.branchID + ":output_success", success ? "true" : "false");

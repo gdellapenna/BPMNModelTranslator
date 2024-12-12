@@ -24,6 +24,12 @@ import org.camunda.feel.syntaxtree.InputInRange;
 import org.camunda.feel.syntaxtree.InputLessOrEqual;
 import org.camunda.feel.syntaxtree.InputLessThan;
 import org.camunda.feel.syntaxtree.OpenConstRangeBoundary;
+import org.camunda.feel.syntaxtree.Comparison;
+import org.camunda.feel.syntaxtree.GreaterOrEqual;
+import org.camunda.feel.syntaxtree.GreaterThan;
+import org.camunda.feel.syntaxtree.LessOrEqual;
+import org.camunda.feel.syntaxtree.LessThan;
+import org.camunda.feel.syntaxtree.Ref;
 
 /**
  *
@@ -33,7 +39,7 @@ public class VariableUtils {
 
     FeelTranslator<String> ft = new ToJavaFeelTranslator();
 
-    public void decodeCostraint(String condition_expression, VariableDefinition.VariableBounds b) throws FeelTranslatorException {
+    public void decodeVariableCostraint(String condition_expression, VariableDefinition.VariableBounds b) throws FeelTranslatorException {
         if (!condition_expression.isBlank()) {
             Exp exp = ft.parse(condition_expression);
             //System.out.println(exp.getClass().getName());
@@ -83,6 +89,70 @@ public class VariableUtils {
         }
     }
 
+    public void extractVariableCostraint(String variable_expression, VariableDefinition v) throws FeelTranslatorException {
+        if (!variable_expression.isBlank()) {
+            Exp exp = ft.parse(variable_expression);
+            //System.out.println(exp.getClass().getName());
+            if (exp instanceof Comparison c) {
+                boolean inverse = false;
+                Exp compared_expression = null;
+                if (c.x() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
+                    inverse = false;
+                    compared_expression = c.y();
+                } else if (c.y() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
+                    inverse = true;
+                    compared_expression = c.x();
+                } else {
+                    v.getBounds().addExpression(variable_expression); //non auto-deducibile  
+                }
+                if (compared_expression != null) {
+                    switch (exp) {
+                        case GreaterThan texp -> {
+                            if (compared_expression instanceof ConstNumber n) {
+                                if (!inverse) {
+                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), true);
+                                } else {
+                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), true);
+                                }
+                            }
+                        }
+                        case LessThan texp -> {
+                            if (compared_expression instanceof ConstNumber n) {
+                                if (!inverse) {
+                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), true);
+                                } else {
+                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), true);
+                                }
+
+                            }
+                        }
+                        case GreaterOrEqual texp -> {
+                            if (compared_expression instanceof ConstNumber n) {
+                                if (!inverse) {
+                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), false);
+                                } else {
+                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), false);
+                                }
+                            }
+                        }
+                        case LessOrEqual texp -> {
+                            if (compared_expression instanceof ConstNumber n) {
+                                if (!inverse) {
+                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), false);
+                                } else {
+                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), false);
+                                }
+                            }
+                        }
+                        default -> {
+                            v.getBounds().addExpression(variable_expression); //non auto-deducibile
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public List<String> extractDMNConstraints(DMNDecodedModel<String>[] dmns, String table_id, String input_name) {
         DMNDecodedTable<String> table = Arrays.stream(dmns).flatMap(dmn -> dmn.tables().values().stream()).filter(t -> t.id().equals(table_id)).findFirst().orElse(null);
         if (table != null) {
@@ -105,14 +175,18 @@ public class VariableUtils {
                     //System.out.print(condition_expressions.stream().collect(Collectors.joining(", ")));
                     for (String c : condition_expressions) {
                         try {
-                            decodeCostraint(c, v.getBounds());
+                            decodeVariableCostraint(c, v.getBounds());
                         } catch (FeelTranslatorException ex) {
                             Logger.getLogger(VariableUtils.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
                 }
-                //System.out.println();
-
+            } else {
+                try {
+                    extractVariableCostraint(u.sourceExpression(), v);
+                } catch (FeelTranslatorException ex) {
+                    Logger.getLogger(VariableUtils.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
         //System.out.println(v.getBounds());

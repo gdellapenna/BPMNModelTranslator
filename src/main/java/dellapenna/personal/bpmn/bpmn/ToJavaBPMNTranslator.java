@@ -80,6 +80,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         code.append("//" + description);
         if (info != null && info.isDebug()) {
             code.append("BPMNExecProcessUtils.debugOutput(\"" + description + "\")");
+            code.append("BPMNExecProcessUtils.logCurrentNode(\"" + n.getId() + "\"," + (n.getName() != null ? ("\"" + n.getName() + "\"") : "null") + ")");
         }
         return code;
     }

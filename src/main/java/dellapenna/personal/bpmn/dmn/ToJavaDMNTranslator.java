@@ -1,8 +1,6 @@
 package dellapenna.personal.bpmn.dmn;
 
 import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
-import dellapenna.personal.bpmn.feel.FeelTranslator;
-import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.List;

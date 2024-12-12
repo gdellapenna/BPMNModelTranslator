@@ -36,7 +36,12 @@ public class ToJavaMainMaker {
     }
 
     public String generateInputCostraintNotes(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-        String result = "";
+        String result = """
+                        
+               /*
+                * ****************************** Input Variable Constraints *************************
+                */
+               """;
         VariableUtils vu = new VariableUtils();
         for (VariableDefinition v : process.getFreeVariables()) {
             vu.analyzeInputConstraints(v, dmns, info);
