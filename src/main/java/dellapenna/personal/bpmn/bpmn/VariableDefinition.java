@@ -21,7 +21,9 @@ public class VariableDefinition {
         private List<String> cases = null;
         private List<String> expressions = null;
         private Double min = null;
+        boolean minExclusive = false;
         private Double max = null;
+        boolean maxExclusive = false;
 
         public List<String> getCases() {
             return cases;
@@ -50,10 +52,9 @@ public class VariableDefinition {
         }
 
         public void updateMin(Double min, boolean exclusive) {
-            if (this.min == null) {
+            if (this.min == null || this.min >= min) {
                 this.min = min;
-            } else {
-                this.min = Math.min(this.min, min);
+                this.minExclusive = exclusive;
             }
         }
 
@@ -62,10 +63,9 @@ public class VariableDefinition {
         }
 
         public void updateMax(Double max, boolean exclusive) {
-            if (this.max == null) {
+            if (this.max == null || this.max <= max) {
                 this.max = max;
-            } else {
-                this.max = Math.max(this.max, max);
+                this.maxExclusive = exclusive;
             }
         }
 
@@ -74,9 +74,38 @@ public class VariableDefinition {
             updateMin(member, false);
         }
 
+        public boolean isMinExclusive() {
+            return minExclusive;
+        }
+
+        public void setMinExclusive(boolean minExclusive) {
+            this.minExclusive = minExclusive;
+        }
+
+        public boolean isMaxExclusive() {
+            return maxExclusive;
+        }
+
+        public void setMaxExclusive(boolean maxExclusive) {
+            this.maxExclusive = maxExclusive;
+        }
+
         @Override
         public String toString() {
-            return "VariableBounds{" + "cases=" + cases + ", expressions=" + expressions + ", min=" + min + ", max=" + max + '}';
+            String result = "";
+            if (cases != null && !cases.isEmpty()) {
+                result += (!result.isBlank() ? " / " : "") + "ENUM: " + String.join(",", cases);
+            }
+            if (min != null) {
+                result += (!result.isBlank() ? " / " : "") + "MIN: " + min + " " + (minExclusive ? "EXCLUSIVE" : "INCLUSIVE");
+            }
+            if (max != null) {
+                result += (!result.isBlank() ? " / " : "") + "MAX: " + max + " " + (maxExclusive ? "EXCLUSIVE" : "INCLUSIVE");
+            }
+            if (expressions != null && !expressions.isEmpty()) {
+                result += (!result.isBlank() ? " / " : "") + "UNHANDLED: " + String.join(",", expressions);
+            }
+            return result;
         }
 
     };

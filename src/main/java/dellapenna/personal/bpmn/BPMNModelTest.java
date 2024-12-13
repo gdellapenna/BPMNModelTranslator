@@ -77,40 +77,47 @@ public class BPMNModelTest {
 
         DMNTranslationInfo d_info = new DMNTranslationInfo();
 
-        Path output_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
+        DMNDecodedModel<String>[] dmns = new DMNDecodedModel[dmn_files.length];
 
-        try (BufferedWriter out = new BufferedWriter(new FileWriter(output_file.toFile()))) {
-            out.write(PRE_CODE);
-            out.newLine();
-            out.newLine();
+        for (int i = 0; i < dmn_files.length; ++i) {
+            DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_files[i].toFile());
+            dmns[i] = dt.decodeDecisionModel(dmnInstance, d_info);
+        }
+        BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
+        BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance, dmns, b_info);
+
+        Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
+        Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
+
+        try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
+            outputJava.write(PRE_CODE);
+            outputJava.newLine();
+            outputJava.newLine();
 //
-            DMNDecodedModel<String>[] dmns = new DMNDecodedModel[dmn_files.length];
-            int i = 0;
-            for (Path dmn_file : dmn_files) {
-                DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_file.toFile());
-                dmns[i] = dt.decodeDecisionModel(dmnInstance, d_info);
-                out.write(dt.generateDecisionModelSource(dmns[i++], d_info));
+            for (int i = 0; i < dmns.length; ++i) {
+                outputJava.write(dt.generateDecisionModelSource(dmns[i], d_info));
             }
 //
-            out.newLine();
+            outputJava.newLine();
 //
-            BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
-            BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance, dmns, b_info);
-            out.write(bt.generateBpmnSource(bpmn, b_info));
+            outputJava.write(bt.generateBpmnSource(bpmn, b_info));
 //
-            out.newLine();
+            outputJava.newLine();
 //
-            out.write(mm.generateProcessLauncher(bpmn, dmns, b_info));
-            
+            outputJava.write(mm.generateProcessLauncher(bpmn, dmns, b_info));
+//
             //deve essere per-processo?!?
-            out.write(mm.generateInputCostraintNotes(bpmn.processes().get(0), dmns, b_info));
+            //outputJava.write(mm.generateInputCostraintNotes(bpmn.processes().get(0), dmns, b_info));
 //
-            out.newLine();
-            out.newLine();
-            out.write(POST_CODE);
+            outputJava.newLine();
+            outputJava.newLine();
+            outputJava.write(POST_CODE);
+        }
+        
+        try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
+            outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
         }
 
-        
     }
 
     public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException {

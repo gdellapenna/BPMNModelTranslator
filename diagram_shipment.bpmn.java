@@ -334,7 +334,7 @@ class bpmn_process_Shipment {
     public void execute(Object _pType, Object _pWeight) {
         this.pType = _pType;
         this.pWeight = _pWeight;
-        BPMNExecProcessUtils.executeProcess(this::init, this::EVENT_package_received);
+        BPMNExecProcessUtils.executeProcess("Shipment", this::init, this::EVENT_package_received);
     }
 
     public static void main(String[] args) {
@@ -352,9 +352,3 @@ class Executor {
         process.execute(null/*pType*/, null/*pWeight*/);
     }
 }
-/*
- * ****************************** Input Variable Constraints *************************
- */
-//pType:VariableBounds{cases=[std, large, xl], expressions=null, min=null, max=null}
-//pWeight:VariableBounds{cases=null, expressions=null, min=0.0, max=10.0}
-

@@ -68,15 +68,11 @@ EVENT_Ok2(s.withCurrent("Activity_1uu1n8a"));
 public void init() {
 //parallel join initializers
 
-}public void execute() {BPMNExecProcessUtils.executeProcess(this::init,this::EVENT_Start);
+}public void execute() {BPMNExecProcessUtils.executeProcess("Process_1ai2j0m",this::init,this::EVENT_Start);
 }public static void main(String[] args) {
 BPMNExecProcessUtils.enableTrueParallel();bpmn_process_Process_1ai2j0m process = new bpmn_process_Process_1ai2j0m();
 process.execute();}}
  class Executor { public static void main(String[] args) {
 BPMNExecProcessUtils.enableTrueParallel();bpmn_process_Process_1ai2j0m process = new bpmn_process_Process_1ai2j0m();
 process.execute();}}
-/*
- * ****************************** Input Variable Constraints *************************
- */
-
 

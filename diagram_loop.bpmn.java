@@ -67,7 +67,7 @@ class bpmn_process_loop {
 
     public void execute(Object _input_a) {
         this.input_a = _input_a;
-        BPMNExecProcessUtils.executeProcess(this::init, this::EVENT_Start);
+        BPMNExecProcessUtils.executeProcess("loop", this::init, this::EVENT_Start);
     }
 
     public static void main(String[] args) {
@@ -85,8 +85,3 @@ class Executor {
         process.execute(null/*input_a*/);
     }
 }
-/*
- * ****************************** Input Variable Constraints *************************
- */
-//input_a:VariableBounds{cases=null, expressions=null, min=null, max=null}
-

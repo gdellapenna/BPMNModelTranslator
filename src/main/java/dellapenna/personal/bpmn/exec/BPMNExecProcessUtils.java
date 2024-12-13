@@ -39,6 +39,8 @@ public class BPMNExecProcessUtils {
 
     };
 
+    static String process_name = "bpmn_process";
+
     static boolean globalSuccess = true;
 
     public static java.io.PrintStream debugChannel = System.out;
@@ -57,8 +59,12 @@ public class BPMNExecProcessUtils {
         executor = Executors.newFixedThreadPool(10);
     }
 
+    public static String getProcessName() {
+        return process_name;
+    }
+
     public static void loadExternalInputs() {
-        java.io.File inputs_file = new java.io.File("inputs.properties");
+        java.io.File inputs_file = new java.io.File(process_name+"_inputs.properties");
         if (inputs_file.canRead()) {
             try {
                 inputs.load(new java.io.FileReader(inputs_file));
@@ -69,7 +75,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void saveExternalOutputs() {
-        java.io.File outputs_file = new java.io.File("outputs.properties");
+        java.io.File outputs_file = new java.io.File(process_name+"_outputs.properties");
         try {
             outputs.store(new java.io.FileWriter(outputs_file), null);
         } catch (java.io.IOException ex) {
@@ -81,15 +87,16 @@ public class BPMNExecProcessUtils {
         joins.put(g, new ArrayList<>(Arrays.asList(l)));
     }
 
-    public static void executeProcess(Runnable init, Consumer<ProcessStatus> start) {
+    public static void executeProcess(String name, Runnable init, Consumer<ProcessStatus> start) {
+        process_name = name;
         ProcessStatus s = new ProcessStatus();
         if (init != null) {
-            debugOutput("INITIALIZING PROCESS");
+            debugOutput("INITIALIZING PROCESS "+process_name);
             loadExternalInputs();
             init.run();
         }
         if (start != null) {
-            debugOutput("STARTING PROCESS");
+            debugOutput("STARTING PROCESS "+process_name);
             startThread(start, s);
         }
         while (active_threads_count > 0) {
@@ -109,7 +116,7 @@ public class BPMNExecProcessUtils {
         if (executor != null) {
             executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
         }
-        debugOutput("ENDING PROCESS");
+        debugOutput("ENDING PROCESS "+process_name);
     }
 
 //    public static void initProcess(ProcessStatus s, Runnable main) {
@@ -273,7 +280,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void logCurrentNode(String id, String description) {
-        //traceChannel.println(">" + id + (description != null && !description.isBlank() ? ("(" + description + ")") : ""));
+        //traceChannel.println(id + "["+ (description != null && !description.isBlank() ? ("label=\"" + description + "\"") : "")+"]");
     }
 
     public static void logResult(ProcessStatus s, boolean success, String message, int code) {

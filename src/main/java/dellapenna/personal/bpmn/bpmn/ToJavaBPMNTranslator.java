@@ -249,7 +249,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 .collect(Collectors.joining());
 
         if (!process.getStartEventFlowNames().isEmpty()) {
-            source += "BPMNExecProcessUtils.executeProcess(this::init,this::" + sanitizeName(process.getStartEventFlowNames().getFirst()) + ");\n";
+            source += "BPMNExecProcessUtils.executeProcess(\"" + sanitizeName(process.getName()) + "\",this::init,this::" + sanitizeName(process.getStartEventFlowNames().getFirst()) + ");\n";
         }
         source += "}";
         return source;

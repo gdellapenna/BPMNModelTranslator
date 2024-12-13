@@ -50,4 +50,20 @@ public class ToJavaMainMaker {
         return result;
     }
 
+    public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        String result = "";
+        VariableUtils vu = new VariableUtils();
+        for (VariableDefinition v : process.getFreeVariables()) {
+            vu.analyzeInputConstraints(v, dmns, info);
+            String value = "?";
+            if (v.getBounds().getCases() != null && !v.getBounds().getCases().isEmpty()) {
+                value = v.getBounds().getCases().get(0);
+            } else if (v.getBounds().getMin() != null) {
+                value = String.valueOf(v.getBounds().getMin() + (v.getBounds().isMinExclusive() ? 1 : 0));
+            }
+            result += v.getName() + "=" + value + "\n#" + v.getBounds() + "\n";
+        }
+        return result;
+    }
+
 }

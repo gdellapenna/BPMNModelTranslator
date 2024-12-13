@@ -1,6 +1,6 @@
-package dellapenna.personal.bpmn.unused;
-
+package dellapenna.personal.bpmn.examples;
 import dellapenna.personal.bpmn.exec.*;
+
 
 /*
  * ****************************** BPMN Generated Code *************************
@@ -8,14 +8,18 @@ import dellapenna.personal.bpmn.exec.*;
 class bpmn_process_loop {
 
 //Input Variables
-    Object input_a;
+// READ: StartEvent_1
+    Object input_a = null;
 
 //Process Variables
-    Object a;
+// READ: Activity_1k1rd56, Gateway_0x6sgvb
+// WRITTEN: StartEvent_1, Activity_1k1rd56
+    Object a = null;
 
 //Process Dynamics
     public void EVENT_Start(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Start [StartEvent_1]
         BPMNExecProcessUtils.debugOutput("Start Event Start [StartEvent_1]");
+        BPMNExecProcessUtils.logCurrentNode("StartEvent_1", "Start");
         a = input_a;
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING a TO %s", input_a);
 //[outgoing edge] Activity_1k1rd56 - Some task
@@ -25,11 +29,13 @@ class bpmn_process_loop {
 
     public void EVENT_Successful(BPMNExecProcessUtils.ProcessStatus s) {//End Event Successful [Event_053oyzy]
         BPMNExecProcessUtils.debugOutput("End Event Successful [Event_053oyzy]");
+        BPMNExecProcessUtils.logCurrentNode("Event_053oyzy", "Successful");
         BPMNExecProcessUtils.success(s);
     }
 
     public void GATEWAY_Decision(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Decision [Gateway_0x6sgvb]
         BPMNExecProcessUtils.debugOutput("Exclusive Gateway Decision [Gateway_0x6sgvb]");
+        BPMNExecProcessUtils.logCurrentNode("Gateway_0x6sgvb", "Decision");
         if (BPMNExecTypeUtils.tonumber(a) >= BPMNExecTypeUtils.tonumber(10.0)) {//[outgoing edge] Event_053oyzy - Successful
             BPMNExecProcessUtils.logTransition("Gateway_0x6sgvb", "Event_053oyzy");
             EVENT_Successful(s.withCurrent("Gateway_0x6sgvb"));
@@ -43,6 +49,7 @@ class bpmn_process_loop {
 
     public void TASK_Some_task(BPMNExecProcessUtils.ProcessStatus s) {//Script Task Some task [Activity_1k1rd56]
         BPMNExecProcessUtils.debugOutput("Script Task Some task [Activity_1k1rd56]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_1k1rd56", "Some task");
         a = (BPMNExecTypeUtils.tonumber(a) + BPMNExecTypeUtils.tonumber(1.0));
 //[outgoing edge] Gateway_0x6sgvb - Decision
         BPMNExecProcessUtils.logTransition("Activity_1k1rd56", "Gateway_0x6sgvb");
@@ -50,7 +57,6 @@ class bpmn_process_loop {
     }
 
     public void init() {
-        this.input_a = 8;	//TODO assign input variable
         if (this.input_a == null) {
             input_a = BPMNExecProcessUtils.inputs.getProperty("input_a", null);
         }
@@ -59,9 +65,23 @@ class bpmn_process_loop {
 
     }
 
+    public void execute(Object _input_a) {
+        this.input_a = _input_a;
+        BPMNExecProcessUtils.executeProcess("loop", this::init, this::EVENT_Start);
+    }
+
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_loop process = new bpmn_process_loop();
-        BPMNExecProcessUtils.executeProcess(process::init, process::EVENT_Start);
+        process.execute(null/*input_a*/);
+    }
+}
+
+class Executor {
+
+    public static void main(String[] args) {
+        BPMNExecProcessUtils.enableTrueParallel();
+        bpmn_process_loop process = new bpmn_process_loop();
+        process.execute(null/*input_a*/);
     }
 }
