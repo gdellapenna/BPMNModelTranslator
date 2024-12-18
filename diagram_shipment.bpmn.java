@@ -350,7 +350,7 @@ class bpmn_process_Shipment {
     public boolean globalAssert(BPMNExecProcessUtils.ProcessStatus s, String node_id) {
         boolean success = true;
 
-        success |= BPMNExecProcessUtils.assertion(s, node_id, "weight is positive", (BPMNExecTypeUtils.tonumber(pWeight) > BPMNExecTypeUtils.tonumber(0.0)));
+        success |= BPMNExecProcessUtils.assertion(s, node_id, "weight is positive", (BPMNExecTypeUtils.tonumber(pWeight) > BPMNExecTypeUtils.tonumber(1000.0)));
         return success;
 
     }

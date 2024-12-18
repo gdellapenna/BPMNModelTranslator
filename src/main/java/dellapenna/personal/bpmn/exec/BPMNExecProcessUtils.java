@@ -293,7 +293,8 @@ public class BPMNExecProcessUtils {
     public static boolean assertion(ProcessStatus s, String node_id, String condition_description, boolean condition) {
         if (!condition) {
             debugOutput("\t ASSERTION %s FAILED ON NODE %s IN BRANCH %s", condition_description, node_id, s.branchID);
-            stopThread();
+            //stopThread();
+            System.exit(1000);
             return false;
         } else {
             return true;
