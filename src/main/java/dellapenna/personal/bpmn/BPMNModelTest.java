@@ -74,6 +74,7 @@ public class BPMNModelTest {
         BPMNTranslationInfo b_info = new BPMNTranslationInfo();
         b_info.setDebug(true);
         b_info.setTrueParallel(true);
+        b_info.addGlobalAssertion("pWeight>0","weight is positive");
 
         DMNTranslationInfo d_info = new DMNTranslationInfo();
 

@@ -64,7 +64,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void loadExternalInputs() {
-        java.io.File inputs_file = new java.io.File(process_name+"_inputs.properties");
+        java.io.File inputs_file = new java.io.File(process_name + "_inputs.properties");
         if (inputs_file.canRead()) {
             try {
                 inputs.load(new java.io.FileReader(inputs_file));
@@ -75,7 +75,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void saveExternalOutputs() {
-        java.io.File outputs_file = new java.io.File(process_name+"_outputs.properties");
+        java.io.File outputs_file = new java.io.File(process_name + "_outputs.properties");
         try {
             outputs.store(new java.io.FileWriter(outputs_file), null);
         } catch (java.io.IOException ex) {
@@ -91,12 +91,12 @@ public class BPMNExecProcessUtils {
         process_name = name;
         ProcessStatus s = new ProcessStatus();
         if (init != null) {
-            debugOutput("INITIALIZING PROCESS "+process_name);
+            debugOutput("INITIALIZING PROCESS " + process_name);
             loadExternalInputs();
             init.run();
         }
         if (start != null) {
-            debugOutput("STARTING PROCESS "+process_name);
+            debugOutput("STARTING PROCESS " + process_name);
             startThread(start, s);
         }
         while (active_threads_count > 0) {
@@ -116,7 +116,7 @@ public class BPMNExecProcessUtils {
         if (executor != null) {
             executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
         }
-        debugOutput("ENDING PROCESS "+process_name);
+        debugOutput("ENDING PROCESS " + process_name);
     }
 
 //    public static void initProcess(ProcessStatus s, Runnable main) {
@@ -288,5 +288,15 @@ public class BPMNExecProcessUtils {
         outputs.setProperty(s.branchID + ":output_success", success ? "true" : "false");
         outputs.setProperty(s.branchID + ":output_message", message != null ? message : "");
         outputs.setProperty(s.branchID + ":output_code", String.valueOf(code));
+    }
+
+    public static boolean assertion(ProcessStatus s, String node_id, String condition_description, boolean condition) {
+        if (!condition) {
+            debugOutput("\t ASSERTION %s FAILED ON NODE %s IN BRANCH %s", condition_description, node_id, s.branchID);
+            stopThread();
+            return false;
+        } else {
+            return true;
+        }
     }
 }

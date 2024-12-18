@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn.bpmn;
 
+import dellapenna.personal.bpmn.versim.Assertion;
 import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
@@ -60,12 +61,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return n.replaceAll("[^A-Za-z0-9_]", "_");
     }
 
-    public static String generateDebugOutputStament(String s, Object... args) {
+    public String generateDebugOutputStament(String s, Object... args) {
         String message = String.format(s, args);
         return "BPMNExecProcessUtils.debugOutput(\"" + message + "\")";
     }
 
-    public static Code generateTransitionDescriptionStaments(FlowNode source, FlowNode target, BPMNTranslationInfo info) {
+    public Code generateTransitionDescriptionStaments(FlowNode source, FlowNode target, BPMNTranslationInfo info) {
         Code code = new Code<String>();
         code.append("//[outgoing edge] " + target.getId() + ((target.getName() != null && !target.getName().isBlank()) ? (" - " + target.getName()) : ""));
         if (info != null && info.isDebug()) {
@@ -74,7 +75,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
-    public static Code generateNodeDescriptionStaments(FlowNode n, BPMNTranslationInfo info) {
+    public Code generateCommonNodeEntryStaments(FlowNode n, BPMNTranslationInfo info) {
         Code code = new Code<String>();
         String description = getNodeDescription(n);
         code.append("//" + description);
@@ -82,10 +83,19 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             code.append("BPMNExecProcessUtils.debugOutput(\"" + description + "\")");
             code.append("BPMNExecProcessUtils.logCurrentNode(\"" + n.getId() + "\"," + (n.getName() != null ? ("\"" + n.getName() + "\"") : "null") + ")");
         }
+
+        if (info != null && !info.getGlobalAssertions().isEmpty()) {
+            code.append("globalAssert(s,\"" + n.getId() + "\")");
+        }
         return code;
     }
 
-    public static String getNodeDescription(FlowNode n) {
+    public Code generateCommonNodeExitStatements(FlowNode n, BPMNTranslationInfo info) {
+        Code code = new Code<String>();
+        return code;
+    }
+
+    public String getNodeDescription(FlowNode n) {
         String nodeTypeString = switch (n) {
             case ManualTask t ->
                 "Manual Task";
@@ -171,6 +181,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 + global_variables
                 + functions
                 + generateProcessInitSource(process, info)
+                + generateProcessGlobalAssertionsSource(process, info)
                 + generateProcessEntryMethod(process, info)
                 + generateProcessMainSource(process, info)
                 + "}";
@@ -195,6 +206,21 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             source += (statement + "\n");
         }
         return source;
+    }
+
+    //generates the input variables initialization code
+    public String generateProcessGlobalAssertionsSource(BPMNDecodedProcess process, BPMNTranslationInfo info) {
+        String source = "boolean success=true;\n\n";
+
+        if (info != null) {
+            for (Assertion a : info.getGlobalAssertions()) {
+                source += "success |= " + generateCodeSource(generateGlobalAssertionCode(a, info));
+            }
+        }
+        return "public boolean globalAssert(BPMNExecProcessUtils.ProcessStatus s, String node_id) {\n"
+                + source
+                + "return success;\n"
+                + "\n}";
     }
 
     //generates the input variables initialization code
@@ -262,19 +288,21 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     //TASKS
     @Override
     public Code generateGenericTaskCode(BPMNDecodedProcess p, Task t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateManualTaskCode(BPMNDecodedProcess p, ManualTask t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateScriptTaskCode(BPMNDecodedProcess p, ScriptTask t, BPMNTranslationInfo info) throws FeelTranslatorException {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
         Code outs = generateOutputAssignmentsCode(p, t, Collections.EMPTY_LIST, info);
         code.append(outs);
 
@@ -288,37 +316,42 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             //in questo modo, però, una variabile di input, se viene riassegnata nel codice, non sarà più considerata tale, non potendo capire staticamente
             p.registerProcessVariables(f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, t.getId(), expression);
         }
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateServiceTaskCode(BPMNDecodedProcess p, ServiceTask t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateSendTaskCode(BPMNDecodedProcess p, SendTask t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateReceiveTaskCode(BPMNDecodedProcess p, ReceiveTask t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateUserTaskCode(BPMNDecodedProcess p, UserTask t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
         code.append(generateOutputAssignmentsCode(p, t, Collections.EMPTY_LIST, info));
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateBusinessRuleTaskCode(BPMNDecodedProcess p, BusinessRuleTask t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
         if (info != null && info.isDebug()) {
             code.append("BPMNExecProcessUtils.debugOutput(\"\t EXECUTING DECISION " + (t.getName() != null ? t.getName() : t.getId()) + "\")");
         }
@@ -358,13 +391,14 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
         code.append(generateOutputAssignmentsCode(p, t, List.of(calledDecision.getAttributeValue("resultVariable")), info));
 
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     //EVENTS
     @Override
     public Code generateEndEventCode(BPMNDecodedProcess p/*UNUSED*/, EndEvent t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
         Collection<EventDefinition> eventDefs = t.getEventDefinitions();
         boolean isSuccess = true;
         for (EventDefinition eventDef : eventDefs) {
@@ -384,93 +418,104 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (isSuccess) {
             code.append("BPMNExecProcessUtils.success(s)");
         }
+        code.append(generateCommonNodeExitStatements(t, info));
+
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
     @Override
     public Code generateStartEventCode(BPMNDecodedProcess p, StartEvent t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateNodeDescriptionStaments(t, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
         code.append(generateOutputAssignmentsCode(p, t, Collections.EMPTY_LIST, info));
         p.registerStartEventFlowName(sanitizeName(p.getFlowName(t)));
+
+        code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
 
 ////// GATEWAYS
     private Code generateJoiningGatewayCode(BPMNDecodedProcess p, Gateway g, FlowNode j, BPMNTranslationInfo info) throws FeelTranslatorException {
-        Code code = new Code<String>(generateNodeDescriptionStaments(g, info));
+        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
         code.append(generateFlowJointCode(p, g, j, info));
+
+        code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }
 
     @Override
-    public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway n, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
-        Code code = new Code<String>(generateNodeDescriptionStaments(n, info));
-        code.append(generateTransitionDescriptionStaments(n, joinedflow, info));
-        code.append("//JOINS: " + n.getIncoming().stream().map(s -> s.getSource().getId()).collect(Collectors.joining(",")));
-        code.append("BPMNExecProcessUtils.join(s,\"" + n.getId() + "\", " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
+    public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
+        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
+        code.append(generateTransitionDescriptionStaments(g, joinedflow, info));
+        code.append("//JOINS: " + g.getIncoming().stream().map(s -> s.getSource().getId()).collect(Collectors.joining(",")));
+        code.append("BPMNExecProcessUtils.join(s,\"" + g.getId() + "\", " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
+
+        code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }
 
     @Override
-    public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway n, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
-        Code code = generateJoiningGatewayCode(p, n, joinedflow, info);
+    public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
+        Code code = generateJoiningGatewayCode(p, g, joinedflow, info);
         return code;
     }
 
     @Override
-    public Code generateExclusiveJoiningGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
-        Code code = generateJoiningGatewayCode(p, n, joinedflow, info);
+    public Code generateExclusiveJoiningGatewayCode(BPMNDecodedProcess p, ExclusiveGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
+        Code code = generateJoiningGatewayCode(p, g, joinedflow, info);
         return code;
     }
 
     @Override
-    public Code generateEventJoiningGatewayCode(BPMNDecodedProcess p, EventBasedGateway n, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
+    public Code generateEventJoiningGatewayCode(BPMNDecodedProcess p, EventBasedGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
-        Code code = new Code<String>(generateNodeDescriptionStaments(n, info));
+    public Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
+        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
         String[] branch_functions = new String[splitFlows.size()];
         for (int o = 0; o < splitFlows.size(); ++o) {
-            code.append(generateTransitionDescriptionStaments(n, splitFlows.get(o).firstStep(), info));
+            code.append(generateTransitionDescriptionStaments(g, splitFlows.get(o).firstStep(), info));
             branch_functions[o] = "this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep()));
         }
         code.append("//FORKS: " + splitFlows.stream().map(s -> s.firstStep().getId()).collect(Collectors.joining(",")));
-        code.append("BPMNExecProcessUtils.fork(s,\"" + (n.getName() != null ? n.getName() : n.getId()) + "\"," + String.join(",", branch_functions) + ")");
+        code.append("BPMNExecProcessUtils.fork(s,\"" + (g.getName() != null ? g.getName() : g.getId()) + "\"," + String.join(",", branch_functions) + ")");
         code.append("BPMNExecProcessUtils.stopThread()");
 
+        code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }
 
     @Override
-    public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway n, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
-        Code code = new Code<String>(generateNodeDescriptionStaments(n, info));
+    public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
+        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
 
         for (int o = 0; o < splitFlows.size(); ++o) {
             String condition_expression = splitFlows.get(o).condition().substring(1);
             FeelTranslationInfo v_f_info = new FeelTranslationInfo();
-            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, n, splitFlows.get(o).firstStep(), info);
+            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, splitFlows.get(o).firstStep(), info);
             code.append("if "
                     + "(" + feel.translate(condition_expression, v_f_info) + ")" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
                     + "{" + generateCodeSource(splitCode)
                     + "} ");
-            p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, n.getId(), condition_expression);
+            p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, g.getId(), condition_expression);
         }
 
         //System.out.println(f_info.getUsedVariableNames().stream().map(cn -> String.join(".", cn)).distinct().collect(Collectors.joining(",")) + " usati nel GATEWAY " + getNodeDescription(n));
+        code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }
 
     @Override
-    public Code generateExclusiveGatewayCode(BPMNDecodedProcess p, ExclusiveGateway n, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
-        Code code = new Code<String>(generateNodeDescriptionStaments(n, info));
+    public Code generateExclusiveGatewayCode(BPMNDecodedProcess p, ExclusiveGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
+        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
         String source = "";
         BPMNDecodedConditionalFlow default_branch = null;
 
         for (int o = 0; o < splitFlows.size(); ++o) {
             FeelTranslationInfo v_f_info = new FeelTranslationInfo();
-            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, n, splitFlows.get(o).firstStep(), info);
+            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, splitFlows.get(o).firstStep(), info);
             if (splitFlows.get(o).condition() != null) {
                 String condition_expression = splitFlows.get(o).condition().substring(1);
                 if (!source.isBlank()) {
@@ -478,7 +523,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 }
                 source += "if " + "(" + feel.translate(condition_expression, v_f_info) + ")";  //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
                 source += "{" + generateCodeSource(splitCode) + "}";
-                p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, n.getId(), condition_expression);
+                p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, g.getId(), condition_expression);
             } else {
                 default_branch = splitFlows.get(o);
             }
@@ -487,7 +532,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             source += " else ";
         }
         if (default_branch != null) {
-            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, n, default_branch.firstStep(), info);
+            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, default_branch.firstStep(), info);
             source += "{" + generateCodeSource(splitCode) + "}";
         } else {
             source += "{ BPMNExecProcessUtils.noDefaultCaseError(s); }";
@@ -498,11 +543,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         //p.registerProcessVariables(f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, n.getId());
         //System.out.println(f_info.getUsedVariableNames().stream().map(cn -> String.join(".", cn)).distinct().collect(Collectors.joining(",")) + " usati nel GATEWAY " + getNodeDescription(n));
 
+        code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }
 
     @Override
-    public Code generateEventGatewayCode(BPMNDecodedProcess p, EventBasedGateway n, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
+    public Code generateEventGatewayCode(BPMNDecodedProcess p, EventBasedGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -565,13 +611,15 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return result;
     }
 
-    //    protected Code generateFlowJointCode(BPMNDecodedProcess p, String flowName, BPMNTranslationInfo info) {
-//        Code code = new Code<String>(flowName + "(s)");
-//        return code;
-//    }
-//    //generates the code to call a function, registering it if needed
-//    private Code generateProcedureCallCode(BPMNDecodedProcess p, FunctionDefinition proc) {
-//        return new Code<String>(sanitizeName(proc.name()) + "()");
-//
-//    }
+    protected Code generateGlobalAssertionCode(Assertion a, BPMNTranslationInfo info) {
+        Code code = new Code<String>();
+        code.append("BPMNExecProcessUtils.assertion(s,node_id,\"" + a.description() + "\",(" + feel.translateChecked(a.expression(), null) + "))");
+        return code;
+    }
+
+    protected Code generateLocalAssertionCode(FlowNode current, Assertion a, BPMNTranslationInfo info) {
+        Code code = new Code<String>();
+        code.append("BPMNExecProcessUtils.assertion(s,\"" + current.getId() + "\",\"" + a.description() + "\",(" + feel.translateChecked(a.expression(), null) + "))");
+        return code;
+    }
 }

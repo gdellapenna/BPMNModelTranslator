@@ -1,5 +1,7 @@
 package dellapenna.personal.bpmn.bpmn;
 
+import dellapenna.personal.bpmn.Pair;
+import dellapenna.personal.bpmn.versim.Assertion;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,33 +15,25 @@ public class BPMNTranslationInfo {
     private boolean trueParallel;
     private String inputsFile;
     private String outputsFile;
+    private List<Assertion> globalAssertions;
 
-    private final List<VariableDefinition> detectedInputVariables = new ArrayList<>();
-
+    //private final List<VariableDefinition> detectedInputVariables = new ArrayList<>();
     public BPMNTranslationInfo() {
         debug = false;
         trueParallel = false;
         inputsFile = "inputs.properties";
         outputsFile = "outputs.properties";
+        globalAssertions = new ArrayList<>();
     }
 
     public BPMNTranslationInfo(BPMNTranslationInfo other) {
-        //            this.readVariables.addAll(other.readVariables);
-        //            this.writtenVariables.addAll(other.writtenVariables);
         this.debug = other.debug;
         this.trueParallel = other.trueParallel;
         this.inputsFile = other.inputsFile;
         this.outputsFile = other.outputsFile;
-    } //            this.readVariables.addAll(other.readVariables);
-    //            this.writtenVariables.addAll(other.writtenVariables);
+        this.globalAssertions = other.globalAssertions;
+    }
 
-    //        public List<List<String>> getReadVariables() {
-    //            return readVariables;
-    //        }
-    //
-    //        public List<List<String>> getWrittenVariables() {
-    //            return writtenVariables;
-    //        }
     public boolean isDebug() {
         return debug;
     }
@@ -72,8 +66,15 @@ public class BPMNTranslationInfo {
         this.trueParallel = trueParallel;
     }
 
-    public List<VariableDefinition> getDetectedInputVariables() {
-        return detectedInputVariables;
+//    public List<VariableDefinition> getDetectedInputVariables() {
+//        return detectedInputVariables;
+//    }
+    public void addGlobalAssertion(String expression, String description) {
+        globalAssertions.add(new Assertion(expression, description));
+    }
+
+    public List<Assertion> getGlobalAssertions() {
+        return globalAssertions;
     }
 
 }
