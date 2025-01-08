@@ -74,7 +74,7 @@ public class BPMNModelTest {
         BPMNTranslationInfo b_info = new BPMNTranslationInfo();
         b_info.setDebug(true);
         b_info.setTrueParallel(true);
-        b_info.addGlobalAssertion("pWeight>0","weight is positive");
+        b_info.addGlobalAssertion("pWeight>0", "weight is positive");
 
         DMNTranslationInfo d_info = new DMNTranslationInfo();
 
@@ -82,9 +82,11 @@ public class BPMNModelTest {
 
         for (int i = 0; i < dmn_files.length; ++i) {
             DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_files[i].toFile());
+            System.out.println("decoding DMN model " + dmn_files[i]);
             dmns[i] = dt.decodeDecisionModel(dmnInstance, d_info);
         }
         BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
+        System.out.println("decoding BPMN model " + bpmn_file);
         BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance, dmns, b_info);
 
         Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
@@ -114,7 +116,7 @@ public class BPMNModelTest {
             outputJava.newLine();
             outputJava.write(POST_CODE);
         }
-        
+
         try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
             outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
         }
@@ -123,14 +125,15 @@ public class BPMNModelTest {
 
     public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException {
 
-        compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_shipment.bpmn"));
+        compile(new Path[]{Path.of("surgery_tables.dmn")}, Path.of("diagram_surgery.bpmn"));
 
-        compile(new Path[0], Path.of("diagram_loop.bpmn"));
-
-        compile(new Path[0], Path.of("diagram_parallel.bpmn"));
-
-        compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
-
+//        compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_shipment.bpmn"));
+//
+//        compile(new Path[0], Path.of("diagram_loop.bpmn"));
+//
+//        compile(new Path[0], Path.of("diagram_parallel.bpmn"));
+//
+//        compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
         //System.out.println(ft.generateBpmnSource("a.b=c"));        

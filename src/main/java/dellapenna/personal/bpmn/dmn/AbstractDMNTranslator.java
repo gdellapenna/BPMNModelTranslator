@@ -87,6 +87,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         Map<String, DMNDecodedTable<T>> tables = new HashMap<>();
         Collection<DecisionTable> raw_tables = dmn.getModelElementsByType(DecisionTable.class);
         for (DecisionTable t : raw_tables) {
+            System.out.println("decoding desition table " + t.getId());
             tables.put(t.getId(), decodeDecisionTable(t, info));
         }
         return new DMNDecodedModel(dmn.getDocumentElement().getAttributeValue("id"), tables);

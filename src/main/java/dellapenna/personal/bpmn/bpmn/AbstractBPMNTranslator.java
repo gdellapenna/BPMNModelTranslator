@@ -178,7 +178,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
 
     private BPMNDecodedNode decodeNode(BPMNDecodedProcess p, FlowNode n, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
         BPMNDecodedNode result;
-
+        System.out.println("decoding node " + n.getId());
         switch (n) {
             case org.camunda.bpm.model.bpmn.instance.Event t -> {
                 result = decodeEventNode(p, t, info);

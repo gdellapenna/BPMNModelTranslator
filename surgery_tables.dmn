@@ -1,0 +1,726 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" xmlns:biodi="http://bpmn.io/schema/dmn/biodi/2.0" xmlns:di="http://www.omg.org/spec/DMN/20180521/DI/" id="Definitions_0qwf6rg" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+  <decision id="PatientAdmissionDT" name="PatientAdmissionDT">
+    <informationRequirement id="InformationRequirement_0a0s5d1">
+      <requiredInput href="#InputData_1j3vchp" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0v15p68">
+      <requiredInput href="#InputData_1ljrnuu" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_18mj3t9">
+      <requiredInput href="#InputData_046vsrc" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1al698t">
+      <requiredInput href="#InputData_1dyuor3" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_0c68hbl">
+      <input id="Input_1">
+        <inputExpression id="InputExpression_1" typeRef="boolean">
+          <text>Hospitalizable</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_06lt5su">
+        <inputExpression id="LiteralExpression_0nce9qe" typeRef="boolean">
+          <text>Emergency</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1m745j3">
+        <inputExpression id="LiteralExpression_13y70nx" typeRef="number">
+          <text>Age</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1arwyv1">
+        <inputExpression id="LiteralExpression_0qnd0bf" typeRef="boolean">
+          <text>PreviouslyHospitalized</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="PatientAdmission" typeRef="string">
+        <outputValues id="UnaryTests_0naclkj">
+          <text>"denied","hospitalization","emergency"</text>
+        </outputValues>
+      </output>
+      <rule id="DecisionRule_14weck8">
+        <inputEntry id="UnaryTests_1q8vp9n">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10y6nmt">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1pi5yva">
+          <text>&lt;18</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_19ox8lr">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0r9lc61">
+          <text>"emergency"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_12l03aj">
+        <inputEntry id="UnaryTests_0k19ujw">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0ops05d">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1pypbal">
+          <text>&gt;=18</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0gf2hw5">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1mofw55">
+          <text>"emergency"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1u00yrx">
+        <inputEntry id="UnaryTests_083h2n5">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_01yfahk">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1glasag">
+          <text>&lt;18</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0v5ygow">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_19eq1mr">
+          <text>"hospitalization"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1nmilh7">
+        <inputEntry id="UnaryTests_1ia1eqx">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nalgdy">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_19k9kc6">
+          <text>&gt;=18</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0sdx970">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1k6ldl4">
+          <text>"hospitalization"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1t9thsq">
+        <inputEntry id="UnaryTests_15tyn57">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_12j1ty0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0b7jgfi">
+          <text>&gt;=18</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0wguddq">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1w7xnog">
+          <text>"denied"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fla0dj">
+        <inputEntry id="UnaryTests_1kvto7u">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1et2vvo">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0brpcnw">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0zr0oyz">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1aiwk8a">
+          <text>"denied"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="PreAnesthesicEvaluationDT" name="PreAnesthesicEvaluationDT">
+    <informationRequirement id="InformationRequirement_0woukjt">
+      <requiredInput href="#InputData_0sq9bm6" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1w2t9jl">
+      <requiredInput href="#InputData_0vtdm8s" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0z5zhnu">
+      <requiredInput href="#InputData_0u9ua0x" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1g05h7l">
+      <requiredDecision href="#PreAnesthesicReEvaluationDT" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_0kjkodg" hitPolicy="ANY">
+      <input id="InputClause_1xdmvcv">
+        <inputExpression id="LiteralExpression_15tiha9" typeRef="boolean">
+          <text>RequiredLaboratoryTests</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_10ft8sg">
+        <inputExpression id="LiteralExpression_0e0s6l4" typeRef="boolean">
+          <text>RequiredDiagnosticTests</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_097gxhj">
+        <inputExpression id="LiteralExpression_0dm3wq8" typeRef="string">
+          <text>ClinicalConditions</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_0hr2vm3">
+          <text>"positive","negative"</text>
+        </inputValues>
+      </input>
+      <output id="OutputClause_1eb28l6" name="PreAnesthesicEvaluation" typeRef="boolean" />
+      <rule id="DecisionRule_1ggpxm3">
+        <inputEntry id="UnaryTests_0eh6wdk">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_143i5qd">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0hqe0qx">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0thtwzy">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0h4b4cu">
+        <inputEntry id="UnaryTests_00gsg34">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dqadeo">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0eopatd">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0yyvfud">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_198g852">
+        <inputEntry id="UnaryTests_0s93o4o">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_17wbiha">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_083c89z">
+          <text>"negative"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_185qer5">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_16wbvvs">
+        <inputEntry id="UnaryTests_0v89s96">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0c4y760">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_08bpllw">
+          <text>"positive"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_04lz04d">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="PreAnesthesicReEvaluationDT" name="PreAnesthesicReEvaluationDT">
+    <informationRequirement id="InformationRequirement_0u1dkvc">
+      <requiredInput href="#InputData_0u9ua0x" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1f0cn9r">
+      <requiredInput href="#InputData_0sq9bm6" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_09nzwxv">
+      <requiredInput href="#InputData_0vtdm8s" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_1qeifng" hitPolicy="ANY">
+      <input id="InputClause_00yw9a4">
+        <inputExpression id="LiteralExpression_136mhv6" typeRef="boolean">
+          <text>RequiredLaboratoryTests</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1r645ge">
+        <inputExpression id="LiteralExpression_1uozbih" typeRef="boolean">
+          <text>RequiredDiagnosticTests</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_14rujvi">
+        <inputExpression id="LiteralExpression_0jc63he" typeRef="string">
+          <text>ClinicalConditions</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_19g2kwd">
+          <text>"positive","negative"</text>
+        </inputValues>
+      </input>
+      <input id="InputClause_058yqg2">
+        <inputExpression id="LiteralExpression_1c39hm5" typeRef="boolean">
+          <text>PreAnesthesicEvaluation</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_16y1d9q" name="PreAnesthesicReEvaluation" typeRef="boolean" biodi:width="192" />
+      <rule id="DecisionRule_0dhxt7g">
+        <inputEntry id="UnaryTests_1wrcjx8">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0u3wete">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1htg2ah">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1sm8m1t">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0ryw1eb">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_031lmaq">
+        <inputEntry id="UnaryTests_1a6pttw">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1vtuekn">
+          <text>false</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_15vz96j">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_167fnrs">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1uzw02n">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_16ojmhr">
+        <inputEntry id="UnaryTests_1ovrget">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_021qxvz">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0pitos3">
+          <text>"negative"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1tdk9n3">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1sx5l5g">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1oqgv69">
+        <inputEntry id="UnaryTests_04t7dhj">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1flhln7">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1innzy4">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1k3515n">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0gx0toy">
+          <text>false</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_13vs02h">
+        <inputEntry id="UnaryTests_0nxa69k">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_16gdylr">
+          <text>true</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1giuwwq">
+          <text>"positive"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0miuhp2">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_12qdwts">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="PatientAdmissionOperatingTheatreDT" name="PatientAdmissionOperatingTheatreDT">
+    <informationRequirement id="InformationRequirement_1oi6d2u">
+      <requiredInput href="#InputData_04tghdl" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_1eimpby">
+      <requiredInput href="#InputData_00apdk1" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_0cxxuxe">
+      <requiredInput href="#InputData_0xo09ix" />
+    </informationRequirement>
+    <informationRequirement id="InformationRequirement_18p1mja">
+      <requiredDecision href="#PreAnesthesicEvaluationDT" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_0d1yr8n" hitPolicy="ANY">
+      <input id="InputClause_19i5f3t">
+        <inputExpression id="LiteralExpression_04rakqh" typeRef="string">
+          <text>InformedConsent</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_0fr8md0">
+          <text>"absent","present"</text>
+        </inputValues>
+      </input>
+      <input id="InputClause_0n1wt4r">
+        <inputExpression id="LiteralExpression_0yg4mmb" typeRef="string">
+          <text>PreoperationalChecklist</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_0tg579q">
+          <text>"complete","incomplete"</text>
+        </inputValues>
+      </input>
+      <input id="InputClause_0w34tkt">
+        <inputExpression id="LiteralExpression_03fxbcm" typeRef="string">
+          <text>AdverseEvents</text>
+        </inputExpression>
+        <inputValues id="UnaryTests_1feb5ze">
+          <text>"absent","present"</text>
+        </inputValues>
+      </input>
+      <input id="InputClause_0d7szw1">
+        <inputExpression id="LiteralExpression_0wx9k35" typeRef="boolean">
+          <text>PreAnesthesicReEvaluation</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_001tc1d" name="PatientAdmissionOperatingTheatre" typeRef="string">
+        <outputValues id="UnaryTests_0cr87vi">
+          <text>"admitted","rejected"</text>
+        </outputValues>
+      </output>
+      <rule id="DecisionRule_1xtkyy7">
+        <inputEntry id="UnaryTests_0mmfl19">
+          <text>"absent"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_06vm97c">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nb91bf">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0th6y0d">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0i3atwb">
+          <text>"rejected"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0z7agp6">
+        <inputEntry id="UnaryTests_0gazb0f">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0td4t8i">
+          <text>"incomplete"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dpxrzx">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0z7nq3x">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_00uu887">
+          <text>"rejected"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1qqw91z">
+        <inputEntry id="UnaryTests_1cjz8og">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_10qviq0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1a3cxob">
+          <text>"present"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0e2alg2">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0l8m5tv">
+          <text>"rejected"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1yfdy0w">
+        <inputEntry id="UnaryTests_0onajok">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0wnsbj4">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0jbseg1">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_06rv4xs">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0njsrec">
+          <text>"rejected"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_00tti3h">
+        <description>patient can be admitted to operating theatre</description>
+        <inputEntry id="UnaryTests_0bin1cj">
+          <text>"present"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1586kvw">
+          <text>"complete"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_11whqz1">
+          <text>"absent"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_09z2z34">
+          <text>true</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1kt29k4">
+          <text>"admitted"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <inputData id="InputData_1j3vchp" name="Hospitalizable" />
+  <inputData id="InputData_1ljrnuu" name="Emergency" />
+  <inputData id="InputData_046vsrc" name="Age" />
+  <inputData id="InputData_1dyuor3" name="PreviouslyHospitalized" />
+  <inputData id="InputData_0u9ua0x" name="RequiredDiagnosticTests" />
+  <inputData id="InputData_0sq9bm6" name="ClinicalConditions" />
+  <inputData id="InputData_0vtdm8s" name="RequiredLaboratoryTests" />
+  <inputData id="InputData_0xo09ix" name="InformedConsent" />
+  <inputData id="InputData_00apdk1" name="AdverseEvents" />
+  <inputData id="InputData_04tghdl" name="PreoperationalChecklist" />
+  <inputData id="InputData_0n665bm" name="VitalParameters" />
+  <decision id="PatientDismissionSurgicalUnitDT" name="PatientDismissionSurgicalUnitDT">
+    <informationRequirement id="InformationRequirement_1ujdvvo">
+      <requiredInput href="#InputData_0n665bm" />
+    </informationRequirement>
+    <decisionTable id="DecisionTable_06vjnfx">
+      <input id="InputClause_1ean45j">
+        <inputExpression id="LiteralExpression_1oj2nwm" typeRef="number">
+          <text>AldreteScore</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1x7veo2">
+        <inputExpression id="LiteralExpression_0n5eixk" typeRef="number">
+          <text>Activity</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1usvzw7">
+        <inputExpression id="LiteralExpression_11vjgl1" typeRef="number">
+          <text>Circulation</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0684cqf">
+        <inputExpression id="LiteralExpression_0s5jxot" typeRef="number">
+          <text>Consciousness</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0fzfrj4">
+        <inputExpression id="LiteralExpression_07asj51" typeRef="number">
+          <text>O2Saturation</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0bzk4j5">
+        <inputExpression id="LiteralExpression_0s3hpz4" typeRef="number">
+          <text>Respiration</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_03mtavk" name="PatientDismissionSurgicalUnit" typeRef="string">
+        <outputValues id="UnaryTests_1es4lgw">
+          <text>"can","cannot","zerovital"</text>
+        </outputValues>
+      </output>
+      <rule id="DecisionRule_0kwbg2q">
+        <inputEntry id="UnaryTests_15bz2t8">
+          <text>&gt;=8</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0q62ijl">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1cc5db4">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1p3pr1g">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_127fujl">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1nj358y">
+          <text>&gt;0</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_012jph1">
+          <text>"can"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0mz7vo5">
+        <inputEntry id="UnaryTests_1hwbj1n">
+          <text>&lt;8</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1sdbbow">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_013dp54">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0i33r0l">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1gb7s4p">
+          <text>&gt;0</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0dka7xo">
+          <text>&gt;0</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_12gwklk">
+          <text>"cannot"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="PatientAdmissionDT">
+        <dc:Bounds height="80" width="180" x="392" y="180" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_1xu21mh" dmnElementRef="PreAnesthesicEvaluationDT">
+        <dc:Bounds height="80" width="180" x="505" y="320" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_0mwdbc9" dmnElementRef="PreAnesthesicReEvaluationDT">
+        <dc:Bounds height="80" width="180" x="220" y="320" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_1pzrb7c" dmnElementRef="PatientAdmissionOperatingTheatreDT">
+        <dc:Bounds height="80" width="180" x="820" y="320" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_0qi1icm" dmnElementRef="InputData_1j3vchp">
+        <dc:Bounds height="45" width="125" x="158" y="78" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_1gp9tji" dmnElementRef="InputData_1ljrnuu">
+        <dc:Bounds height="45" width="125" x="338" y="79" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_1qc1g73" dmnElementRef="InputData_046vsrc">
+        <dc:Bounds height="45" width="125" x="508" y="79" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_1mf07ux" dmnElementRef="InputData_1dyuor3">
+        <dc:Bounds height="45" width="125" x="668" y="79" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_17iu95s" dmnElementRef="InformationRequirement_0a0s5d1">
+        <di:waypoint x="221" y="123" />
+        <di:waypoint x="428" y="160" />
+        <di:waypoint x="428" y="180" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_0cq4rey" dmnElementRef="InformationRequirement_0v15p68">
+        <di:waypoint x="401" y="124" />
+        <di:waypoint x="464" y="160" />
+        <di:waypoint x="464" y="180" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_199ibx6" dmnElementRef="InformationRequirement_18mj3t9">
+        <di:waypoint x="571" y="124" />
+        <di:waypoint x="500" y="160" />
+        <di:waypoint x="500" y="180" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_0xbrvta" dmnElementRef="InformationRequirement_1al698t">
+        <di:waypoint x="731" y="124" />
+        <di:waypoint x="536" y="160" />
+        <di:waypoint x="536" y="180" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_0z2q9sa" dmnElementRef="InputData_0u9ua0x">
+        <dc:Bounds height="45" width="125" x="217" y="507" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_17nytno" dmnElementRef="InformationRequirement_0u1dkvc">
+        <di:waypoint x="280" y="507" />
+        <di:waypoint x="265" y="420" />
+        <di:waypoint x="265" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_0yz4kzd" dmnElementRef="InformationRequirement_0z5zhnu">
+        <di:waypoint x="280" y="507" />
+        <di:waypoint x="550" y="420" />
+        <di:waypoint x="550" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_1i2vij2" dmnElementRef="InputData_0sq9bm6">
+        <dc:Bounds height="45" width="125" x="517" y="507" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_0t3vkv1" dmnElementRef="InformationRequirement_0woukjt">
+        <di:waypoint x="580" y="507" />
+        <di:waypoint x="640" y="420" />
+        <di:waypoint x="640" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_08ob1xz" dmnElementRef="InformationRequirement_1f0cn9r">
+        <di:waypoint x="580" y="507" />
+        <di:waypoint x="355" y="420" />
+        <di:waypoint x="355" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_19ls2ij" dmnElementRef="InputData_0vtdm8s">
+        <dc:Bounds height="45" width="125" x="378" y="507" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_14ze4uy" dmnElementRef="InformationRequirement_09nzwxv">
+        <di:waypoint x="441" y="507" />
+        <di:waypoint x="310" y="420" />
+        <di:waypoint x="310" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_0te62zb" dmnElementRef="InformationRequirement_1w2t9jl">
+        <di:waypoint x="441" y="507" />
+        <di:waypoint x="595" y="420" />
+        <di:waypoint x="595" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_04o9iba" dmnElementRef="InputData_0xo09ix">
+        <dc:Bounds height="45" width="125" x="687" y="507" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_12s4rf8" dmnElementRef="InputData_00apdk1">
+        <dc:Bounds height="45" width="125" x="847" y="507" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_1gy8ef0" dmnElementRef="InputData_04tghdl">
+        <dc:Bounds height="45" width="125" x="1017" y="507" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_1d3fhfs" dmnElementRef="InformationRequirement_1oi6d2u">
+        <di:waypoint x="1080" y="507" />
+        <di:waypoint x="955" y="420" />
+        <di:waypoint x="955" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_10ze8u5" dmnElementRef="InformationRequirement_1eimpby">
+        <di:waypoint x="910" y="507" />
+        <di:waypoint x="910" y="420" />
+        <di:waypoint x="910" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_05hywux" dmnElementRef="InformationRequirement_0cxxuxe">
+        <di:waypoint x="750" y="507" />
+        <di:waypoint x="865" y="420" />
+        <di:waypoint x="865" y="400" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_1yza5ki" dmnElementRef="InformationRequirement_1g05h7l">
+        <di:waypoint x="400" y="360" />
+        <di:waypoint x="485" y="360" />
+        <di:waypoint x="505" y="360" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNEdge id="DMNEdge_1ixpr6u" dmnElementRef="InformationRequirement_18p1mja">
+        <di:waypoint x="685" y="360" />
+        <di:waypoint x="800" y="360" />
+        <di:waypoint x="820" y="360" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_0wvazfl" dmnElementRef="InputData_0n665bm">
+        <dc:Bounds height="45" width="125" x="1068" y="79" />
+      </dmndi:DMNShape>
+      <dmndi:DMNEdge id="DMNEdge_1mawx6m" dmnElementRef="InformationRequirement_1ujdvvo">
+        <di:waypoint x="1131" y="124" />
+        <di:waypoint x="1130" y="150" />
+        <di:waypoint x="1130" y="170" />
+      </dmndi:DMNEdge>
+      <dmndi:DMNShape id="DMNShape_1nnu50s" dmnElementRef="PatientDismissionSurgicalUnitDT">
+        <dc:Bounds height="80" width="180" x="1040" y="170" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
