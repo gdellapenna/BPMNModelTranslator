@@ -1,3 +1,4 @@
+package dellapenna.personal.bpmn.examples;
 
 import dellapenna.personal.bpmn.exec.*;
 
@@ -686,15 +687,6 @@ class bpmn_process_Surgery {
         this.rRespiration = _rRespiration;
         BPMNExecProcessUtils.executeProcess("Surgery", this::init, this::EVENT_Event_1dd675w);
     }
-
-    public static void main(String[] args) {
-        BPMNExecProcessUtils.enableTrueParallel();
-        bpmn_process_Surgery process = new bpmn_process_Surgery();
-        process.execute(null/*uHospitalizable*/, null/*uEmergency*/, null/*uAge*/, null/*uPreviouslyHospitalized*/, null/*pRequiredLaboratoryTests*/, null/*pRequiredDiagnosticTests*/, null/*pClinicalConditions*/, null/*AdverseEvents*/, null/*uInformedConsent*/, null/*nPreoperationalChecklist*/, null/*ICU*/, null/*rAldreteScore*/, null/*rActivity*/, null/*rCirculation*/, null/*rConsciousness*/, null/*rO2Saturation*/, null/*rRespiration*/);
-    }
-}
-
-class Executor {
 
     public static void main(String[] args) {
         BPMNExecProcessUtils.enableTrueParallel();

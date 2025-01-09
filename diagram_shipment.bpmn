@@ -131,9 +131,6 @@
     <bpmn:dataObjectReference id="DataObjectReference_11qlomu" name="consent" dataObjectRef="DataObject_053nob6" />
     <bpmn:dataObject id="DataObject_053nob6" />
     <bpmn:userTask id="Activity_0iafefy" name="measure weight">
-      <bpmn:extensionElements>
-        <zeebe:formDefinition formKey="WeightInputForm" />
-      </bpmn:extensionElements>
       <bpmn:incoming>Flow_1sswihv</bpmn:incoming>
       <bpmn:outgoing>Flow_176xpbe</bpmn:outgoing>
       <bpmn:dataOutputAssociation id="DataOutputAssociation_17mc681">

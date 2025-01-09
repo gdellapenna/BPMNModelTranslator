@@ -57,7 +57,7 @@ public class ToJavaMainMaker {
             vu.analyzeInputConstraints(v, dmns, info);
             String value = "?";
             if (v.getBounds().getCases() != null && !v.getBounds().getCases().isEmpty()) {
-                value = v.getBounds().getCases().get(0);
+                value = v.getBounds().getCases().toArray(new String[0])[0];
             } else if (v.getBounds().getMin() != null) {
                 value = String.valueOf(v.getBounds().getMin() + (v.getBounds().isMinExclusive() ? 1 : 0));
             }

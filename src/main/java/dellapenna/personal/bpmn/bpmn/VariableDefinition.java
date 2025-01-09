@@ -18,20 +18,20 @@ public class VariableDefinition {
     ;
     public static class VariableBounds {
 
-        private List<String> cases = null;
+        private Set<String> cases = null;
         private List<String> expressions = null;
         private Double min = null;
         boolean minExclusive = false;
         private Double max = null;
         boolean maxExclusive = false;
 
-        public List<String> getCases() {
+        public Set<String> getCases() {
             return cases;
         }
 
         public void addCase(String c) {
             if (this.cases == null) {
-                this.cases = new ArrayList<>();
+                this.cases = new HashSet<>();
             }
             this.cases.add(c);
         }

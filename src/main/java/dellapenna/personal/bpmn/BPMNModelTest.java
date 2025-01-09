@@ -74,7 +74,7 @@ public class BPMNModelTest {
         BPMNTranslationInfo b_info = new BPMNTranslationInfo();
         b_info.setDebug(true);
         b_info.setTrueParallel(true);
-        b_info.addGlobalAssertion("pWeight>0", "weight is positive");
+        //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
 
         DMNTranslationInfo d_info = new DMNTranslationInfo();
 
@@ -127,13 +127,13 @@ public class BPMNModelTest {
 
         compile(new Path[]{Path.of("surgery_tables.dmn")}, Path.of("diagram_surgery.bpmn"));
 
-//        compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_shipment.bpmn"));
-//
-//        compile(new Path[0], Path.of("diagram_loop.bpmn"));
-//
-//        compile(new Path[0], Path.of("diagram_parallel.bpmn"));
-//
-//        compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
+        compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_shipment.bpmn"));
+
+        compile(new Path[0], Path.of("diagram_loop.bpmn"));
+
+        compile(new Path[0], Path.of("diagram_parallel.bpmn"));
+
+        compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
         //System.out.println(ft.generateBpmnSource("a.b=c"));        

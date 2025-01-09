@@ -25,6 +25,8 @@ import org.camunda.feel.syntaxtree.InputLessOrEqual;
 import org.camunda.feel.syntaxtree.InputLessThan;
 import org.camunda.feel.syntaxtree.OpenConstRangeBoundary;
 import org.camunda.feel.syntaxtree.Comparison;
+import org.camunda.feel.syntaxtree.ConstBool;
+import org.camunda.feel.syntaxtree.Equal;
 import org.camunda.feel.syntaxtree.GreaterOrEqual;
 import org.camunda.feel.syntaxtree.GreaterThan;
 import org.camunda.feel.syntaxtree.LessOrEqual;
@@ -48,6 +50,8 @@ public class VariableUtils {
                     b.addCase(texp.value());
                 case ConstNumber texp ->
                     b.updateRange(texp.value().bigDecimal().doubleValue());
+                case ConstBool texp ->
+                    b.addCase(texp.value() ? "true" : "false");
                 case InputInRange texp -> {
                     ConstRangeBoundary left = texp.range().start();
                     ConstRangeBoundary right = texp.range().end();
@@ -94,6 +98,15 @@ public class VariableUtils {
             Exp exp = ft.parse(variable_expression);
             //System.out.println(exp.getClass().getName());
             if (exp instanceof Comparison c) {
+//                System.err.println(v.getName());
+//                System.err.println(variable_expression);
+//                System.err.println(c.x().getClass());
+//                System.err.println(c.y().getClass());
+//                if (c.x() instanceof Ref r) {
+//                    System.err.println(String.join(".", scala.collection.JavaConverters.asJava(r.names())));
+//                    System.err.println(String.join(".",scala.collection.JavaConverters.asJava(r.names())).equals(v.getName()));
+//                }
+
                 boolean inverse = false;
                 Exp compared_expression = null;
                 if (c.x() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
@@ -144,6 +157,17 @@ public class VariableUtils {
                                 }
                             }
                         }
+                        case Equal texp -> {
+                            if (compared_expression instanceof ConstNumber n) {
+                                v.getBounds().updateRange(n.value().bigDecimal().doubleValue());
+                            } else if (compared_expression instanceof ConstString n) {
+                                v.getBounds().addCase(n.value());
+                            } else if (compared_expression instanceof ConstBool n) {
+                                v.getBounds().addCase(n.value() ? "true" : "false");
+                            } else {
+                                v.getBounds().addExpression(variable_expression); //non auto-deducibile
+                            }
+                        }
                         default -> {
                             v.getBounds().addExpression(variable_expression); //non auto-deducibile
                         }
@@ -156,7 +180,8 @@ public class VariableUtils {
     public List<String> extractDMNConstraints(DMNDecodedModel<String>[] dmns, String table_id, String input_name) {
         DMNDecodedTable<String> table = Arrays.stream(dmns).flatMap(dmn -> dmn.tables().values().stream()).filter(t -> t.id().equals(table_id)).findFirst().orElse(null);
         if (table != null) {
-            return table.rules().stream().flatMap(r -> r.conditions().stream()).filter(c -> c.inputExpression().equals(input_name)).map(c -> c.sourceTestExpression()).toList();
+            return table.rules().stream()
+                    .flatMap(r -> r.conditions().stream()).filter(c -> c.inputExpression().equals(input_name)).map(c -> c.sourceTestExpression()).toList();
         } else {
             return Collections.EMPTY_LIST;
         }

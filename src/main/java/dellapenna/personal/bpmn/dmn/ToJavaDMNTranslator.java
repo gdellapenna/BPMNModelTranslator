@@ -24,19 +24,43 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
     }
 
     private String generateRulesSource(List<DMNDecodedRule<String>> decoded_rules, String output_record_name, DMNTranslationInfo info) {
-        return decoded_rules.stream().map(r -> {
+        boolean default_present = false;
+        String result = "";
+        for (DMNDecodedRule<String> r : decoded_rules) {
             String cond = r.conditions().stream().map(c -> (c.testExpression())).filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(" && "));
             String rs = "";
+
             if (!cond.isBlank()) {
                 rs += "if (" + cond + ")";
+            } else {
+                default_present = true;
             }
             rs += " { return new " + output_record_name + "("
                     //+ r.assignments().stream().map(a -> (a.outputName() + " = " + a.outputExpression())).collect(Collectors.joining("; "))
                     + r.assignments().stream().map(a -> ("/*" + a.outputName() + "*/" + a.outputExpression())).collect(Collectors.joining(", "))
                     + ");}";
 
-            return rs;
-        }).collect(Collectors.joining(" else "));
+            result += (!result.isBlank() ? " else " : "") + rs;
+        }
+        if (!default_present) {
+            result += (!result.isBlank() ? " else " : "") + "{ BPMNExecProcessUtils.noDefaultCaseError(null);\n return null; }";
+        }
+//        String result = decoded_rules.stream().map(r -> {
+//            String cond = r.conditions().stream().map(c -> (c.testExpression())).filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(" && "));
+//            String rs = "";
+//            
+//            if (!cond.isBlank()) {
+//                rs += "if (" + cond + ")";
+//            } 
+//            rs += " { return new " + output_record_name + "("
+//                    //+ r.assignments().stream().map(a -> (a.outputName() + " = " + a.outputExpression())).collect(Collectors.joining("; "))
+//                    + r.assignments().stream().map(a -> ("/*" + a.outputName() + "*/" + a.outputExpression())).collect(Collectors.joining(", "))
+//                    + ");}";
+//
+//            return rs;
+//        }).collect(Collectors.joining(" else "));
+
+        return result;
     }
 
     private String generateDecisionTableSource(DMNDecodedTable<String> table, DMNTranslationInfo info) {
