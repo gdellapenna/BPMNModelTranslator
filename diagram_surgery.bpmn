@@ -141,6 +141,31 @@
       <bpmn:incoming>Flow_141t102</bpmn:incoming>
       <bpmn:outgoing>Flow_04kpogb</bpmn:outgoing>
     </bpmn:task>
+    <bpmn:businessRuleTask id="Activity_16nr0p7" name="Patient dismission from surgical unit">
+      <bpmn:extensionElements>
+        <zeebe:calledDecision decisionId="PatientDismissionSurgicalUnitDT" resultVariable="PatientDismissionSurgicalUnitResult" />
+        <zeebe:ioMapping>
+          <zeebe:input source="=rAldreteScore" target="AldreteScore" />
+          <zeebe:input source="=rActivity" target="Activity" />
+          <zeebe:input source="=rCirculation" target="Circulation" />
+          <zeebe:input source="=rConsciousness" target="Consciousness" />
+          <zeebe:input source="=rO2Saturation" target="O2Saturation" />
+          <zeebe:input source="=rRespiration" target="Respiration" />
+          <zeebe:output source="=PatientDismissionSurgicalUnitResult.PatientDismissionSurgicalUnit" target="PatientDismissionSurgicalUnit" />
+        </zeebe:ioMapping>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0o75ye4</bpmn:incoming>
+      <bpmn:outgoing>Flow_1r7w3kp</bpmn:outgoing>
+    </bpmn:businessRuleTask>
+    <bpmn:exclusiveGateway id="Gateway_058xy6d" name="Can patient leave surgical unit" default="Flow_0me09az">
+      <bpmn:incoming>Flow_1r7w3kp</bpmn:incoming>
+      <bpmn:outgoing>Flow_0me09az</bpmn:outgoing>
+      <bpmn:outgoing>Flow_028pjud</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="Event_01gw6pd" name="Return to ward (success)">
+      <bpmn:incoming>Flow_028pjud</bpmn:incoming>
+      <bpmn:incoming>Flow_04kpogb</bpmn:incoming>
+    </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_10vn5g9" sourceRef="Event_1dd675w" targetRef="Activity_0do0700" />
     <bpmn:sequenceFlow id="Flow_06mbmf5" sourceRef="Activity_0do0700" targetRef="Activity_1mbfbnv" />
     <bpmn:sequenceFlow id="Flow_04r8shj" sourceRef="Activity_1mbfbnv" targetRef="Gateway_1hwej0w" />
@@ -167,12 +192,6 @@
     <bpmn:sequenceFlow id="Flow_0lou1yg" name="PatientAdmissionOperatingTheatre=&#34;rejected&#34;" sourceRef="Gateway_1s04agq" targetRef="Event_0tlco0q">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=PatientAdmissionOperatingTheatre="rejected"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_028pjud" name="PatientDismissionSurgicalUnit=&#34;can&#34;" sourceRef="Gateway_058xy6d" targetRef="Event_01gw6pd">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=PatientDismissionSurgicalUnit="can"</bpmn:conditionExpression>
-    </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="Flow_0me09az" sourceRef="Gateway_058xy6d" targetRef="Activity_1uuxpml" />
-    <bpmn:sequenceFlow id="Flow_0o75ye4" sourceRef="Activity_1uuxpml" targetRef="Activity_16nr0p7" />
-    <bpmn:sequenceFlow id="Flow_04kpogb" sourceRef="Activity_0mqe4nv" targetRef="Event_01gw6pd" />
     <bpmn:sequenceFlow id="Flow_10cq4xe" sourceRef="Activity_01iv8eh" targetRef="Activity_1b92j4u" />
     <bpmn:sequenceFlow id="Flow_0cbx2l5" sourceRef="Activity_1b92j4u" targetRef="Activity_0g3bnhh" />
     <bpmn:sequenceFlow id="Flow_0x7q3bw" sourceRef="Activity_0g3bnhh" targetRef="Gateway_1s04agq" />
@@ -182,35 +201,16 @@
     <bpmn:sequenceFlow id="Flow_0nczf5i" sourceRef="Activity_0hywbyv" targetRef="Activity_1v7bxvg" />
     <bpmn:sequenceFlow id="Flow_0muysuw" sourceRef="Activity_1v7bxvg" targetRef="Gateway_07brpq2" />
     <bpmn:sequenceFlow id="Flow_0vhk8rs" sourceRef="Gateway_07brpq2" targetRef="Activity_1uuxpml" />
+    <bpmn:sequenceFlow id="Flow_0me09az" sourceRef="Gateway_058xy6d" targetRef="Activity_1uuxpml" />
+    <bpmn:sequenceFlow id="Flow_0o75ye4" sourceRef="Activity_1uuxpml" targetRef="Activity_16nr0p7" />
     <bpmn:sequenceFlow id="Flow_141t102" sourceRef="Gateway_07brpq2" targetRef="Activity_0mqe4nv">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=ICU=true</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
-    <bpmn:businessRuleTask id="Activity_16nr0p7" name="Patient dismission from surgical unit">
-      <bpmn:extensionElements>
-        <zeebe:calledDecision decisionId="PatientDismissionSurgicalUnitDT" resultVariable="PatientDismissionSurgicalUnitResult" />
-        <zeebe:ioMapping>
-          <zeebe:input source="=rAldreteScore" target="AldreteScore" />
-          <zeebe:input source="=rActivity" target="Activity" />
-          <zeebe:input source="=rCirculation" target="Circulation" />
-          <zeebe:input source="=rConsciousness" target="Consciousness" />
-          <zeebe:input source="=rO2Saturation" target="O2Saturation" />
-          <zeebe:input source="=rRespiration" target="Respiration" />
-          <zeebe:output source="=PatientDismissionSurgicalUnitResult.PatientDismissionSurgicalUnit" target="PatientDismissionSurgicalUnit" />
-        </zeebe:ioMapping>
-      </bpmn:extensionElements>
-      <bpmn:incoming>Flow_0o75ye4</bpmn:incoming>
-      <bpmn:outgoing>Flow_1r7w3kp</bpmn:outgoing>
-    </bpmn:businessRuleTask>
-    <bpmn:exclusiveGateway id="Gateway_058xy6d" name="Can patient leave surgical unit" default="Flow_0me09az">
-      <bpmn:incoming>Flow_1r7w3kp</bpmn:incoming>
-      <bpmn:outgoing>Flow_0me09az</bpmn:outgoing>
-      <bpmn:outgoing>Flow_028pjud</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_04kpogb" sourceRef="Activity_0mqe4nv" targetRef="Event_01gw6pd" />
     <bpmn:sequenceFlow id="Flow_1r7w3kp" sourceRef="Activity_16nr0p7" targetRef="Gateway_058xy6d" />
-    <bpmn:endEvent id="Event_01gw6pd" name="Return to ward (success)">
-      <bpmn:incoming>Flow_028pjud</bpmn:incoming>
-      <bpmn:incoming>Flow_04kpogb</bpmn:incoming>
-    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_028pjud" name="PatientDismissionSurgicalUnit=&#34;can&#34;" sourceRef="Gateway_058xy6d" targetRef="Event_01gw6pd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=PatientDismissionSurgicalUnit="can"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
   </bpmn:process>
   <bpmn:message id="Message_1095b2h" name="SoftwareMessage">
     <bpmn:extensionElements>
@@ -220,7 +220,7 @@
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1onq5lz">
       <bpmndi:BPMNShape id="Participant_0g1cvw9_di" bpmnElement="Participant_0g1cvw9" isHorizontal="true">
-        <dc:Bounds x="160" y="80" width="2565" height="570" />
+        <dc:Bounds x="160" y="80" width="2350" height="570" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1rtp3iv_di" bpmnElement="Activity_0do0700">
         <dc:Bounds x="280" y="529" width="100" height="80" />
@@ -258,7 +258,7 @@
       <bpmndi:BPMNShape id="Gateway_01rw5bk_di" bpmnElement="Gateway_01rw5bk" isMarkerVisible="true">
         <dc:Bounds x="915" y="385" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="974.5" y="396" width="85" height="27" />
+          <dc:Bounds x="975" y="396" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_01knwd9_di" bpmnElement="Activity_1bfwy21">
@@ -267,7 +267,7 @@
       <bpmndi:BPMNShape id="Gateway_0uzvw4h_di" bpmnElement="Gateway_0uzvw4h" isMarkerVisible="true">
         <dc:Bounds x="1085" y="249" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1079.5" y="212" width="61" height="27" />
+          <dc:Bounds x="1080" y="212" width="61" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1w9tp8a_di" bpmnElement="Event_0tlco0q">
@@ -290,7 +290,7 @@
       <bpmndi:BPMNShape id="Gateway_1s04agq_di" bpmnElement="Gateway_1s04agq" isMarkerVisible="true">
         <dc:Bounds x="1715" y="249" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1774.5" y="260.5" width="85" height="27" />
+          <dc:Bounds x="1757" y="286" width="85" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0hywbyv_di" bpmnElement="Activity_0hywbyv">
@@ -306,7 +306,7 @@
       <bpmndi:BPMNShape id="Gateway_07brpq2_di" bpmnElement="Gateway_07brpq2" isMarkerVisible="true">
         <dc:Bounds x="2035" y="125" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2050.5" y="101" width="19" height="14" />
+          <dc:Bounds x="2051" y="101" width="19" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0mqe4nv_di" bpmnElement="Activity_0mqe4nv">
@@ -345,14 +345,14 @@
         <di:waypoint x="495" y="274" />
         <di:waypoint x="580" y="274" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="516" y="247" width="45" height="14" />
+          <dc:Bounds x="516" y="253" width="45" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_01kwxwt_di" bpmnElement="Flow_01kwxwt">
         <di:waypoint x="470" y="299" />
         <di:waypoint x="470" y="551" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="433" y="379" width="34" height="14" />
+          <dc:Bounds x="473" y="333" width="34" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_13jbc8y_di" bpmnElement="Flow_13jbc8y">
@@ -371,7 +371,7 @@
         <di:waypoint x="940" y="385" />
         <di:waypoint x="940" y="314" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="910" y="347" width="90" height="27" />
+          <dc:Bounds x="945" y="351" width="90" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_05awgel_di" bpmnElement="Flow_05awgel">
@@ -379,7 +379,7 @@
         <di:waypoint x="940" y="569" />
         <di:waypoint x="1240" y="569" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="910" y="499" width="90" height="27" />
+          <dc:Bounds x="945" y="499" width="90" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1azjrbx_di" bpmnElement="Flow_1azjrbx">
@@ -390,7 +390,7 @@
         <di:waypoint x="1135" y="274" />
         <di:waypoint x="1208" y="274" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1130" y="256" width="84" height="27" />
+          <dc:Bounds x="1118" y="299" width="84" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0p6ecp8_di" bpmnElement="Flow_0p6ecp8">
@@ -398,7 +398,7 @@
         <di:waypoint x="1110" y="569" />
         <di:waypoint x="1240" y="569" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1083" y="431" width="84" height="27" />
+          <dc:Bounds x="1118" y="406" width="84" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0lou1yg_di" bpmnElement="Flow_0lou1yg">
@@ -408,28 +408,6 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1712" y="431" width="87" height="40" />
         </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_028pjud_di" bpmnElement="Flow_028pjud">
-        <di:waypoint x="2270" y="405" />
-        <di:waypoint x="2270" y="274" />
-        <di:waypoint x="2432" y="274" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="2282" y="257" width="88" height="40" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0me09az_di" bpmnElement="Flow_0me09az">
-        <di:waypoint x="2260" y="395" />
-        <di:waypoint x="2260" y="274" />
-        <di:waypoint x="2110" y="274" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0o75ye4_di" bpmnElement="Flow_0o75ye4">
-        <di:waypoint x="2060" y="314" />
-        <di:waypoint x="2060" y="380" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_04kpogb_di" bpmnElement="Flow_04kpogb">
-        <di:waypoint x="2310" y="150" />
-        <di:waypoint x="2450" y="150" />
-        <di:waypoint x="2450" y="256" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_10cq4xe_di" bpmnElement="Flow_10cq4xe">
         <di:waypoint x="1308" y="274" />
@@ -447,7 +425,7 @@
         <di:waypoint x="1740" y="249" />
         <di:waypoint x="1740" y="190" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1712" y="217" width="87" height="40" />
+          <dc:Bounds x="1756" y="217" width="87" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0nczf5i_di" bpmnElement="Flow_0nczf5i">
@@ -462,13 +440,35 @@
         <di:waypoint x="2060" y="175" />
         <di:waypoint x="2060" y="234" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0me09az_di" bpmnElement="Flow_0me09az">
+        <di:waypoint x="2260" y="395" />
+        <di:waypoint x="2260" y="274" />
+        <di:waypoint x="2110" y="274" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o75ye4_di" bpmnElement="Flow_0o75ye4">
+        <di:waypoint x="2060" y="314" />
+        <di:waypoint x="2060" y="380" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_141t102_di" bpmnElement="Flow_141t102">
         <di:waypoint x="2085" y="150" />
         <di:waypoint x="2210" y="150" />
       </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04kpogb_di" bpmnElement="Flow_04kpogb">
+        <di:waypoint x="2310" y="150" />
+        <di:waypoint x="2450" y="150" />
+        <di:waypoint x="2450" y="256" />
+      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1r7w3kp_di" bpmnElement="Flow_1r7w3kp">
         <di:waypoint x="2110" y="420" />
         <di:waypoint x="2235" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_028pjud_di" bpmnElement="Flow_028pjud">
+        <di:waypoint x="2270" y="405" />
+        <di:waypoint x="2270" y="274" />
+        <di:waypoint x="2432" y="274" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2282" y="280" width="88" height="40" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
