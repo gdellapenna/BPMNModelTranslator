@@ -320,145 +320,135 @@ class bpmn_process_Surgery {
     Object PreAnesthesicReEvaluation = null;
 
 //Process Dynamics
-    public void EVENT_Event_1dd675w(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Event_1dd675w
-        BPMNExecProcessUtils.debugOutput("Start Event Event_1dd675w");
-        BPMNExecProcessUtils.logCurrentNode("Event_1dd675w", null);
-//[outgoing edge] Activity_0do0700 - User Info
-        BPMNExecProcessUtils.logTransition("Event_1dd675w", "Activity_0do0700");
-        TASK_User_Info(s.withCurrent("Event_1dd675w"));
-    }
-
-    public void EVENT_Patient_rejected(BPMNExecProcessUtils.ProcessStatus s) {//End Event Patient rejected [Event_0tqfzbc]
-        BPMNExecProcessUtils.debugOutput("End Event Patient rejected [Event_0tqfzbc]");
-        BPMNExecProcessUtils.logCurrentNode("Event_0tqfzbc", "Patient rejected");
-        BPMNExecProcessUtils.error(s, "Rejected", 1);
-    }
-
-    public void EVENT_Return_to_ward__exception_(BPMNExecProcessUtils.ProcessStatus s) {//End Event Return to ward (exception) [Event_0tlco0q]
-        BPMNExecProcessUtils.debugOutput("End Event Return to ward (exception) [Event_0tlco0q]");
-        BPMNExecProcessUtils.logCurrentNode("Event_0tlco0q", "Return to ward (exception)");
-        BPMNExecProcessUtils.error(s, "Return", 2);
-    }
-
-    public void EVENT_Return_to_ward__success_(BPMNExecProcessUtils.ProcessStatus s) {//End Event Return to ward (success) [Event_01gw6pd]
+    public void EVENT_Event_01gw6pd_Return_to_ward__success_(BPMNExecProcessUtils.ProcessStatus s) {//End Event Return to ward (success) [Event_01gw6pd]
         BPMNExecProcessUtils.debugOutput("End Event Return to ward (success) [Event_01gw6pd]");
         BPMNExecProcessUtils.logCurrentNode("Event_01gw6pd", "Return to ward (success)");
         BPMNExecProcessUtils.success(s);
     }
 
-    public void GATEWAY_Any_adverse_event(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Any adverse event [Gateway_0uzvw4h]
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Any adverse event [Gateway_0uzvw4h]");
-        BPMNExecProcessUtils.logCurrentNode("Gateway_0uzvw4h", "Any adverse event");
-        if (AdverseEvents.equals("absent")) {//[outgoing edge] Activity_01iv8eh - Preoperational patient preparation
-            BPMNExecProcessUtils.logTransition("Gateway_0uzvw4h", "Activity_01iv8eh");
-            TASK_Preoperational_patient_preparation(s.withCurrent("Gateway_0uzvw4h"));
-        } else if (AdverseEvents.equals("present")) {//[outgoing edge] Event_0tlco0q - Return to ward (exception)
-            BPMNExecProcessUtils.logTransition("Gateway_0uzvw4h", "Event_0tlco0q");
-            EVENT_Return_to_ward__exception_(s.withCurrent("Gateway_0uzvw4h"));
-        } else {
-            BPMNExecProcessUtils.noDefaultCaseError(s);
-        }
+    public void EVENT_Event_0tlco0q_Return_to_ward__exception_(BPMNExecProcessUtils.ProcessStatus s) {//End Event Return to ward (exception) [Event_0tlco0q]
+        BPMNExecProcessUtils.debugOutput("End Event Return to ward (exception) [Event_0tlco0q]");
+        BPMNExecProcessUtils.logCurrentNode("Event_0tlco0q", "Return to ward (exception)");
+        BPMNExecProcessUtils.error(s, "Return", 2);
     }
 
-    public void GATEWAY_Can_patient_leave_surgical_unit(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Can patient leave surgical unit [Gateway_058xy6d]
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Can patient leave surgical unit [Gateway_058xy6d]");
-        BPMNExecProcessUtils.logCurrentNode("Gateway_058xy6d", "Can patient leave surgical unit");
-        if (PatientDismissionSurgicalUnit.equals("can")) {//[outgoing edge] Event_01gw6pd - Return to ward (success)
-            BPMNExecProcessUtils.logTransition("Gateway_058xy6d", "Event_01gw6pd");
-            EVENT_Return_to_ward__success_(s.withCurrent("Gateway_058xy6d"));
-        } else {//[outgoing edge] Activity_1uuxpml - Recovery room
-            BPMNExecProcessUtils.logTransition("Gateway_058xy6d", "Activity_1uuxpml");
-            TASK_Recovery_room(s.withCurrent("Gateway_058xy6d"));
-        }
+    public void EVENT_Event_0tqfzbc_Patient_rejected(BPMNExecProcessUtils.ProcessStatus s) {//End Event Patient rejected [Event_0tqfzbc]
+        BPMNExecProcessUtils.debugOutput("End Event Patient rejected [Event_0tqfzbc]");
+        BPMNExecProcessUtils.logCurrentNode("Event_0tqfzbc", "Patient rejected");
+        BPMNExecProcessUtils.error(s, "Rejected", 1);
     }
 
-    public void GATEWAY_ICU(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway ICU [Gateway_07brpq2]
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway ICU [Gateway_07brpq2]");
-        BPMNExecProcessUtils.logCurrentNode("Gateway_07brpq2", "ICU");
-        if (ICU.equals(true)) {//[outgoing edge] Activity_0mqe4nv - Transport to ICU
-            BPMNExecProcessUtils.logTransition("Gateway_07brpq2", "Activity_0mqe4nv");
-            TASK_Transport_to_ICU(s.withCurrent("Gateway_07brpq2"));
-        } else {//[outgoing edge] Activity_1uuxpml - Recovery room
-            BPMNExecProcessUtils.logTransition("Gateway_07brpq2", "Activity_1uuxpml");
-            TASK_Recovery_room(s.withCurrent("Gateway_07brpq2"));
-        }
+    public void EVENT_Event_1dd675w(BPMNExecProcessUtils.ProcessStatus s) {//Start Event Event_1dd675w
+        BPMNExecProcessUtils.debugOutput("Start Event Event_1dd675w");
+        BPMNExecProcessUtils.logCurrentNode("Event_1dd675w", null);
+//[outgoing edge] Activity_0do0700 - User Info
+        BPMNExecProcessUtils.logTransition("Event_1dd675w", "Activity_0do0700");
+        TASK_Activity_0do0700_User_Info(s.withCurrent("Event_1dd675w"));
     }
 
-    public void GATEWAY_Patient_sent_back_1(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Patient sent back 1 [Gateway_01rw5bk]
+    public void GATEWAY_Gateway_01rw5bk_Patient_sent_back_1(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Patient sent back 1 [Gateway_01rw5bk]
         BPMNExecProcessUtils.debugOutput("Exclusive Gateway Patient sent back 1 [Gateway_01rw5bk]");
         BPMNExecProcessUtils.logCurrentNode("Gateway_01rw5bk", "Patient sent back 1");
         if (PreAnesthesicEvaluation.equals(true)) {//[outgoing edge] Activity_1bfwy21 - Check adverse events
             BPMNExecProcessUtils.logTransition("Gateway_01rw5bk", "Activity_1bfwy21");
-            TASK_Check_adverse_events(s.withCurrent("Gateway_01rw5bk"));
+            TASK_Activity_1bfwy21_Check_adverse_events(s.withCurrent("Gateway_01rw5bk"));
         } else if (PreAnesthesicEvaluation.equals(false)) {//[outgoing edge] Event_0tlco0q - Return to ward (exception)
             BPMNExecProcessUtils.logTransition("Gateway_01rw5bk", "Event_0tlco0q");
-            EVENT_Return_to_ward__exception_(s.withCurrent("Gateway_01rw5bk"));
+            EVENT_Event_0tlco0q_Return_to_ward__exception_(s.withCurrent("Gateway_01rw5bk"));
         } else {
             BPMNExecProcessUtils.noDefaultCaseError(s);
         }
     }
 
-    public void GATEWAY_Patient_sent_back_2(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Patient sent back 2 [Gateway_1s04agq]
-        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Patient sent back 2 [Gateway_1s04agq]");
-        BPMNExecProcessUtils.logCurrentNode("Gateway_1s04agq", "Patient sent back 2");
-        if (PatientAdmissionOperatingTheatre.equals("admitted")) {//[outgoing edge] Activity_0hywbyv - Surgery
-            BPMNExecProcessUtils.logTransition("Gateway_1s04agq", "Activity_0hywbyv");
-            TASK_Surgery(s.withCurrent("Gateway_1s04agq"));
-        } else if (PatientAdmissionOperatingTheatre.equals("rejected")) {//[outgoing edge] Event_0tlco0q - Return to ward (exception)
-            BPMNExecProcessUtils.logTransition("Gateway_1s04agq", "Event_0tlco0q");
-            EVENT_Return_to_ward__exception_(s.withCurrent("Gateway_1s04agq"));
+    public void GATEWAY_Gateway_058xy6d_Can_patient_leave_surgical_unit(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Can patient leave surgical unit [Gateway_058xy6d]
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Can patient leave surgical unit [Gateway_058xy6d]");
+        BPMNExecProcessUtils.logCurrentNode("Gateway_058xy6d", "Can patient leave surgical unit");
+        if (PatientDismissionSurgicalUnit.equals("can")) {//[outgoing edge] Event_01gw6pd - Return to ward (success)
+            BPMNExecProcessUtils.logTransition("Gateway_058xy6d", "Event_01gw6pd");
+            EVENT_Event_01gw6pd_Return_to_ward__success_(s.withCurrent("Gateway_058xy6d"));
+        } else {//[outgoing edge] Activity_1uuxpml - Recovery room
+            BPMNExecProcessUtils.logTransition("Gateway_058xy6d", "Activity_1uuxpml");
+            TASK_Activity_1uuxpml_Recovery_room(s.withCurrent("Gateway_058xy6d"));
+        }
+    }
+
+    public void GATEWAY_Gateway_07brpq2_ICU(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway ICU [Gateway_07brpq2]
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway ICU [Gateway_07brpq2]");
+        BPMNExecProcessUtils.logCurrentNode("Gateway_07brpq2", "ICU");
+        if (ICU.equals(true)) {//[outgoing edge] Activity_0mqe4nv - Transport to ICU
+            BPMNExecProcessUtils.logTransition("Gateway_07brpq2", "Activity_0mqe4nv");
+            TASK_Activity_0mqe4nv_Transport_to_ICU(s.withCurrent("Gateway_07brpq2"));
+        } else {//[outgoing edge] Activity_1uuxpml - Recovery room
+            BPMNExecProcessUtils.logTransition("Gateway_07brpq2", "Activity_1uuxpml");
+            TASK_Activity_1uuxpml_Recovery_room(s.withCurrent("Gateway_07brpq2"));
+        }
+    }
+
+    public void GATEWAY_Gateway_0uzvw4h_Any_adverse_event(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Any adverse event [Gateway_0uzvw4h]
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Any adverse event [Gateway_0uzvw4h]");
+        BPMNExecProcessUtils.logCurrentNode("Gateway_0uzvw4h", "Any adverse event");
+        if (AdverseEvents.equals("absent")) {//[outgoing edge] Activity_01iv8eh - Preoperational patient preparation
+            BPMNExecProcessUtils.logTransition("Gateway_0uzvw4h", "Activity_01iv8eh");
+            TASK_Activity_01iv8eh_Preoperational_patient_preparation(s.withCurrent("Gateway_0uzvw4h"));
+        } else if (AdverseEvents.equals("present")) {//[outgoing edge] Event_0tlco0q - Return to ward (exception)
+            BPMNExecProcessUtils.logTransition("Gateway_0uzvw4h", "Event_0tlco0q");
+            EVENT_Event_0tlco0q_Return_to_ward__exception_(s.withCurrent("Gateway_0uzvw4h"));
         } else {
             BPMNExecProcessUtils.noDefaultCaseError(s);
         }
     }
 
-    public void GATEWAY_Triage(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Triage [Gateway_1hwej0w]
+    public void GATEWAY_Gateway_1hwej0w_Triage(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Triage [Gateway_1hwej0w]
         BPMNExecProcessUtils.debugOutput("Exclusive Gateway Triage [Gateway_1hwej0w]");
         BPMNExecProcessUtils.logCurrentNode("Gateway_1hwej0w", "Triage");
         if (PatientAdmission.equals("denied")) {//[outgoing edge] Event_0tqfzbc - Patient rejected
             BPMNExecProcessUtils.logTransition("Gateway_1hwej0w", "Event_0tqfzbc");
-            EVENT_Patient_rejected(s.withCurrent("Gateway_1hwej0w"));
+            EVENT_Event_0tqfzbc_Patient_rejected(s.withCurrent("Gateway_1hwej0w"));
         } else {//[outgoing edge] Activity_1qr375k - Insert into surgeon waiting list
             BPMNExecProcessUtils.logTransition("Gateway_1hwej0w", "Activity_1qr375k");
-            TASK_Insert_into_surgeon_waiting_list(s.withCurrent("Gateway_1hwej0w"));
+            TASK_Activity_1qr375k_Insert_into_surgeon_waiting_list(s.withCurrent("Gateway_1hwej0w"));
         }
     }
 
-    public void TASK_Check_adverse_events(BPMNExecProcessUtils.ProcessStatus s) {//User Task Check adverse events [Activity_1bfwy21]
-        BPMNExecProcessUtils.debugOutput("User Task Check adverse events [Activity_1bfwy21]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_1bfwy21", "Check adverse events");
-//[outgoing edge] Gateway_0uzvw4h - Any adverse event
-        BPMNExecProcessUtils.logTransition("Activity_1bfwy21", "Gateway_0uzvw4h");
-        GATEWAY_Any_adverse_event(s.withCurrent("Activity_1bfwy21"));
+    public void GATEWAY_Gateway_1s04agq_Patient_sent_back_2(BPMNExecProcessUtils.ProcessStatus s) {//Exclusive Gateway Patient sent back 2 [Gateway_1s04agq]
+        BPMNExecProcessUtils.debugOutput("Exclusive Gateway Patient sent back 2 [Gateway_1s04agq]");
+        BPMNExecProcessUtils.logCurrentNode("Gateway_1s04agq", "Patient sent back 2");
+        if (PatientAdmissionOperatingTheatre.equals("admitted")) {//[outgoing edge] Activity_0hywbyv - Surgery
+            BPMNExecProcessUtils.logTransition("Gateway_1s04agq", "Activity_0hywbyv");
+            TASK_Activity_0hywbyv_Surgery(s.withCurrent("Gateway_1s04agq"));
+        } else if (PatientAdmissionOperatingTheatre.equals("rejected")) {//[outgoing edge] Event_0tlco0q - Return to ward (exception)
+            BPMNExecProcessUtils.logTransition("Gateway_1s04agq", "Event_0tlco0q");
+            EVENT_Event_0tlco0q_Return_to_ward__exception_(s.withCurrent("Gateway_1s04agq"));
+        } else {
+            BPMNExecProcessUtils.noDefaultCaseError(s);
+        }
     }
 
-    public void TASK_Insert_into_surgeon_waiting_list(BPMNExecProcessUtils.ProcessStatus s) {//Send Task Insert into surgeon waiting list [Activity_1qr375k]
-        BPMNExecProcessUtils.debugOutput("Send Task Insert into surgeon waiting list [Activity_1qr375k]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_1qr375k", "Insert into surgeon waiting list");
-//[outgoing edge] Activity_0ba89kz - Wait for message from external software
-        BPMNExecProcessUtils.logTransition("Activity_1qr375k", "Activity_0ba89kz");
-        TASK_Wait_for_message_from_external_software(s.withCurrent("Activity_1qr375k"));
+    public void TASK_Activity_01iv8eh_Preoperational_patient_preparation(BPMNExecProcessUtils.ProcessStatus s) {//User Task Preoperational patient preparation [Activity_01iv8eh]
+        BPMNExecProcessUtils.debugOutput("User Task Preoperational patient preparation [Activity_01iv8eh]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_01iv8eh", "Preoperational patient preparation");
+//[outgoing edge] Activity_1b92j4u - Pre-Anesthesic re-evaluation
+        BPMNExecProcessUtils.logTransition("Activity_01iv8eh", "Activity_1b92j4u");
+        TASK_Activity_1b92j4u_Pre_Anesthesic_re_evaluation(s.withCurrent("Activity_01iv8eh"));
     }
 
-    public void TASK_Parient_Admission(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Parient Admission [Activity_1mbfbnv]
-        BPMNExecProcessUtils.debugOutput("Business Rule Task Parient Admission [Activity_1mbfbnv]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_1mbfbnv", "Parient Admission");
-        BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION Parient Admission");
-        dmn_dtable_PatientAdmissionDT_arguments args = new dmn_dtable_PatientAdmissionDT_arguments();
-        args.Hospitalizable = uHospitalizable;
-        args.Emergency = uEmergency;
-        args.Age = uAge;
-        args.PreviouslyHospitalized = uPreviouslyHospitalized;
-        dmn_dtable_PatientAdmissionDT_result PatientAdmissionResult = dmn_dtable_PatientAdmissionDT.execute(args);
-        BPMNExecProcessUtils.debugOutput("	 DECISION RESULT IS %s", PatientAdmissionResult);
-        PatientAdmission = PatientAdmissionResult.PatientAdmission;
-        BPMNExecProcessUtils.debugOutput("	 ASSIGNING PatientAdmission TO %s", PatientAdmissionResult.PatientAdmission);
-//[outgoing edge] Gateway_1hwej0w - Triage
-        BPMNExecProcessUtils.logTransition("Activity_1mbfbnv", "Gateway_1hwej0w");
-        GATEWAY_Triage(s.withCurrent("Activity_1mbfbnv"));
+    public void TASK_Activity_0ba89kz_Wait_for_message_from_external_software(BPMNExecProcessUtils.ProcessStatus s) {//Receive Task Wait for message from external software [Activity_0ba89kz]
+        BPMNExecProcessUtils.debugOutput("Receive Task Wait for message from external software [Activity_0ba89kz]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_0ba89kz", "Wait for message from external software");
+//[outgoing edge] Activity_1o5csdt - Pre-Anesthesic evaluation
+        BPMNExecProcessUtils.logTransition("Activity_0ba89kz", "Activity_1o5csdt");
+        TASK_Activity_1o5csdt_Pre_Anesthesic_evaluation(s.withCurrent("Activity_0ba89kz"));
     }
 
-    public void TASK_Patient_admission_to_operating_theatre(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Patient admission to operating theatre [Activity_0g3bnhh]
+    public void TASK_Activity_0do0700_User_Info(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task User Info [Activity_0do0700]
+        BPMNExecProcessUtils.debugOutput("Generic Task User Info [Activity_0do0700]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_0do0700", "User Info");
+//[outgoing edge] Activity_1mbfbnv - Parient Admission
+        BPMNExecProcessUtils.logTransition("Activity_0do0700", "Activity_1mbfbnv");
+        TASK_Activity_1mbfbnv_Parient_Admission(s.withCurrent("Activity_0do0700"));
+    }
+
+    public void TASK_Activity_0g3bnhh_Patient_admission_to_operating_theatre(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Patient admission to operating theatre [Activity_0g3bnhh]
         BPMNExecProcessUtils.debugOutput("Business Rule Task Patient admission to operating theatre [Activity_0g3bnhh]");
         BPMNExecProcessUtils.logCurrentNode("Activity_0g3bnhh", "Patient admission to operating theatre");
         BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION Patient admission to operating theatre");
@@ -473,18 +463,26 @@ class bpmn_process_Surgery {
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING PatientAdmissionOperatingTheatre TO %s", PatientAdmissionOperatingTheatreResult.PatientAdmissionOperatingTheatre);
 //[outgoing edge] Gateway_1s04agq - Patient sent back 2
         BPMNExecProcessUtils.logTransition("Activity_0g3bnhh", "Gateway_1s04agq");
-        GATEWAY_Patient_sent_back_2(s.withCurrent("Activity_0g3bnhh"));
+        GATEWAY_Gateway_1s04agq_Patient_sent_back_2(s.withCurrent("Activity_0g3bnhh"));
     }
 
-    public void TASK_Patient_discharge_from_operating_theater(BPMNExecProcessUtils.ProcessStatus s) {//User Task Patient discharge from operating theater [Activity_1v7bxvg]
-        BPMNExecProcessUtils.debugOutput("User Task Patient discharge from operating theater [Activity_1v7bxvg]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_1v7bxvg", "Patient discharge from operating theater");
-//[outgoing edge] Gateway_07brpq2 - ICU
-        BPMNExecProcessUtils.logTransition("Activity_1v7bxvg", "Gateway_07brpq2");
-        GATEWAY_ICU(s.withCurrent("Activity_1v7bxvg"));
+    public void TASK_Activity_0hywbyv_Surgery(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Surgery [Activity_0hywbyv]
+        BPMNExecProcessUtils.debugOutput("Generic Task Surgery [Activity_0hywbyv]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_0hywbyv", "Surgery");
+//[outgoing edge] Activity_1v7bxvg - Patient discharge from operating theater
+        BPMNExecProcessUtils.logTransition("Activity_0hywbyv", "Activity_1v7bxvg");
+        TASK_Activity_1v7bxvg_Patient_discharge_from_operating_theater(s.withCurrent("Activity_0hywbyv"));
     }
 
-    public void TASK_Patient_dismission_from_surgical_unit(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Patient dismission from surgical unit [Activity_16nr0p7]
+    public void TASK_Activity_0mqe4nv_Transport_to_ICU(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Transport to ICU [Activity_0mqe4nv]
+        BPMNExecProcessUtils.debugOutput("Generic Task Transport to ICU [Activity_0mqe4nv]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_0mqe4nv", "Transport to ICU");
+//[outgoing edge] Event_01gw6pd - Return to ward (success)
+        BPMNExecProcessUtils.logTransition("Activity_0mqe4nv", "Event_01gw6pd");
+        EVENT_Event_01gw6pd_Return_to_ward__success_(s.withCurrent("Activity_0mqe4nv"));
+    }
+
+    public void TASK_Activity_16nr0p7_Patient_dismission_from_surgical_unit(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Patient dismission from surgical unit [Activity_16nr0p7]
         BPMNExecProcessUtils.debugOutput("Business Rule Task Patient dismission from surgical unit [Activity_16nr0p7]");
         BPMNExecProcessUtils.logCurrentNode("Activity_16nr0p7", "Patient dismission from surgical unit");
         BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION Patient dismission from surgical unit");
@@ -501,27 +499,10 @@ class bpmn_process_Surgery {
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING PatientDismissionSurgicalUnit TO %s", PatientDismissionSurgicalUnitResult.PatientDismissionSurgicalUnit);
 //[outgoing edge] Gateway_058xy6d - Can patient leave surgical unit
         BPMNExecProcessUtils.logTransition("Activity_16nr0p7", "Gateway_058xy6d");
-        GATEWAY_Can_patient_leave_surgical_unit(s.withCurrent("Activity_16nr0p7"));
+        GATEWAY_Gateway_058xy6d_Can_patient_leave_surgical_unit(s.withCurrent("Activity_16nr0p7"));
     }
 
-    public void TASK_Pre_Anesthesic_evaluation(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Pre-Anesthesic evaluation [Activity_1o5csdt]
-        BPMNExecProcessUtils.debugOutput("Business Rule Task Pre-Anesthesic evaluation [Activity_1o5csdt]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_1o5csdt", "Pre-Anesthesic evaluation");
-        BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION Pre-Anesthesic evaluation");
-        dmn_dtable_PreAnesthesicEvaluationDT_arguments args = new dmn_dtable_PreAnesthesicEvaluationDT_arguments();
-        args.RequiredLaboratoryTests = pRequiredLaboratoryTests;
-        args.RequiredDiagnosticTests = pRequiredDiagnosticTests;
-        args.ClinicalConditions = pClinicalConditions;
-        dmn_dtable_PreAnesthesicEvaluationDT_result PreAnesthesicEvaluationResult = dmn_dtable_PreAnesthesicEvaluationDT.execute(args);
-        BPMNExecProcessUtils.debugOutput("	 DECISION RESULT IS %s", PreAnesthesicEvaluationResult);
-        PreAnesthesicEvaluation = PreAnesthesicEvaluationResult.PreAnesthesicEvaluation;
-        BPMNExecProcessUtils.debugOutput("	 ASSIGNING PreAnesthesicEvaluation TO %s", PreAnesthesicEvaluationResult.PreAnesthesicEvaluation);
-//[outgoing edge] Gateway_01rw5bk - Patient sent back 1
-        BPMNExecProcessUtils.logTransition("Activity_1o5csdt", "Gateway_01rw5bk");
-        GATEWAY_Patient_sent_back_1(s.withCurrent("Activity_1o5csdt"));
-    }
-
-    public void TASK_Pre_Anesthesic_re_evaluation(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Pre-Anesthesic re-evaluation [Activity_1b92j4u]
+    public void TASK_Activity_1b92j4u_Pre_Anesthesic_re_evaluation(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Pre-Anesthesic re-evaluation [Activity_1b92j4u]
         BPMNExecProcessUtils.debugOutput("Business Rule Task Pre-Anesthesic re-evaluation [Activity_1b92j4u]");
         BPMNExecProcessUtils.logCurrentNode("Activity_1b92j4u", "Pre-Anesthesic re-evaluation");
         BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION Pre-Anesthesic re-evaluation");
@@ -536,55 +517,74 @@ class bpmn_process_Surgery {
         BPMNExecProcessUtils.debugOutput("	 ASSIGNING PreAnesthesicReEvaluation TO %s", PreAnesthesicReEvaluationResult.PreAnesthesicReEvaluation);
 //[outgoing edge] Activity_0g3bnhh - Patient admission to operating theatre
         BPMNExecProcessUtils.logTransition("Activity_1b92j4u", "Activity_0g3bnhh");
-        TASK_Patient_admission_to_operating_theatre(s.withCurrent("Activity_1b92j4u"));
+        TASK_Activity_0g3bnhh_Patient_admission_to_operating_theatre(s.withCurrent("Activity_1b92j4u"));
     }
 
-    public void TASK_Preoperational_patient_preparation(BPMNExecProcessUtils.ProcessStatus s) {//User Task Preoperational patient preparation [Activity_01iv8eh]
-        BPMNExecProcessUtils.debugOutput("User Task Preoperational patient preparation [Activity_01iv8eh]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_01iv8eh", "Preoperational patient preparation");
-//[outgoing edge] Activity_1b92j4u - Pre-Anesthesic re-evaluation
-        BPMNExecProcessUtils.logTransition("Activity_01iv8eh", "Activity_1b92j4u");
-        TASK_Pre_Anesthesic_re_evaluation(s.withCurrent("Activity_01iv8eh"));
+    public void TASK_Activity_1bfwy21_Check_adverse_events(BPMNExecProcessUtils.ProcessStatus s) {//User Task Check adverse events [Activity_1bfwy21]
+        BPMNExecProcessUtils.debugOutput("User Task Check adverse events [Activity_1bfwy21]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_1bfwy21", "Check adverse events");
+//[outgoing edge] Gateway_0uzvw4h - Any adverse event
+        BPMNExecProcessUtils.logTransition("Activity_1bfwy21", "Gateway_0uzvw4h");
+        GATEWAY_Gateway_0uzvw4h_Any_adverse_event(s.withCurrent("Activity_1bfwy21"));
     }
 
-    public void TASK_Recovery_room(BPMNExecProcessUtils.ProcessStatus s) {//User Task Recovery room [Activity_1uuxpml]
+    public void TASK_Activity_1mbfbnv_Parient_Admission(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Parient Admission [Activity_1mbfbnv]
+        BPMNExecProcessUtils.debugOutput("Business Rule Task Parient Admission [Activity_1mbfbnv]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_1mbfbnv", "Parient Admission");
+        BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION Parient Admission");
+        dmn_dtable_PatientAdmissionDT_arguments args = new dmn_dtable_PatientAdmissionDT_arguments();
+        args.Hospitalizable = uHospitalizable;
+        args.Emergency = uEmergency;
+        args.Age = uAge;
+        args.PreviouslyHospitalized = uPreviouslyHospitalized;
+        dmn_dtable_PatientAdmissionDT_result PatientAdmissionResult = dmn_dtable_PatientAdmissionDT.execute(args);
+        BPMNExecProcessUtils.debugOutput("	 DECISION RESULT IS %s", PatientAdmissionResult);
+        PatientAdmission = PatientAdmissionResult.PatientAdmission;
+        BPMNExecProcessUtils.debugOutput("	 ASSIGNING PatientAdmission TO %s", PatientAdmissionResult.PatientAdmission);
+//[outgoing edge] Gateway_1hwej0w - Triage
+        BPMNExecProcessUtils.logTransition("Activity_1mbfbnv", "Gateway_1hwej0w");
+        GATEWAY_Gateway_1hwej0w_Triage(s.withCurrent("Activity_1mbfbnv"));
+    }
+
+    public void TASK_Activity_1o5csdt_Pre_Anesthesic_evaluation(BPMNExecProcessUtils.ProcessStatus s) {//Business Rule Task Pre-Anesthesic evaluation [Activity_1o5csdt]
+        BPMNExecProcessUtils.debugOutput("Business Rule Task Pre-Anesthesic evaluation [Activity_1o5csdt]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_1o5csdt", "Pre-Anesthesic evaluation");
+        BPMNExecProcessUtils.debugOutput("	 EXECUTING DECISION Pre-Anesthesic evaluation");
+        dmn_dtable_PreAnesthesicEvaluationDT_arguments args = new dmn_dtable_PreAnesthesicEvaluationDT_arguments();
+        args.RequiredLaboratoryTests = pRequiredLaboratoryTests;
+        args.RequiredDiagnosticTests = pRequiredDiagnosticTests;
+        args.ClinicalConditions = pClinicalConditions;
+        dmn_dtable_PreAnesthesicEvaluationDT_result PreAnesthesicEvaluationResult = dmn_dtable_PreAnesthesicEvaluationDT.execute(args);
+        BPMNExecProcessUtils.debugOutput("	 DECISION RESULT IS %s", PreAnesthesicEvaluationResult);
+        PreAnesthesicEvaluation = PreAnesthesicEvaluationResult.PreAnesthesicEvaluation;
+        BPMNExecProcessUtils.debugOutput("	 ASSIGNING PreAnesthesicEvaluation TO %s", PreAnesthesicEvaluationResult.PreAnesthesicEvaluation);
+//[outgoing edge] Gateway_01rw5bk - Patient sent back 1
+        BPMNExecProcessUtils.logTransition("Activity_1o5csdt", "Gateway_01rw5bk");
+        GATEWAY_Gateway_01rw5bk_Patient_sent_back_1(s.withCurrent("Activity_1o5csdt"));
+    }
+
+    public void TASK_Activity_1qr375k_Insert_into_surgeon_waiting_list(BPMNExecProcessUtils.ProcessStatus s) {//Send Task Insert into surgeon waiting list [Activity_1qr375k]
+        BPMNExecProcessUtils.debugOutput("Send Task Insert into surgeon waiting list [Activity_1qr375k]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_1qr375k", "Insert into surgeon waiting list");
+//[outgoing edge] Activity_0ba89kz - Wait for message from external software
+        BPMNExecProcessUtils.logTransition("Activity_1qr375k", "Activity_0ba89kz");
+        TASK_Activity_0ba89kz_Wait_for_message_from_external_software(s.withCurrent("Activity_1qr375k"));
+    }
+
+    public void TASK_Activity_1uuxpml_Recovery_room(BPMNExecProcessUtils.ProcessStatus s) {//User Task Recovery room [Activity_1uuxpml]
         BPMNExecProcessUtils.debugOutput("User Task Recovery room [Activity_1uuxpml]");
         BPMNExecProcessUtils.logCurrentNode("Activity_1uuxpml", "Recovery room");
 //[outgoing edge] Activity_16nr0p7 - Patient dismission from surgical unit
         BPMNExecProcessUtils.logTransition("Activity_1uuxpml", "Activity_16nr0p7");
-        TASK_Patient_dismission_from_surgical_unit(s.withCurrent("Activity_1uuxpml"));
+        TASK_Activity_16nr0p7_Patient_dismission_from_surgical_unit(s.withCurrent("Activity_1uuxpml"));
     }
 
-    public void TASK_Surgery(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Surgery [Activity_0hywbyv]
-        BPMNExecProcessUtils.debugOutput("Generic Task Surgery [Activity_0hywbyv]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_0hywbyv", "Surgery");
-//[outgoing edge] Activity_1v7bxvg - Patient discharge from operating theater
-        BPMNExecProcessUtils.logTransition("Activity_0hywbyv", "Activity_1v7bxvg");
-        TASK_Patient_discharge_from_operating_theater(s.withCurrent("Activity_0hywbyv"));
-    }
-
-    public void TASK_Transport_to_ICU(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task Transport to ICU [Activity_0mqe4nv]
-        BPMNExecProcessUtils.debugOutput("Generic Task Transport to ICU [Activity_0mqe4nv]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_0mqe4nv", "Transport to ICU");
-//[outgoing edge] Event_01gw6pd - Return to ward (success)
-        BPMNExecProcessUtils.logTransition("Activity_0mqe4nv", "Event_01gw6pd");
-        EVENT_Return_to_ward__success_(s.withCurrent("Activity_0mqe4nv"));
-    }
-
-    public void TASK_User_Info(BPMNExecProcessUtils.ProcessStatus s) {//Generic Task User Info [Activity_0do0700]
-        BPMNExecProcessUtils.debugOutput("Generic Task User Info [Activity_0do0700]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_0do0700", "User Info");
-//[outgoing edge] Activity_1mbfbnv - Parient Admission
-        BPMNExecProcessUtils.logTransition("Activity_0do0700", "Activity_1mbfbnv");
-        TASK_Parient_Admission(s.withCurrent("Activity_0do0700"));
-    }
-
-    public void TASK_Wait_for_message_from_external_software(BPMNExecProcessUtils.ProcessStatus s) {//Receive Task Wait for message from external software [Activity_0ba89kz]
-        BPMNExecProcessUtils.debugOutput("Receive Task Wait for message from external software [Activity_0ba89kz]");
-        BPMNExecProcessUtils.logCurrentNode("Activity_0ba89kz", "Wait for message from external software");
-//[outgoing edge] Activity_1o5csdt - Pre-Anesthesic evaluation
-        BPMNExecProcessUtils.logTransition("Activity_0ba89kz", "Activity_1o5csdt");
-        TASK_Pre_Anesthesic_evaluation(s.withCurrent("Activity_0ba89kz"));
+    public void TASK_Activity_1v7bxvg_Patient_discharge_from_operating_theater(BPMNExecProcessUtils.ProcessStatus s) {//User Task Patient discharge from operating theater [Activity_1v7bxvg]
+        BPMNExecProcessUtils.debugOutput("User Task Patient discharge from operating theater [Activity_1v7bxvg]");
+        BPMNExecProcessUtils.logCurrentNode("Activity_1v7bxvg", "Patient discharge from operating theater");
+//[outgoing edge] Gateway_07brpq2 - ICU
+        BPMNExecProcessUtils.logTransition("Activity_1v7bxvg", "Gateway_07brpq2");
+        GATEWAY_Gateway_07brpq2_ICU(s.withCurrent("Activity_1v7bxvg"));
     }
 
     public void init() {

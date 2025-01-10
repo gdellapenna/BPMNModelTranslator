@@ -43,7 +43,8 @@ public class BPMNDecodedProcess {
             default ->
                 NodeProcedureType.FLOW;
         };
-        return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
+        //return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
+        return type.toString() + "_" + start.getId() + (start.getName() != null && !start.getName().isBlank() ? "_" + start.getName() : "");
     }
 
     public BPMNDecodedProcess(String name) {
