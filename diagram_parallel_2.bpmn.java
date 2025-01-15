@@ -88,12 +88,3 @@ public void EVENT_Event_0aq6tzc_Ok1(BPMNExecProcessUtils.ProcessStatus s) {//End
         process.execute();
     }
 }
-
-class Executor {
-
-    public static void main(String[] args) {
-        BPMNExecProcessUtils.enableTrueParallel();
-        bpmn_process_Process_1ai2j0m process = new bpmn_process_Process_1ai2j0m();
-        process.execute();
-    }
-}

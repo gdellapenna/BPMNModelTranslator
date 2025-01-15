@@ -83,12 +83,3 @@ class bpmn_process_loop {
         process.execute(null/*input_a*/);
     }
 }
-
-class Executor {
-
-    public static void main(String[] args) {
-        BPMNExecProcessUtils.enableTrueParallel();
-        bpmn_process_loop process = new bpmn_process_loop();
-        process.execute(null/*input_a*/);
-    }
-}

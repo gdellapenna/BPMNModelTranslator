@@ -63,7 +63,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         return result;
     }
 
-    private String generateDecisionTableSource(DMNDecodedTable<String> table, DMNTranslationInfo info) {
+    public String generateDecisionTableSource(DMNDecodedTable<String> table, DMNTranslationInfo info) {
         String tableClassName = sanitizeName("dmn_dtable_" + table.id());
         String resultClassName = tableClassName + "_result";
         String argumentsClassName = tableClassName + "_arguments";

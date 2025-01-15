@@ -350,12 +350,3 @@ class bpmn_process_Shipment {
         process.execute(null/*pType*/, null/*pWeight*/);
     }
 }
-
-class Executor {
-
-    public static void main(String[] args) {
-        BPMNExecProcessUtils.enableTrueParallel();
-        bpmn_process_Shipment process = new bpmn_process_Shipment();
-        process.execute(null/*pType*/, null/*pWeight*/);
-    }
-}

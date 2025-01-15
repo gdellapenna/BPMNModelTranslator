@@ -1,26 +1,12 @@
 package dellapenna.personal.bpmn;
 
-import dellapenna.personal.bpmn.bpmn.BPMNDecoded;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
-import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
-import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
-import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
-import dellapenna.personal.bpmn.dmn.DMNTranslator;
-import dellapenna.personal.bpmn.dmn.DMNTranslationInfo;
-import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.FeelTranslator;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
-import dellapenna.personal.bpmn.versim.ToJavaMainMaker;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
-import org.camunda.bpm.model.bpmn.Bpmn;
-import org.camunda.bpm.model.bpmn.BpmnModelInstance;
-import org.camunda.bpm.model.dmn.Dmn;
-import org.camunda.bpm.model.dmn.DmnModelInstance;
 import org.camunda.feel.FeelEngine;
 import org.camunda.feel.api.EvaluationResult;
 import org.camunda.feel.api.FeelEngineApi;
@@ -60,80 +46,27 @@ public class BPMNModelTest {
         }
     }
 
-    ////////////////////////////////////////
-    public static final String PRE_CODE = "import dellapenna.personal.bpmn.exec.*;";
-    public static final String POST_CODE = "";
+    public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException, Exception {
 
-    public static void compile(Path[] dmn_files, Path bpmn_file)
-            throws IOException, FeelTranslatorException, BpmnTranslatorException {
+        BPDMNTranslator t = new BPDMNTranslator();
 
-        DMNTranslator<String> dt = new ToJavaDMNTranslator();
-        ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
-        ToJavaMainMaker mm = new ToJavaMainMaker();
+        t.compile_inputs(Path.of("surgery_tables.dmn"), Path.of("diagram_surgery.bpmn"));
 
-        BPMNTranslationInfo b_info = new BPMNTranslationInfo();
-        b_info.setDebug(true);
-        b_info.setTrueParallel(true);
-        //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
+        //t.compile(new Path[]{Path.of("surgery_tables.dmn")}, Path.of("diagram_surgery.bpmn"));
+        
+        //t.compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_shipment.bpmn"));
+        t.compile_inputs(Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn"), Path.of("diagram_shipment.bpmn"));
 
-        DMNTranslationInfo d_info = new DMNTranslationInfo();
+        //t.compile(new Path[0], Path.of("diagram_loop.bpmn"));
+        t.compile_inputs(Path.of("diagram_loop.bpmn"));
 
-        DMNDecodedModel<String>[] dmns = new DMNDecodedModel[dmn_files.length];
+        //t.compile(new Path[0], Path.of("diagram_parallel.bpmn"));
+        t.compile_inputs(Path.of("diagram_parallel.bpmn"));
 
-        for (int i = 0; i < dmn_files.length; ++i) {
-            DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_files[i].toFile());
-            System.out.println("decoding DMN model " + dmn_files[i]);
-            dmns[i] = dt.decodeDecisionModel(dmnInstance, d_info);
-        }
-        BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
-        System.out.println("decoding BPMN model " + bpmn_file);
-        BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance, dmns, b_info);
+        //t.compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
+        t.compile_inputs(Path.of("diagram_parallel_2.bpmn"));
+         
 
-        Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
-        Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
-
-        try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
-            outputJava.write(PRE_CODE);
-            outputJava.newLine();
-            outputJava.newLine();
-//
-            for (int i = 0; i < dmns.length; ++i) {
-                outputJava.write(dt.generateDecisionModelSource(dmns[i], d_info));
-            }
-//
-            outputJava.newLine();
-//
-            outputJava.write(bt.generateBpmnSource(bpmn, b_info));
-//
-            outputJava.newLine();
-//
-            outputJava.write(mm.generateProcessLauncher(bpmn, dmns, b_info));
-//
-            //deve essere per-processo?!?
-            //outputJava.write(mm.generateInputCostraintNotes(bpmn.processes().get(0), dmns, b_info));
-//
-            outputJava.newLine();
-            outputJava.newLine();
-            outputJava.write(POST_CODE);
-        }
-
-        try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
-            outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
-        }
-
-    }
-
-    public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException {
-
-        compile(new Path[]{Path.of("surgery_tables.dmn")}, Path.of("diagram_surgery.bpmn"));
-
-        compile(new Path[]{Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn")}, Path.of("diagram_shipment.bpmn"));
-
-        compile(new Path[0], Path.of("diagram_loop.bpmn"));
-
-        compile(new Path[0], Path.of("diagram_parallel.bpmn"));
-
-        compile(new Path[0], Path.of("diagram_parallel_2.bpmn"));
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
         //System.out.println(ft.generateBpmnSource("a.b=c"));        
