@@ -661,7 +661,6 @@ class bpmn_process_Surgery {
 
     public boolean globalAssert(BPMNExecProcessUtils.ProcessStatus s, String node_id) {
         boolean success = true;
-
         return success;
 
     }
