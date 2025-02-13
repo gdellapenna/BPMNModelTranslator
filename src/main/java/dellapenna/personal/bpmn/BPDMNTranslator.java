@@ -176,7 +176,42 @@ public class BPDMNTranslator {
                 outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
             }
         }
+
+        //save_compiled(dmns, bpmns);
     }
+
+    //il problema è che, ad esempio, per un modello dmn possono dover essere generate più classi, e non viene fatto qui..
+//    public void save_compiled(String output_path, DMNDecodedModel<String>[] dmns, BPMNDecoded[] bpmns)
+//            throws IOException, FeelTranslatorException, BpmnTranslatorException, Exception {
+//
+//        for (int i = 0; i < dmns.length; ++i) {
+//            Path output_java_file = Path.of(output_path).resolve(dmns[i].id() + ".java");
+//        }
+//
+//        for (int i = 0; i < bpmns.length; ++i) {
+//
+//            Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
+//            Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
+//
+//            try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
+//                outputJava.write(PRE_CODE);
+//                outputJava.newLine();
+//                outputJava.newLine();
+//                for (int j = 0; j < dmns.length; ++j) {
+//                    outputJava.write(dt.generateDecisionModelSource(dmns[j], d_info));
+//                }
+//                outputJava.newLine();
+//                outputJava.write(bt.generateBpmnSource(bpmn, b_info));
+//                outputJava.newLine();
+//                outputJava.newLine();
+//                outputJava.write(POST_CODE);
+//            }
+//
+//            try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
+//                outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
+//            }
+//        }
+//    }
 
     public void compile(Path[] dmn_files, Path bpmn_file)
             throws IOException, FeelTranslatorException, BpmnTranslatorException {

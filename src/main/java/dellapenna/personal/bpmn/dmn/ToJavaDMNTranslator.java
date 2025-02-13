@@ -63,6 +63,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         return result;
     }
 
+    @Override
     public String generateDecisionTableSource(DMNDecodedTable<String> table, DMNTranslationInfo info) {
         String tableClassName = sanitizeName("dmn_dtable_" + table.id());
         String resultClassName = tableClassName + "_result";
@@ -142,6 +143,59 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
     }
 
+    ////Classi di supporto nidificate. Dovrebbe essere necessario modificare però i nomi dei relativi tipi nella DMN
+    public String generateDecisionTableSourceExp(DMNDecodedTable<String> table, DMNTranslationInfo info) {
+        String tableClassName = sanitizeName("dmn_dtable_" + table.id());
+        String resultClassName = tableClassName + "_result";
+        String argumentsClassName = tableClassName + "_arguments";
+
+        return "// DMN table " + table.id() + "\n"
+                + "class " + tableClassName + " {\n\n"
+                + "// output wrapper class\n"
+                + "public static class " + resultClassName + "{"
+                + table.outputs().stream()
+                        .map(o -> mapType(o.getValue()) + " " + o.getKey())
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "public " + resultClassName + "("
+                + table.outputs().stream()
+                        .map(o -> mapType(o.getValue()) + " " + o.getKey())
+                        .collect(Collectors.joining(","))
+                + ") {"
+                + table.outputs().stream()
+                        .map(o -> "this." + o.getKey() + "=" + o.getKey())
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "}\n"
+                + "public String toString() { String result=\"{\"; "
+                + table.outputs().stream()
+                        .map(o -> "result+=\"" + o.getKey() + "=\"+this." + o.getKey() + " ")
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "return result+\"}\";"
+                + "}\n"
+                + "};"
+                + "\n\n"
+                //
+                + "// input wrapper class\n"
+                + "public static class " + argumentsClassName + "{"
+                + table.inputs().stream()
+                        .map(i -> "public Object" + " " + sanitizeName(i.getKey()))
+                        .collect(Collectors.joining(";\n", "", ";\n"))
+                + "}"
+                + "\n\n"
+                //
+
+                + "public static " + resultClassName + " execute("
+                + argumentsClassName + " args"
+                + ") {\n\n"
+                + table.inputs().stream()
+                        .map(i -> "Object" + " " + sanitizeName(i.getKey()) + " = args." + sanitizeName(i.getKey()))
+                        .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
+                + generateRulesSource(table.rules(), resultClassName, info)
+                + "\n}"
+                + "\n}";
+
+    }
+
+    ////
     @Override
     public String translateExpression(String input, String exp, DMNTranslationInfo info) throws FeelTranslatorException {
         FeelTranslationInfo f_info = new FeelTranslationInfo();
