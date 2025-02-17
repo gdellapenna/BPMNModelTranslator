@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn.exec;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ public class BPMNExecProcessUtils {
 
     public static java.io.PrintStream debugChannel = System.out;
     public static java.io.PrintStream resultChannel = System.out;
-    public static java.io.PrintStream traceChannel = System.out;
+    public static java.io.PrintStream traceChannel = new java.io.PrintStream(java.io.OutputStream.nullOutputStream());
     public static java.util.Properties outputs = new java.util.Properties();
     public static java.util.Properties inputs = new java.util.Properties();
 
@@ -57,6 +58,42 @@ public class BPMNExecProcessUtils {
 
     public static void enableTrueParallel() {
         executor = Executors.newFixedThreadPool(10);
+    }
+
+    public static void setExternalTraceFile(String name) {
+        try {
+            traceChannel = new java.io.PrintStream(name + ".trace");
+        } catch (FileNotFoundException ex) {
+            ///
+        }
+    }
+
+    public static void setExternalResultFile(String name) {
+        try {
+            resultChannel = new java.io.PrintStream(name + ".result");
+        } catch (FileNotFoundException ex) {
+            ///
+        }
+    }
+
+    public static void setExternalDebugFile(String name) {
+        try {
+            debugChannel = new java.io.PrintStream(name + ".debug");
+        } catch (FileNotFoundException ex) {
+            ///
+        }
+    }
+
+    public static void setDebugChannel(java.io.PrintStream c) {
+        debugChannel = c;
+    }
+
+    public static void setTraceChannel(java.io.PrintStream c) {
+        traceChannel = c;
+    }
+
+    public static void setResultChannel(java.io.PrintStream c) {
+        resultChannel = c;
     }
 
     public static String getProcessName() {
@@ -276,11 +313,11 @@ public class BPMNExecProcessUtils {
     }
 
     public static void logTransition(String source, String target) {
-        //traceChannel.println("\""+source + "\" -> \"" + target+"\"");
+        traceChannel.println("\"" + source + "\" -> \"" + target + "\"");
     }
 
     public static void logCurrentNode(String id, String description) {
-        //traceChannel.println(id + "["+ (description != null && !description.isBlank() ? ("label=\"" + description + "\"") : "")+"]");
+        traceChannel.println(id + "[" + (description != null && !description.isBlank() ? ("label=\"" + description + "\"") : "") + "]");
     }
 
     public static void logResult(ProcessStatus s, boolean success, String message, int code) {

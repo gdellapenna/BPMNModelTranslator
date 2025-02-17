@@ -84,6 +84,7 @@ public void EVENT_Event_0aq6tzc_Ok1(BPMNExecProcessUtils.ProcessStatus s) {//End
     }
 
     public static void main(String[] args) {
+        BPMNExecProcessUtils.setExternalTraceFile("parallel_2");
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_parallel_2 process = new bpmn_process_parallel_2();
         process.execute();

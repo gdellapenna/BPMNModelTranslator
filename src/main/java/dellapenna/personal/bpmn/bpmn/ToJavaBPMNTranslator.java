@@ -246,8 +246,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     //generates the text source for the process main function
     public String generateProcessMainSource(BPMNDecodedProcess process, BPMNTranslationInfo info) {
         String source = "public static void main(String[] args) {\n";
-        if (info == null || !info.isDebug()) {
-            source += "BPMNExecProcessUtils.debugChannel=new java.io.PrintStream(java.io.OutputStream.nullOutputStream());";
+        if (info != null && info.isTrace()) {
+            source += "BPMNExecProcessUtils.setExternalTraceFile(\"" + sanitizeName(process.getName()) + "\");";
         }
         if (info == null || info.isTrueParallel()) {
             source += "BPMNExecProcessUtils.enableTrueParallel();";
@@ -447,6 +447,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
         Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
         code.append(generateTransitionDescriptionStaments(g, joinedflow, info));
+        p.registerDecodedEdge(g, joinedflow);
         code.append("//JOINS: " + g.getIncoming().stream().map(s -> s.getSource().getId()).collect(Collectors.joining(",")));
         code.append("BPMNExecProcessUtils.join(s,\"" + g.getId() + "\", " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
 
@@ -477,6 +478,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         String[] branch_functions = new String[splitFlows.size()];
         for (int o = 0; o < splitFlows.size(); ++o) {
             code.append(generateTransitionDescriptionStaments(g, splitFlows.get(o).firstStep(), info));
+            p.registerDecodedEdge(g, splitFlows.get(o).firstStep());
             branch_functions[o] = "this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep()));
         }
         code.append("//FORKS: " + splitFlows.stream().map(s -> s.firstStep().getId()).collect(Collectors.joining(",")));
@@ -559,6 +561,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     protected Code generateFlowJointCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info) {
         Code code = new Code<String>();
         code.append(generateTransitionDescriptionStaments(current, next, info));
+        p.registerDecodedEdge(current, next);
         code.append(sanitizeName(p.getFlowName(next)) + "(s.withCurrent(\"" + current.getId() + "\"))");
         return code;
     }

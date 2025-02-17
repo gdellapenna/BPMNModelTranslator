@@ -6,7 +6,9 @@ import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import static dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator.sanitizeName;
 import dellapenna.personal.bpmn.bpmn.VariableDefinition;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
+import java.util.Map;
 import java.util.stream.Collectors;
+import org.camunda.bpm.model.bpmn.instance.FlowNode;
 
 /**
  *
@@ -63,6 +65,24 @@ public class ToJavaMainMaker {
             }
             result += v.getName() + "=" + value + "\n#" + v.getBounds() + "\n";
         }
+        return result;
+    }
+
+    public String generateTraceProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        String result = "# nodes\n";
+        for (Map.Entry<FlowNode, BPMNDecodedProcess.FlowNodeInfo> e : process.getGraph().entrySet()) {
+            FlowNode s = e.getKey();
+            result += s.getId() + "[" + (s.getName() != null ? ("label=\"" + s.getName() + "\"") : "") + "]" + "\n";
+        }
+
+        result += "\n\n# edges\n";
+        for (Map.Entry<FlowNode, BPMNDecodedProcess.FlowNodeInfo> e : process.getGraph().entrySet()) {
+            FlowNode s = e.getKey();
+            for (FlowNode t : e.getValue().getOutgoingEdges()) {
+                result += "\"" + s.getId() + "\"" + " -> " + "\"" + t.getId() + "\"" + "\n";
+            }
+        }
+
         return result;
     }
 

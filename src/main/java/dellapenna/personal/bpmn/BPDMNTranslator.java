@@ -157,6 +157,7 @@ public class BPDMNTranslator {
 
             Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
             Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
+            Path trace_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + ".graph");
 
             try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
                 outputJava.write(PRE_CODE);
@@ -174,6 +175,10 @@ public class BPDMNTranslator {
 
             try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
                 outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
+            }
+
+            try (BufferedWriter traceProperties = new BufferedWriter(new FileWriter(trace_inputs_file.toFile()))) {
+                traceProperties.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
             }
         }
 
@@ -212,58 +217,62 @@ public class BPDMNTranslator {
 //            }
 //        }
 //    }
-
-    public void compile(Path[] dmn_files, Path bpmn_file)
-            throws IOException, FeelTranslatorException, BpmnTranslatorException {
-
-        DMNTranslator<String> dt = new ToJavaDMNTranslator();
-        ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
-        ToJavaMainMaker mm = new ToJavaMainMaker();
-
-        BPMNTranslationInfo b_info = new BPMNTranslationInfo();
-        b_info.setDebug(true);
-        b_info.setTrueParallel(true);
-        //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
-
-        DMNTranslationInfo d_info = new DMNTranslationInfo();
-
-        DMNDecodedModel<String>[] dmns = new DMNDecodedModel[dmn_files.length];
-
-        for (int i = 0; i < dmn_files.length; ++i) {
-            DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_files[i].toFile());
-            System.out.println("decoding DMN model " + dmn_files[i]);
-            dmns[i] = dt.decodeDecisionModel(dmnInstance, d_info);
-        }
-        BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
-        System.out.println("decoding BPMN model " + bpmn_file);
-        BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance, dmns, b_info);
-
-        Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
-        Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
-
-        try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
-            outputJava.write(PRE_CODE);
-            outputJava.newLine();
-            outputJava.newLine();
-            for (int i = 0; i < dmns.length; ++i) {
-                outputJava.write(dt.generateDecisionModelSource(dmns[i], d_info));
-            }
-            outputJava.newLine();
-            outputJava.write(bt.generateBpmnSource(bpmn, b_info));
-            outputJava.newLine();
-            outputJava.write(mm.generateProcessLauncher(bpmn, dmns, b_info));
+//    public void compile(Path[] dmn_files, Path bpmn_file)
+//            throws IOException, FeelTranslatorException, BpmnTranslatorException {
 //
-            //deve essere per-processo?!?
-            //outputJava.write(mm.generateInputCostraintNotes(bpmn.processes().get(0), dmns, b_info));
+//        DMNTranslator<String> dt = new ToJavaDMNTranslator();
+//        ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
+//        ToJavaMainMaker mm = new ToJavaMainMaker();
 //
-            outputJava.newLine();
-            outputJava.newLine();
-            outputJava.write(POST_CODE);
-        }
-
-        try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
-            outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
-        }
-
-    }
+//        BPMNTranslationInfo b_info = new BPMNTranslationInfo();
+//        b_info.setDebug(true);
+//        b_info.setTrueParallel(true);
+//        //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
+//
+//        DMNTranslationInfo d_info = new DMNTranslationInfo();
+//
+//        DMNDecodedModel<String>[] dmns = new DMNDecodedModel[dmn_files.length];
+//
+//        for (int i = 0; i < dmn_files.length; ++i) {
+//            DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_files[i].toFile());
+//            System.out.println("decoding DMN model " + dmn_files[i]);
+//            dmns[i] = dt.decodeDecisionModel(dmnInstance, d_info);
+//        }
+//        BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
+//        System.out.println("decoding BPMN model " + bpmn_file);
+//        BPMNDecoded bpmn = bt.decodeBpmn(bpmnInstance, dmns, b_info);
+//
+//        Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
+//        Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
+//        Path trace_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_nodes.list");
+//
+//        try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
+//            outputJava.write(PRE_CODE);
+//            outputJava.newLine();
+//            outputJava.newLine();
+//            for (int i = 0; i < dmns.length; ++i) {
+//                outputJava.write(dt.generateDecisionModelSource(dmns[i], d_info));
+//            }
+//            outputJava.newLine();
+//            outputJava.write(bt.generateBpmnSource(bpmn, b_info));
+//            outputJava.newLine();
+//            outputJava.write(mm.generateProcessLauncher(bpmn, dmns, b_info));
+////
+//            //deve essere per-processo?!?
+//            //outputJava.write(mm.generateInputCostraintNotes(bpmn.processes().get(0), dmns, b_info));
+////
+//            outputJava.newLine();
+//            outputJava.newLine();
+//            outputJava.write(POST_CODE);
+//        }
+//
+//        try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
+//            outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
+//        }
+//
+//        try (BufferedWriter traceProperties = new BufferedWriter(new FileWriter(trace_inputs_file.toFile()))) {
+//            traceProperties.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
+//        }
+//
+//    }
 }

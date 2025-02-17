@@ -1,0 +1,58 @@
+# nodes
+Event_01gw6pd[label="Return to ward (success)"]
+Activity_1qr375k[label="Insert into surgeon waiting list"]
+Gateway_1hwej0w[label="Triage"]
+Gateway_1s04agq[label="Patient sent back 2"]
+Activity_1uuxpml[label="Recovery room"]
+Event_0tqfzbc[label="Patient rejected"]
+Activity_0hywbyv[label="Surgery"]
+Activity_1bfwy21[label="Check adverse events"]
+Activity_0g3bnhh[label="Patient admission to operating theatre"]
+Activity_1o5csdt[label="Pre-Anesthesic evaluation"]
+Gateway_0uzvw4h[label="Any adverse event"]
+Activity_1b92j4u[label="Pre-Anesthesic re-evaluation"]
+Gateway_01rw5bk[label="Patient sent back 1"]
+Gateway_07brpq2[label="ICU"]
+Event_0tlco0q[label="Return to ward (exception)"]
+Gateway_058xy6d[label="Can patient leave surgical unit"]
+Activity_0do0700[label="User Info"]
+Activity_1mbfbnv[label="Parient Admission"]
+Activity_01iv8eh[label="Preoperational patient preparation"]
+Activity_1v7bxvg[label="Patient discharge from operating theater"]
+Activity_0ba89kz[label="Wait for message from external software"]
+Activity_16nr0p7[label="Patient dismission from surgical unit"]
+Activity_0mqe4nv[label="Transport to ICU"]
+Event_1dd675w[]
+
+
+# edges
+"Activity_1qr375k" -> "Activity_0ba89kz"
+"Gateway_1hwej0w" -> "Activity_1qr375k"
+"Gateway_1hwej0w" -> "Event_0tqfzbc"
+"Gateway_1hwej0w" -> "Activity_1qr375k"
+"Gateway_1s04agq" -> "Activity_0hywbyv"
+"Gateway_1s04agq" -> "Event_0tlco0q"
+"Activity_1uuxpml" -> "Activity_16nr0p7"
+"Activity_0hywbyv" -> "Activity_1v7bxvg"
+"Activity_1bfwy21" -> "Gateway_0uzvw4h"
+"Activity_0g3bnhh" -> "Gateway_1s04agq"
+"Activity_1o5csdt" -> "Gateway_01rw5bk"
+"Gateway_0uzvw4h" -> "Activity_01iv8eh"
+"Gateway_0uzvw4h" -> "Event_0tlco0q"
+"Activity_1b92j4u" -> "Activity_0g3bnhh"
+"Gateway_01rw5bk" -> "Activity_1bfwy21"
+"Gateway_01rw5bk" -> "Event_0tlco0q"
+"Gateway_07brpq2" -> "Activity_1uuxpml"
+"Gateway_07brpq2" -> "Activity_0mqe4nv"
+"Gateway_07brpq2" -> "Activity_1uuxpml"
+"Gateway_058xy6d" -> "Activity_1uuxpml"
+"Gateway_058xy6d" -> "Event_01gw6pd"
+"Gateway_058xy6d" -> "Activity_1uuxpml"
+"Activity_0do0700" -> "Activity_1mbfbnv"
+"Activity_1mbfbnv" -> "Gateway_1hwej0w"
+"Activity_01iv8eh" -> "Activity_1b92j4u"
+"Activity_1v7bxvg" -> "Gateway_07brpq2"
+"Activity_0ba89kz" -> "Activity_1o5csdt"
+"Activity_16nr0p7" -> "Gateway_058xy6d"
+"Activity_0mqe4nv" -> "Event_01gw6pd"
+"Event_1dd675w" -> "Activity_0do0700"

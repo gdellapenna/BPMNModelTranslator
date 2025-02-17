@@ -1,0 +1,15 @@
+# nodes
+Event_0aq6tzc[label="Ok1"]
+Activity_1uu1n8a[label="Task2"]
+StartEvent_1[label="Start"]
+Activity_0qvix8b[label="Task1"]
+Event_0ftzlyc[label="Ok2"]
+Gateway_02uz50m[label="UnclosedParallel"]
+
+
+# edges
+"Activity_1uu1n8a" -> "Event_0ftzlyc"
+"StartEvent_1" -> "Gateway_02uz50m"
+"Activity_0qvix8b" -> "Event_0aq6tzc"
+"Gateway_02uz50m" -> "Activity_0qvix8b"
+"Gateway_02uz50m" -> "Activity_1uu1n8a"

@@ -160,6 +160,7 @@ public void EVENT_Event_0zv9hfo_End(BPMNExecProcessUtils.ProcessStatus s) {//End
     }
 
     public static void main(String[] args) {
+        BPMNExecProcessUtils.setExternalTraceFile("diagram_2");
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_diagram_2 process = new bpmn_process_diagram_2();
         process.execute();

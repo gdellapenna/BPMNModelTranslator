@@ -78,6 +78,7 @@ class bpmn_process_loop {
     }
 
     public static void main(String[] args) {
+        BPMNExecProcessUtils.setExternalTraceFile("loop");
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_loop process = new bpmn_process_loop();
         process.execute(null/*input_a*/);

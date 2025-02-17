@@ -346,6 +346,7 @@ class bpmn_process_Shipment {
     }
 
     public static void main(String[] args) {
+        BPMNExecProcessUtils.setExternalTraceFile("Shipment");
         BPMNExecProcessUtils.enableTrueParallel();
         bpmn_process_Shipment process = new bpmn_process_Shipment();
         process.execute(null/*pType*/, null/*pWeight*/);

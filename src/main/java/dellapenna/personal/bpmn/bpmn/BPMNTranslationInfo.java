@@ -12,6 +12,7 @@ import java.util.List;
 public class BPMNTranslationInfo {
 
     private boolean debug;
+    private boolean trace;
     private boolean trueParallel;
     private String inputsFile;
     private String outputsFile;
@@ -20,6 +21,7 @@ public class BPMNTranslationInfo {
     //private final List<VariableDefinition> detectedInputVariables = new ArrayList<>();
     public BPMNTranslationInfo() {
         debug = false;
+        trace = true;
         trueParallel = false;
         inputsFile = "inputs.properties";
         outputsFile = "outputs.properties";
@@ -40,6 +42,14 @@ public class BPMNTranslationInfo {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public boolean isTrace() {
+        return trace;
+    }
+
+    public void setTrace(boolean trace) {
+        this.trace = trace;
     }
 
     public String getInputsFile() {
