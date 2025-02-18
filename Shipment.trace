@@ -15,7 +15,9 @@ Gateway_1ocbjca[]
 Activity_1cbdv9z[label="choose consent"]
 "Activity_1cbdv9z" -> "Gateway_0u50uj6"
 Gateway_0u50uj6[]
-"Gateway_0u50uj6" -> "Gateway_07f90ke"
+"Gateway_0u50uj6" -> "Activity_1njskid"
+Activity_1njskid[label="sign declaration"]
+"Activity_1njskid" -> "Gateway_07f90ke"
 Gateway_07f90ke[]
 "Gateway_07f90ke" -> "Event_1pjc4df"
 Event_1pjc4df[label="ready for shipment"]

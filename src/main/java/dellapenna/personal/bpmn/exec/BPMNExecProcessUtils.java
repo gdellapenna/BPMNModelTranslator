@@ -60,6 +60,21 @@ public class BPMNExecProcessUtils {
         executor = Executors.newFixedThreadPool(10);
     }
 
+    public static void closeChannels() {
+        if (traceChannel != null) {
+            traceChannel.flush();
+            traceChannel.close();
+        }
+        if (debugChannel != null) {
+            debugChannel.flush();
+            debugChannel.close();
+        }
+        if (resultChannel != null) {
+            resultChannel.flush();
+            resultChannel.close();
+        }
+    }
+
     public static void setExternalTraceFile(String name) {
         try {
             traceChannel = new java.io.PrintStream(name + ".trace");
@@ -154,6 +169,7 @@ public class BPMNExecProcessUtils {
             executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
         }
         debugOutput("ENDING PROCESS " + process_name);
+        closeChannels();
     }
 
 //    public static void initProcess(ProcessStatus s, Runnable main) {
