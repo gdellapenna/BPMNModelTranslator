@@ -1,3 +1,5 @@
+digraph bpmn {
+
 # nodes
 Event_01gw6pd[label="Return to ward (success)"]
 Activity_1qr375k[label="Insert into surgeon waiting list"]
@@ -27,7 +29,6 @@ Event_1dd675w[]
 
 # edges
 "Activity_1qr375k" -> "Activity_0ba89kz"
-"Gateway_1hwej0w" -> "Activity_1qr375k"
 "Gateway_1hwej0w" -> "Event_0tqfzbc"
 "Gateway_1hwej0w" -> "Activity_1qr375k"
 "Gateway_1s04agq" -> "Activity_0hywbyv"
@@ -42,10 +43,8 @@ Event_1dd675w[]
 "Activity_1b92j4u" -> "Activity_0g3bnhh"
 "Gateway_01rw5bk" -> "Activity_1bfwy21"
 "Gateway_01rw5bk" -> "Event_0tlco0q"
-"Gateway_07brpq2" -> "Activity_1uuxpml"
 "Gateway_07brpq2" -> "Activity_0mqe4nv"
 "Gateway_07brpq2" -> "Activity_1uuxpml"
-"Gateway_058xy6d" -> "Activity_1uuxpml"
 "Gateway_058xy6d" -> "Event_01gw6pd"
 "Gateway_058xy6d" -> "Activity_1uuxpml"
 "Activity_0do0700" -> "Activity_1mbfbnv"
@@ -56,3 +55,5 @@ Event_1dd675w[]
 "Activity_16nr0p7" -> "Gateway_058xy6d"
 "Activity_0mqe4nv" -> "Event_01gw6pd"
 "Event_1dd675w" -> "Activity_0do0700"
+
+}

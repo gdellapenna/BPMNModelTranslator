@@ -25,7 +25,6 @@ Event_0zv9hfo[label="End"]
 "Gateway_1gapucr" -> "Activity_0pfa4n5"
 "Gateway_1c7340a" -> "Activity_09oefmk"
 "Gateway_1c7340a" -> "Activity_0sbgnmb"
-"Gateway_1c7340a" -> "Activity_0sbgnmb"
 "Activity_09oefmk" -> "Gateway_02100g2"
 "Activity_0sbgnmb" -> "Gateway_0fm3ji9"
 "Gateway_02100g2" -> "Activity_16zc6e7"

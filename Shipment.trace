@@ -1,3 +1,4 @@
+digraph Shipment {
 StartEvent_1[label="package received"]
 "StartEvent_1" -> "Activity_0h04jo2"
 Activity_0h04jo2[label="get length"]
@@ -21,3 +22,4 @@ Activity_1njskid[label="sign declaration"]
 Gateway_07f90ke[]
 "Gateway_07f90ke" -> "Event_1pjc4df"
 Event_1pjc4df[label="ready for shipment"]
+}

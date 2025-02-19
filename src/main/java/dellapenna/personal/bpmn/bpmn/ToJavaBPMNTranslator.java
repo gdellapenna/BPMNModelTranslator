@@ -517,8 +517,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
         for (int o = 0; o < splitFlows.size(); ++o) {
             FeelTranslationInfo v_f_info = new FeelTranslationInfo();
-            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, splitFlows.get(o).firstStep(), info);
             if (splitFlows.get(o).condition() != null) {
+                Code splitCode = generateFlowJointCode(p, g, splitFlows.get(o).firstStep(), info);
                 String condition_expression = splitFlows.get(o).condition().substring(1);
                 if (!source.isBlank()) {
                     source += " else ";
@@ -534,7 +534,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             source += " else ";
         }
         if (default_branch != null) {
-            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, default_branch.firstStep(), info);
+            Code splitCode = generateFlowJointCode(p, g, default_branch.firstStep(), info);
             source += "{" + generateCodeSource(splitCode) + "}";
         } else {
             source += "{ BPMNExecProcessUtils.noDefaultCaseError(s); }";

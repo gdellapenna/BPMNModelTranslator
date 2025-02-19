@@ -1,3 +1,5 @@
+digraph BPMN {
+
 # nodes
 Activity_1njskid[label="sign declaration"]
 Activity_1cbdv9z[label="choose consent"]
@@ -24,7 +26,6 @@ Gateway_1ocbjca[]
 "StartEvent_1" -> "Activity_0h04jo2"
 "Activity_0h04jo2" -> "Gateway_0i2yujj"
 "Gateway_07f90ke" -> "Event_1pjc4df"
-"Gateway_0i2yujj" -> "Activity_0iafefy"
 "Gateway_0i2yujj" -> "Event_06urgzi"
 "Gateway_0i2yujj" -> "Activity_0iafefy"
 "Gateway_0u50uj6" -> "Activity_1njskid"
@@ -33,8 +34,7 @@ Gateway_1ocbjca[]
 "Activity_1nfni4r" -> "Gateway_07f90ke"
 "Gateway_1tgxmu2" -> "Event_0wjo1ye"
 "Gateway_1tgxmu2" -> "Activity_1ol43bw"
-"Gateway_1tgxmu2" -> "Activity_1ol43bw"
 "Activity_0iafefy" -> "Gateway_1tgxmu2"
 "Gateway_1ocbjca" -> "Event_19ylwnc"
 "Gateway_1ocbjca" -> "Activity_1cbdv9z"
-"Gateway_1ocbjca" -> "Activity_1cbdv9z"
+}
