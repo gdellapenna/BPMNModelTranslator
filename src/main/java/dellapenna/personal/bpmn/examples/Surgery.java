@@ -263,7 +263,7 @@ class dmn_dtable_PreAnesthesicReEvaluationDT {
 /*
  * ****************************** BPMN Generated Code *************************
  */
-class bpmn_process_Surgery {
+class Surgery {
 
 //Input Variables
 // READ: $DMN$PatientAdmissionOperatingTheatreDT$AdverseEvents, Gateway_0uzvw4h, Activity_0g3bnhh
@@ -690,7 +690,7 @@ class bpmn_process_Surgery {
     public static void main(String[] args) {
         BPMNExecProcessUtils.setExternalTraceFile("Surgery");
         BPMNExecProcessUtils.enableTrueParallel();
-        bpmn_process_Surgery process = new bpmn_process_Surgery();
+        Surgery process = new Surgery();
         process.execute(null/*uHospitalizable*/, null/*uEmergency*/, null/*uAge*/, null/*uPreviouslyHospitalized*/, null/*pRequiredLaboratoryTests*/, null/*pRequiredDiagnosticTests*/, null/*pClinicalConditions*/, null/*AdverseEvents*/, null/*uInformedConsent*/, null/*nPreoperationalChecklist*/, null/*ICU*/, null/*rAldreteScore*/, null/*rActivity*/, null/*rCirculation*/, null/*rConsciousness*/, null/*rO2Saturation*/, null/*rRespiration*/);
     }
 }

@@ -16,26 +16,26 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
  */
 public class ToJavaMainMaker {
 
-    public String generateProcessLauncher(BPMNDecoded bpmn, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-        String mainMethod = "public static void main(String[] args) {\n";
-        if (info == null || !info.isDebug()) {
-            mainMethod += "BPMNExecProcessUtils.debugChannel=new java.io.PrintStream(java.io.OutputStream.nullOutputStream());";
-        }
-        if (info == null || info.isTrueParallel()) {
-            mainMethod += "BPMNExecProcessUtils.enableTrueParallel();";
-        }
-
-        //test for first process only
-        BPMNDecodedProcess process = bpmn.processes().get(0);
-        mainMethod += "bpmn_process_" + sanitizeName(process.getName()) + " process = new " + "bpmn_process_" + sanitizeName(process.getName()) + "();\n";
-        mainMethod += "process.execute("
-                + process.getFreeVariables().stream().map(v -> "null" + "/*" + v.getName() + "*/").collect(Collectors.joining(","))
-                + ");";
-
-        mainMethod += "}";
-
-        return " class Executor" + " { " + mainMethod + "}";
-    }
+//    public String generateProcessLauncher(BPMNDecoded bpmn, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+//        String mainMethod = "public static void main(String[] args) {\n";
+//        if (info == null || !info.isDebug()) {
+//            mainMethod += "BPMNExecProcessUtils.debugChannel=new java.io.PrintStream(java.io.OutputStream.nullOutputStream());";
+//        }
+//        if (info == null || info.isTrueParallel()) {
+//            mainMethod += "BPMNExecProcessUtils.enableTrueParallel();";
+//        }
+//
+//        //test for first process only
+//        BPMNDecodedProcess process = bpmn.processes().get(0);
+//        mainMethod += /*"bpmn_process_" +*/ sanitizeName(process.getName()) + " process = new " /*+ "bpmn_process_"*/ + sanitizeName(process.getName()) + "();\n";
+//        mainMethod += "process.execute("
+//                + process.getFreeVariables().stream().map(v -> "null" + "/*" + v.getName() + "*/").collect(Collectors.joining(","))
+//                + ");";
+//
+//        mainMethod += "}";
+//
+//        return " class Executor" + " { " + mainMethod + "}";
+//    }
 
     public String generateInputCostraintNotes(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         String result = """

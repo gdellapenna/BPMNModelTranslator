@@ -134,7 +134,7 @@ class dmn_dtable_ChooseConsentDT {
 /*
  * ****************************** BPMN Generated Code *************************
  */
-class bpmn_process_Shipment {
+class Shipment {
 
 //Input Variables
 // READ: $DMN$GetLengthDT$Type, Activity_0h04jo2
@@ -347,7 +347,7 @@ class bpmn_process_Shipment {
     public static void main(String[] args) {
         BPMNExecProcessUtils.setExternalTraceFile("Shipment");
         BPMNExecProcessUtils.enableTrueParallel();
-        bpmn_process_Shipment process = new bpmn_process_Shipment();
+        Shipment process = new Shipment();
         process.execute(null/*pType*/, null/*pWeight*/);
     }
 }

@@ -5,7 +5,6 @@ import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
-import dellapenna.personal.bpmn.dmn.DMNDecodedTable;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslationInfo;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -153,32 +153,40 @@ public class BPDMNTranslator {
             //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
 
             bpmns[i] = compile_bpmn(bpmn_file, dmns, b_info);
-            BPMNDecoded bpmn = bpmns[i];
 
-            Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
-            Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
-            Path trace_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + ".graph");
+            Path base_folder = Paths.get(".").toAbsolutePath().normalize();
 
-            try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
-                outputJava.write(PRE_CODE);
-                outputJava.newLine();
-                outputJava.newLine();
-                for (int j = 0; j < dmns.length; ++j) {
-                    outputJava.write(dt.generateDecisionModelSource(dmns[j], d_info));
+            for (BPMNDecoded bpmn : bpmns) {
+
+//            Path output_java_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn_file.getFileName() + ".java");
+//            Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
+//            Path output_graph_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + ".graph");
+//            Path base_folder = bpmn_file.toAbsolutePath().getParent();
+                Path output_java_file = base_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + ".java");
+                Path output_inputs_file = base_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + "_inputs.properties");
+                Path output_graph_file = base_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + ".graph");
+
+                try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
+                    outputJava.write(PRE_CODE);
+                    outputJava.newLine();
+                    outputJava.newLine();
+                    for (int j = 0; j < dmns.length; ++j) {
+                        outputJava.write(dt.generateDecisionModelSource(dmns[j], d_info));
+                    }
+                    outputJava.newLine();
+                    outputJava.write(bt.generateBpmnSource(bpmn, b_info));
+                    outputJava.newLine();
+                    outputJava.newLine();
+                    outputJava.write(POST_CODE);
                 }
-                outputJava.newLine();
-                outputJava.write(bt.generateBpmnSource(bpmn, b_info));
-                outputJava.newLine();
-                outputJava.newLine();
-                outputJava.write(POST_CODE);
-            }
 
-            try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
-                outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
-            }
+                try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(output_inputs_file.toFile()))) {
+                    outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
+                }
 
-            try (BufferedWriter traceProperties = new BufferedWriter(new FileWriter(trace_inputs_file.toFile()))) {
-                traceProperties.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
+                try (BufferedWriter traceProperties = new BufferedWriter(new FileWriter(output_graph_file.toFile()))) {
+                    traceProperties.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
+                }
             }
         }
 

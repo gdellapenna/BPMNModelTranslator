@@ -1,12 +1,12 @@
 # nodes
-Activity_1k1rd56[label="Some task"]
 Gateway_0x6sgvb[label="Decision"]
-Event_053oyzy[label="Successful"]
 StartEvent_1[label="Start"]
+Event_053oyzy[label="Successful"]
+Activity_1k1rd56[label="Some task"]
 
 
 # edges
-"Activity_1k1rd56" -> "Gateway_0x6sgvb"
 "Gateway_0x6sgvb" -> "Event_053oyzy"
 "Gateway_0x6sgvb" -> "Activity_1k1rd56"
 "StartEvent_1" -> "Activity_1k1rd56"
+"Activity_1k1rd56" -> "Gateway_0x6sgvb"

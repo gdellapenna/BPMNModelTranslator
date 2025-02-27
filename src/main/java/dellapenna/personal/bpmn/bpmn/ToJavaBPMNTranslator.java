@@ -176,7 +176,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 .sorted((fd1, fd2) -> fd1.name().compareTo(fd2.name()))
                 .map(fd -> generateFunctionSource(fd))
                 .collect(Collectors.joining("\n\n", "\n\n//Process Dynamics\n", "\n\n"));
-        return " class bpmn_process_" + sanitizeName(process.getName()) + " { "
+        //return " class bpmn_process_" + sanitizeName(process.getName()) + " { "
+        return " class " + sanitizeName(process.getName()) + " { "
                 + input_variables
                 + global_variables
                 + functions
@@ -252,7 +253,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (info == null || info.isTrueParallel()) {
             source += "BPMNExecProcessUtils.enableTrueParallel();";
         }
-        source += "bpmn_process_" + sanitizeName(process.getName()) + " process = new " + "bpmn_process_" + sanitizeName(process.getName()) + "();\n";
+        source += /*"bpmn_process_" +*/ sanitizeName(process.getName()) + " process = new " /*+ "bpmn_process_"*/ + sanitizeName(process.getName()) + "();\n";
         source += "process.execute("
                 + process.getFreeVariables().stream().map(v -> "null" + "/*" + v.getName() + "*/").collect(Collectors.joining(","))
                 + ");";

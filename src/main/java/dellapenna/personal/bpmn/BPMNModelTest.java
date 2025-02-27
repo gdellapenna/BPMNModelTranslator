@@ -50,16 +50,15 @@ public class BPMNModelTest {
 
         BPDMNTranslator t = new BPDMNTranslator();
 
-        t.compile_inputs(Path.of("surgery_tables.dmn"), Path.of("diagram_surgery.bpmn"));
+        t.compile_inputs(Path.of("surgery_tables.dmn"), Path.of("Surgery.bpmn"));
 
-         t.compile_inputs(Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn"), Path.of("diagram_shipment.bpmn"));
+        t.compile_inputs(Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn"), Path.of("Shipment.bpmn"));
 
-       t.compile_inputs(Path.of("diagram_loop.bpmn"));
+        t.compile_inputs(Path.of("Loop.bpmn"));
 
-       t.compile_inputs(Path.of("diagram_parallel.bpmn"));
+        t.compile_inputs(Path.of("Parallel1.bpmn"));
 
-       t.compile_inputs(Path.of("diagram_parallel_2.bpmn"));
-         
+        t.compile_inputs(Path.of("Parallel2.bpmn"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
