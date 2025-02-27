@@ -121,10 +121,10 @@ public class BPDMNTranslator {
         return bt.decodeBpmn(bpmnInstance, dmns, b_info);
     }
 
-    public void compile_inputs(Path... files)
-            throws IOException, FeelTranslatorException, BpmnTranslatorException, Exception {
+    public List<Path> compile_inputs(Path... files) throws IOException, FeelTranslatorException, BpmnTranslatorException, Exception {
         List<Path> dmn_files = new ArrayList<>();
         List<Path> bpmn_files = new ArrayList<>();
+        List<Path> java_bpmn_files = new ArrayList<>();
 
         for (Path file : files) {
             switch (detectFileType(file)) {
@@ -184,12 +184,14 @@ public class BPDMNTranslator {
                     outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
                 }
 
-                try (BufferedWriter traceProperties = new BufferedWriter(new FileWriter(output_graph_file.toFile()))) {
-                    traceProperties.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
+                try (BufferedWriter outputGraph = new BufferedWriter(new FileWriter(output_graph_file.toFile()))) {
+                    outputGraph.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
                 }
+
+                java_bpmn_files.add(output_java_file);
             }
         }
-
+        return java_bpmn_files;
         //save_compiled(dmns, bpmns);
     }
 
@@ -278,8 +280,8 @@ public class BPDMNTranslator {
 //            outputProperties.write(mm.generateInputProperties(bpmn.processes().get(0), dmns, b_info));
 //        }
 //
-//        try (BufferedWriter traceProperties = new BufferedWriter(new FileWriter(trace_inputs_file.toFile()))) {
-//            traceProperties.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
+//        try (BufferedWriter outputGraph = new BufferedWriter(new FileWriter(trace_inputs_file.toFile()))) {
+//            outputGraph.write(mm.generateTraceProperties(bpmn.processes().get(0), dmns, b_info));
 //        }
 //
 //    }
