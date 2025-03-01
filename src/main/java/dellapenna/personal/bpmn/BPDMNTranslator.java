@@ -121,7 +121,7 @@ public class BPDMNTranslator {
         return bt.decodeBpmn(bpmnInstance, dmns, b_info);
     }
 
-    public List<Path> compile_inputs(Path... files) throws IOException, FeelTranslatorException, BpmnTranslatorException, Exception {
+    public List<Path> compile_inputs(Path output_folder, Path... files) throws IOException, FeelTranslatorException, BpmnTranslatorException, Exception {
         List<Path> dmn_files = new ArrayList<>();
         List<Path> bpmn_files = new ArrayList<>();
         List<Path> java_bpmn_files = new ArrayList<>();
@@ -154,7 +154,7 @@ public class BPDMNTranslator {
 
             bpmns[i] = compile_bpmn(bpmn_file, dmns, b_info);
 
-            Path base_folder = Paths.get(".").toAbsolutePath().normalize();
+            //Path base_folder = Paths.get(".").toAbsolutePath().normalize();
 
             for (BPMNDecoded bpmn : bpmns) {
 
@@ -162,9 +162,9 @@ public class BPDMNTranslator {
 //            Path output_inputs_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + "_inputs.properties");
 //            Path output_graph_file = bpmn_file.toAbsolutePath().getParent().resolve(bpmn.processes().get(0).getName() + ".graph");
 //            Path base_folder = bpmn_file.toAbsolutePath().getParent();
-                Path output_java_file = base_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + ".java");
-                Path output_inputs_file = base_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + "_inputs.properties");
-                Path output_graph_file = base_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + ".graph");
+                Path output_java_file = output_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + ".java");
+                Path output_inputs_file = output_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + "_inputs.properties");
+                Path output_graph_file = output_folder.resolve(sanitizeName(bpmn.processes().get(0).getName()) + ".graph");
 
                 try (BufferedWriter outputJava = new BufferedWriter(new FileWriter(output_java_file.toFile()))) {
                     outputJava.write(PRE_CODE);

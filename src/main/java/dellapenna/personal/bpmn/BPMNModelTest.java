@@ -6,6 +6,7 @@ import dellapenna.personal.bpmn.feel.FeelTranslator;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import org.camunda.feel.FeelEngine;
 import org.camunda.feel.api.EvaluationResult;
@@ -49,14 +50,16 @@ public class BPMNModelTest {
     public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException, Exception {
 
         BPDMNTranslator t = new BPDMNTranslator();
+        
+        Path output_folder = Paths.get(".").toAbsolutePath().normalize();
 
-        t.compile_inputs(Path.of("surgery_tables.dmn"), Path.of("Surgery.bpmn"));
+        t.compile_inputs(output_folder,Path.of("surgery_tables.dmn"), Path.of("Surgery.bpmn"));
 
-        t.compile_inputs(Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn"), Path.of("Shipment.bpmn"));
+        t.compile_inputs(output_folder,Path.of("get_length.dmn"), Path.of("determine_mode.dmn"), Path.of("choose_consent.dmn"), Path.of("Shipment.bpmn"));
 
-        t.compile_inputs(Path.of("Loop.bpmn"));
+        t.compile_inputs(output_folder,Path.of("Loop.bpmn"));
 
-        t.compile_inputs(Path.of("Parallel1.bpmn"));
+        t.compile_inputs(output_folder,Path.of("Parallel1.bpmn"));
 
         t.compile_inputs(Path.of("Parallel2.bpmn"));
 
