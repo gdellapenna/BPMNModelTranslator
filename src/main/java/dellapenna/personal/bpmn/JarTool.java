@@ -6,6 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -37,28 +40,37 @@ public class JarTool {
         return new JarOutputStream(new FileOutputStream(jarFile), manifest);
     }
 
-    public void addFile(JarOutputStream target, String rootPath, String source) throws FileNotFoundException, IOException {
+    public void addFileFromPath(JarOutputStream jar, String rootPath, Path source) throws FileNotFoundException, IOException {
         String remaining = "";
         if (rootPath.endsWith(File.separator)) {
-            remaining = source.substring(rootPath.length());
+            remaining = source.toString().substring(rootPath.length());
         } else {
-            remaining = source.substring(rootPath.length() + 1);
+            remaining = source.toString().substring(rootPath.length() + 1);
         }
-        String name = remaining.replace("\\", "/");
-        JarEntry entry = new JarEntry(name);
-        entry.setTime(new File(source).lastModified());
-        target.putNextEntry(entry);
+        addFileWithPath(jar, remaining, source);
 
-        BufferedInputStream in = new BufferedInputStream(new FileInputStream(source));
-        byte[] buffer = new byte[1024];
-        while (true) {
-            int count = in.read(buffer);
-            if (count == -1) {
-                break;
+    }
+
+    public void addFileWithPath(JarOutputStream jar, String jarPathName, Path source) throws FileNotFoundException, IOException {
+        addEntry(jar, jarPathName, Files.getLastModifiedTime(source).toMillis(), Files.newInputStream(source));
+    }
+
+    private void addEntry(JarOutputStream jar, String jarPathName, long lastModified, InputStream source) throws IOException {
+        String name = jarPathName.replace("\\", "/");
+        JarEntry entry = new JarEntry(name);
+        entry.setTime(lastModified);
+        jar.putNextEntry(entry);
+
+        try (BufferedInputStream in = new BufferedInputStream(source)) {
+            byte[] buffer = new byte[1024];
+            while (true) {
+                int count = in.read(buffer);
+                if (count == -1) {
+                    break;
+                }
+                jar.write(buffer, 0, count);
             }
-            target.write(buffer, 0, count);
         }
-        target.closeEntry();
-        in.close();
+        jar.closeEntry();
     }
 }

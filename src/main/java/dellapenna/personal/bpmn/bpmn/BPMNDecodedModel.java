@@ -6,6 +6,6 @@ import java.util.List;
  *
  * @author giuse
  */
-public record BPMNDecoded(List<BPMNDecodedProcess> processes) {
+public record BPMNDecodedModel(List<BPMNDecodedProcess> processes) {
     
 }

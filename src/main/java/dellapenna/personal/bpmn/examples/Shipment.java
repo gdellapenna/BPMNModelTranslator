@@ -1,3 +1,5 @@
+package dellapenna.personal.bpmn.examples;
+
 
 import dellapenna.personal.bpmn.exec.*;
 
@@ -132,7 +134,7 @@ class dmn_dtable_ChooseConsentDT {
 }
 
 /*
- * ****************************** BPMN Generated Code *************************
+ * ****************************** Process Code *************************
  */
 class Shipment {
 

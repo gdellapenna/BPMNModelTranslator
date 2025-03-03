@@ -1,34 +1,34 @@
 # nodes
-Gateway_1gapucr[label="Parallel1Split"]
-Activity_0sbgnmb[label="Task2DefaultBranch"]
-Activity_0svmpy2[label="InnerParallelTask1"]
 Activity_0veq5io[label="Parallel Task 2"]
-Gateway_1c7340a[label="Exclusive1"]
-Gateway_0fm3ji9[label="Parallel2Split"]
-Event_0zv9hfo[label="End"]
 Activity_0pfa4n5[label="Parallel Task 1"]
+Activity_0svmpy2[label="InnerParallelTask1"]
+Activity_1otvmx2[label="InnerParallelTask2"]
 StartEvent_1[label="Start"]
+Gateway_1gapucr[label="Parallel1Split"]
+Gateway_1c7340a[label="Exclusive1"]
+Activity_09oefmk[label="Task2Branch1"]
+Activity_0sbgnmb[label="Task2DefaultBranch"]
 Gateway_02100g2[label="Parallel1Join"]
 Activity_16zc6e7[label="Final Task"]
-Activity_1otvmx2[label="InnerParallelTask2"]
-Activity_09oefmk[label="Task2Branch1"]
+Gateway_0fm3ji9[label="Parallel2Split"]
 Gateway_1iv1tvb[label="Parallel2Join"]
+Event_0zv9hfo[label="End"]
 
 
 # edges
+"Activity_0veq5io" -> "Gateway_1c7340a"
+"Activity_0pfa4n5" -> "Gateway_02100g2"
+"Activity_0svmpy2" -> "Gateway_1iv1tvb"
+"Activity_1otvmx2" -> "Gateway_1iv1tvb"
+"StartEvent_1" -> "Gateway_1gapucr"
 "Gateway_1gapucr" -> "Activity_0veq5io"
 "Gateway_1gapucr" -> "Activity_0pfa4n5"
-"Activity_0sbgnmb" -> "Gateway_0fm3ji9"
-"Activity_0svmpy2" -> "Gateway_1iv1tvb"
-"Activity_0veq5io" -> "Gateway_1c7340a"
 "Gateway_1c7340a" -> "Activity_09oefmk"
 "Gateway_1c7340a" -> "Activity_0sbgnmb"
-"Gateway_0fm3ji9" -> "Activity_0svmpy2"
-"Gateway_0fm3ji9" -> "Activity_1otvmx2"
-"Activity_0pfa4n5" -> "Gateway_02100g2"
-"StartEvent_1" -> "Gateway_1gapucr"
+"Activity_09oefmk" -> "Gateway_02100g2"
+"Activity_0sbgnmb" -> "Gateway_0fm3ji9"
 "Gateway_02100g2" -> "Activity_16zc6e7"
 "Activity_16zc6e7" -> "Event_0zv9hfo"
-"Activity_1otvmx2" -> "Gateway_1iv1tvb"
-"Activity_09oefmk" -> "Gateway_02100g2"
+"Gateway_0fm3ji9" -> "Activity_0svmpy2"
+"Gateway_0fm3ji9" -> "Activity_1otvmx2"
 "Gateway_1iv1tvb" -> "Gateway_02100g2"

@@ -136,7 +136,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     /////////////////////////////////////////////////////////////////////
     //generates the source code for a complete BPMN given the code of its single processes
     @Override
-    public String generateBpmnSource(BPMNDecoded bpmn, BPMNTranslationInfo info) {
+    public String generateBpmnSource(BPMNDecodedModel bpmn, BPMNTranslationInfo info) {
         return """
                /*
                 * ****************************** BPMN Generated Code *************************
@@ -148,7 +148,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     }
 
     //generates the source code for a complete BPMN process
-    protected String generateProcessSource(BPMNDecodedProcess process, BPMNTranslationInfo info) {
+    public String generateProcessSource(BPMNDecodedProcess process, BPMNTranslationInfo info) {
         //input variables should be deduced by differencing declared globals from
         //variables referenced by feel expressions
 
@@ -177,7 +177,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 .map(fd -> generateFunctionSource(fd))
                 .collect(Collectors.joining("\n\n", "\n\n//Process Dynamics\n", "\n\n"));
         //return " class bpmn_process_" + sanitizeName(process.getName()) + " { "
-        return " class " + sanitizeName(process.getName()) + " { "
+        return """
+               /*
+                * ****************************** Process Code *************************
+                */
+               """
+                + " class " + sanitizeName(process.getName()) + " { "
                 + input_variables
                 + global_variables
                 + functions

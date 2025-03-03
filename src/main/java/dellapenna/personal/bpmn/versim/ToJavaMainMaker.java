@@ -1,6 +1,6 @@
 package dellapenna.personal.bpmn.versim;
 
-import dellapenna.personal.bpmn.bpmn.BPMNDecoded;
+import dellapenna.personal.bpmn.bpmn.BPMNDecodedModel;
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import static dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator.sanitizeName;
@@ -16,7 +16,7 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
  */
 public class ToJavaMainMaker {
 
-//    public String generateProcessLauncher(BPMNDecoded bpmn, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+//    public String generateProcessLauncher(BPMNDecodedModel bpmn, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
 //        String mainMethod = "public static void main(String[] args) {\n";
 //        if (info == null || !info.isDebug()) {
 //            mainMethod += "BPMNExecProcessUtils.debugChannel=new java.io.PrintStream(java.io.OutputStream.nullOutputStream());";

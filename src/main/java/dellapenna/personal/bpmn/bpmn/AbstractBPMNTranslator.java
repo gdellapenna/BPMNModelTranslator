@@ -72,17 +72,17 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     }
 
     ////////////////////////
-    // Decode a BPMN instance to BPMNDecoded structure
+    // Decode a BPMN instance to BPMNDecodedModel structure
     ////////////////////////
     @Override
-    public BPMNDecoded decodeBpmn(BpmnModelInstance bpmn, DMNDecodedModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
+    public BPMNDecodedModel decodeBpmn(BpmnModelInstance bpmn, DMNDecodedModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
         List<BPMNDecodedProcess> process_definitions = new ArrayList<>();
         Collection<Process> processes = bpmn.getModelElementsByType(Process.class);
         for (Process process : processes) {
             reset();
             process_definitions.add(decodeProcessNode(process, info));
         }
-        return new BPMNDecoded(process_definitions);
+        return new BPMNDecodedModel(process_definitions);
     }
 
     ////////////////////////

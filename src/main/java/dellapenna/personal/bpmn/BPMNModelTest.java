@@ -61,7 +61,7 @@ public class BPMNModelTest {
 
         t.compile_inputs(output_folder,Path.of("Parallel1.bpmn"));
 
-        t.compile_inputs(Path.of("Parallel2.bpmn"));
+        t.compile_inputs(output_folder,Path.of("Parallel2.bpmn"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
