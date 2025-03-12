@@ -4,10 +4,8 @@ import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
@@ -15,7 +13,6 @@ import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.spi.ToolProvider;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**

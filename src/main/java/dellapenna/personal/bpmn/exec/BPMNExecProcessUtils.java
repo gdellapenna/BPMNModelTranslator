@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class BPMNExecProcessUtils {
@@ -49,9 +51,12 @@ public class BPMNExecProcessUtils {
     public static java.io.PrintStream traceChannel = new java.io.PrintStream(java.io.OutputStream.nullOutputStream());
     public static java.util.Properties outputs = new java.util.Properties();
     public static java.util.Properties inputs = new java.util.Properties();
+    public static int max_wait_sync_time = 10;
 
     static Map<String, List<String>> parallels = new HashMap<>();
     public static Map<String, List<String>> joins = new HashMap<>();
+    static Map<String, LinkedBlockingQueue<Object>> massage_channels = new HashMap<>();
+
     static int parallel_branch_count = 0;
     static Integer active_threads_count = 0;
     static ExecutorService executor = null;
@@ -132,6 +137,35 @@ public class BPMNExecProcessUtils {
             outputs.store(new java.io.FileWriter(outputs_file), null);
         } catch (java.io.IOException ex) {
             //
+        }
+    }
+
+    public static void sendMessage(ProcessStatus s, String channel, Object data) {
+        if (!massage_channels.containsKey(channel)) {
+            massage_channels.put(channel, new LinkedBlockingQueue<>());
+        }
+        try {
+            massage_channels.get(channel).put(data);
+        } catch (InterruptedException ex) {
+            timeoutError(s);
+        }
+    }
+
+    public static Object receiveMessage(ProcessStatus s, String channel) {
+        if (!massage_channels.containsKey(channel)) {
+            massage_channels.put(channel, new LinkedBlockingQueue<>());
+        }
+        try {
+            Object message = massage_channels.get(channel).poll(max_wait_sync_time, TimeUnit.SECONDS);
+            if (message != null) {
+                return message;
+            } else {
+                timeoutError(s);
+                return null;
+            }
+        } catch (InterruptedException ex) {
+            timeoutError(s);
+            return null;
         }
     }
 
@@ -300,6 +334,10 @@ public class BPMNExecProcessUtils {
 
     public static void noDefaultCaseError(ProcessStatus s) {
         error(s, "No default branch in gateway", 9999);
+    }
+
+    public static void timeoutError(ProcessStatus s) {
+        error(s, "Timeout in wait operation", 9999);
     }
 
     public static void success(ProcessStatus s, String m, int c) {

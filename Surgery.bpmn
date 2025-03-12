@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_18if82i" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_18if82i" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.22.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
   <bpmn:error id="Error_059lte9" name="Rejected" errorCode="1" />
   <bpmn:error id="Error_0xlwhc8" name="Return" errorCode="2" />
   <bpmn:collaboration id="Collaboration_1onq5lz">
@@ -39,7 +39,10 @@
     </bpmn:endEvent>
     <bpmn:sendTask id="Activity_1qr375k" name="Insert into surgeon waiting list">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="SoftwareMessage" />
+        <zeebe:taskDefinition type="SurgeonListMessages" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="channel" value="SurgeonListMessages" />
+        </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1jpmawa</bpmn:incoming>
       <bpmn:outgoing>Flow_13jbc8y</bpmn:outgoing>
@@ -212,9 +215,9 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=PatientDismissionSurgicalUnit="can"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
   </bpmn:process>
-  <bpmn:message id="Message_1095b2h" name="SoftwareMessage">
+  <bpmn:message id="Message_1095b2h" name="SystemContinueMessages">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="=SMK" />
+      <zeebe:subscription correlationKey="=passthrough" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">

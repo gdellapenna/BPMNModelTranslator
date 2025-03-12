@@ -336,6 +336,15 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateSendTaskCode(BPMNDecodedProcess p, SendTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        String channel = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "taskHeaders")
+                .getDomElement().getChildElementsByNameNs(ZEEBENS, "header").stream()
+                .filter(e -> "channel".equals(e.getAttribute("key")))
+                .map(e -> e.getAttribute("value"))
+                .findAny().orElse(null);
+
+        code.append("BPMNExecProcessUtils.debugOutput(\"\t SENDING message on channel " + channel + "\")");
+        code.append("BPMNExecProcessUtils.sendMessage(s,\"" + channel + "\",true)");
+
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
@@ -343,6 +352,17 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateReceiveTaskCode(BPMNDecodedProcess p, ReceiveTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        String channel = t.getMessage().getName();
+        String correlationKey = t.getMessage().getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "subscription")
+                .getAttributeValue("correlationKey").substring(1);
+
+        if (!correlationKey.equalsIgnoreCase("passthrough")) {
+            code.append("BPMNExecProcessUtils.debugOutput(\"\t RECEIVING message on channel " + channel + "\")");
+            code.append("BPMNExecProcessUtils.receiveMessage(s,\"" + channel + "\")");
+        } else {
+            code.append("BPMNExecProcessUtils.debugOutput(\"\t ASSUMING RECEPTION of message on channel " + channel + "\")");
+        }
+        //bisogna mappare i dati del messaggio nel codice?        
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
