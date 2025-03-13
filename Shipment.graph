@@ -1,37 +1,37 @@
 # nodes
-Activity_1njskid[label="sign declaration"]
-Activity_1cbdv9z[label="choose consent"]
-Event_06urgzi[label="undefined length"]
-Activity_1ol43bw[label="determine mode"]
-Event_0wjo1ye[label="unsuppoted weight"]
-StartEvent_1[label="package received"]
-Activity_0h04jo2[label="get length"]
-Gateway_07f90ke[]
 Event_19ylwnc[label="no shipment"]
-Gateway_0i2yujj[]
-Event_1pjc4df[label="ready for shipment"]
 Gateway_0u50uj6[]
-Activity_1nfni4r[label="fetch declaration"]
-Gateway_1tgxmu2[]
+Event_1pjc4df[label="ready for shipment"]
 Activity_0iafefy[label="measure weight"]
+Activity_0h04jo2[label="get length"]
+Activity_1nfni4r[label="fetch declaration"]
+Gateway_07f90ke[]
+Event_06urgzi[label="undefined length"]
+Activity_1njskid[label="sign declaration"]
+Activity_1ol43bw[label="determine mode"]
 Gateway_1ocbjca[]
+Gateway_1tgxmu2[]
+Gateway_0i2yujj[]
+Event_0wjo1ye[label="unsuppoted weight"]
+Activity_1cbdv9z[label="choose consent"]
+StartEvent_1[label="package received"]
 
 
 # edges
-"Activity_1njskid" -> "Gateway_07f90ke"
-"Activity_1cbdv9z" -> "Gateway_0u50uj6"
-"Activity_1ol43bw" -> "Gateway_1ocbjca"
-"StartEvent_1" -> "Activity_0h04jo2"
-"Activity_0h04jo2" -> "Gateway_0i2yujj"
-"Gateway_07f90ke" -> "Event_1pjc4df"
-"Gateway_0i2yujj" -> "Event_06urgzi"
-"Gateway_0i2yujj" -> "Activity_0iafefy"
 "Gateway_0u50uj6" -> "Activity_1njskid"
 "Gateway_0u50uj6" -> "Activity_1nfni4r"
 "Gateway_0u50uj6" -> "Gateway_07f90ke"
-"Activity_1nfni4r" -> "Gateway_07f90ke"
-"Gateway_1tgxmu2" -> "Event_0wjo1ye"
-"Gateway_1tgxmu2" -> "Activity_1ol43bw"
 "Activity_0iafefy" -> "Gateway_1tgxmu2"
+"Activity_0h04jo2" -> "Gateway_0i2yujj"
+"Activity_1nfni4r" -> "Gateway_07f90ke"
+"Gateway_07f90ke" -> "Event_1pjc4df"
+"Activity_1njskid" -> "Gateway_07f90ke"
+"Activity_1ol43bw" -> "Gateway_1ocbjca"
 "Gateway_1ocbjca" -> "Event_19ylwnc"
 "Gateway_1ocbjca" -> "Activity_1cbdv9z"
+"Gateway_1tgxmu2" -> "Event_0wjo1ye"
+"Gateway_1tgxmu2" -> "Activity_1ol43bw"
+"Gateway_0i2yujj" -> "Event_06urgzi"
+"Gateway_0i2yujj" -> "Activity_0iafefy"
+"Activity_1cbdv9z" -> "Gateway_0u50uj6"
+"StartEvent_1" -> "Activity_0h04jo2"

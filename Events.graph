@@ -1,18 +1,18 @@
 # nodes
+Activity_1bbiwff[label="ReceiveMessage1"]
 Event_0otlgeu[label="StartProcess"]
 Gateway_0vvmbrx[label="StartParallel"]
-Activity_05wh2j7[label="DoSomething"]
 Gateway_1nlfvxl[label="EndParallel"]
 Event_02n50iy[label="FinishProcess"]
 Activity_0ewds2n[label="SendMessage1"]
-Activity_1bbiwff[label="ReceiveMessage1"]
+Activity_05wh2j7[label="DoSomething"]
 
 
 # edges
+"Activity_1bbiwff" -> "Gateway_1nlfvxl"
 "Event_0otlgeu" -> "Gateway_0vvmbrx"
 "Gateway_0vvmbrx" -> "Activity_05wh2j7"
 "Gateway_0vvmbrx" -> "Activity_1bbiwff"
-"Activity_05wh2j7" -> "Activity_0ewds2n"
 "Gateway_1nlfvxl" -> "Event_02n50iy"
 "Activity_0ewds2n" -> "Gateway_1nlfvxl"
-"Activity_1bbiwff" -> "Gateway_1nlfvxl"
+"Activity_05wh2j7" -> "Activity_0ewds2n"

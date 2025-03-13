@@ -3,7 +3,6 @@ package dellapenna.personal.bpmn.feel;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.camunda.feel.api.ParseResult;
 
 /**
  *
@@ -22,7 +21,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     private String castToBoolean(String a) {
         return "BPMNExecTypeUtils.toboolean(" + a + ")";
     }
-
+    
     @Override
     public String translateGreaterThan(String arg1, String arg2, FeelTranslationInfo info) {
         return ((arg1 != null ? castToNumber(arg1) : "") + " > " + castToNumber(arg2));
@@ -45,7 +44,8 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateEqual(String arg1, String arg2, FeelTranslationInfo info) {
-        return ((arg1 != null ? arg1 : "") + ".equals(" + arg2 + ")");
+        return "BPMNExecTypeUtils.equals("+((arg1 != null ? arg1 : "") + "," + arg2 + ")");
+        //return ((arg1 != null ? arg1 : "") + ".equals(" + arg2 + ")");
     }
 
     @Override

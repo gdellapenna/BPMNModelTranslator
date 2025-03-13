@@ -28,4 +28,17 @@ public class BPMNExecTypeUtils {
 
         }
     }
+
+    public static boolean equals(Object o1, Object o2) {
+        if (o1.getClass().equals(o2.getClass())) {
+            return o1.equals(o2);
+        } else if (o1 instanceof Number n1 && o2 instanceof Number n2) {
+            return n1.doubleValue() == n2.doubleValue();
+        } else if (o1 instanceof String || o2 instanceof String) {
+            return o1.toString().equals(o2.toString());
+        } else {
+            return o1.equals(o2);
+
+        }
+    }
 }

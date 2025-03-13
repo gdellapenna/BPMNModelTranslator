@@ -1,8 +1,8 @@
 package dellapenna.personal.bpmn.exec;
 
 import java.io.FileNotFoundException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,26 +18,47 @@ public class BPMNExecProcessUtils {
 
         String branchID;
         String previousStep;
+        boolean statusSuccess;
+        String statusMessage;
+        int statusCode;
 
-        public ProcessStatus withCurrent(String c) {
-            ProcessStatus n = new ProcessStatus();
-            n.branchID = this.branchID;
-            n.previousStep = c;
+        public ProcessStatus withCurrent(String current) {
+            ProcessStatus n = new ProcessStatus(this);
+            n.previousStep = current;
+            return n;
+        }
+
+        public ProcessStatus withBranchAndcurrent(String branch_id, String current) {
+            ProcessStatus n = new ProcessStatus(this);
+            n.branchID = branch_id;
+            n.previousStep = current;
             return n;
         }
 
         public ProcessStatus(String branchID) {
             this.branchID = branchID;
+            this.previousStep = "";
+            this.statusSuccess = true;
+            this.statusMessage = "OK";
+            this.statusCode = 0;
+        }
+
+        public ProcessStatus(ProcessStatus parent) {
+            this();
+            this.branchID = parent.branchID;
+            this.previousStep = parent.previousStep;
+            this.statusSuccess = parent.statusSuccess;
+            this.statusMessage = parent.statusMessage;
+            this.statusCode = parent.statusCode;
         }
 
         public ProcessStatus(String branchID, String previousStep) {
-            this.branchID = branchID;
+            this(branchID);
             this.previousStep = previousStep;
         }
 
         public ProcessStatus() {
-            this.branchID = "Main";
-            this.previousStep = "";
+            this("Main");
         }
 
     };
@@ -51,15 +72,22 @@ public class BPMNExecProcessUtils {
     public static java.io.PrintStream traceChannel = new java.io.PrintStream(java.io.OutputStream.nullOutputStream());
     public static java.util.Properties outputs = new java.util.Properties();
     public static java.util.Properties inputs = new java.util.Properties();
-    public static int max_wait_sync_time = 10;
 
+    //parallel fork/join and send/receive support data
     static Map<String, List<String>> parallels = new HashMap<>();
-    public static Map<String, List<String>> joins = new HashMap<>();
     static Map<String, LinkedBlockingQueue<Object>> massage_channels = new HashMap<>();
-
-    static int parallel_branch_count = 0;
+    //public static Map<String, List<String>> joins = new HashMap<>();
+    private static volatile SecureRandom numberGenerator = new SecureRandom();
+    private static final long MSB = 0x8000000000000000L;
+    //static int parallel_branch_count = 0;
     static Integer active_threads_count = 0;
+    public static int max_wait_sync_time = 10;
     static ExecutorService executor = null;
+    //
+
+    public static String getRandomID() {
+        return Long.toHexString(MSB | numberGenerator.nextLong()) + Long.toHexString(MSB | numberGenerator.nextLong());
+    }
 
     public static void enableTrueParallel() {
         executor = Executors.newFixedThreadPool(10);
@@ -169,20 +197,19 @@ public class BPMNExecProcessUtils {
         }
     }
 
-    public static void initJoin(String g, String... l) {
-        joins.put(g, new ArrayList<>(Arrays.asList(l)));
-    }
-
+//    public static void initJoin(String g, String... l) {
+//        joins.put(g, new ArrayList<>(Arrays.asList(l)));
+//    }
     public static void executeProcess(String name, Runnable init, Consumer<ProcessStatus> start) {
         process_name = name;
         ProcessStatus s = new ProcessStatus();
         if (init != null) {
-            debugOutput("INITIALIZING PROCESS " + process_name);
+            debugOutput(s, "INITIALIZING PROCESS " + process_name);
             loadExternalInputs();
             init.run();
         }
         if (start != null) {
-            debugOutput("STARTING PROCESS " + process_name);
+            debugOutput(s, "STARTING PROCESS " + process_name);
             startThread(start, s);
         }
         while (active_threads_count > 0) {
@@ -202,7 +229,7 @@ public class BPMNExecProcessUtils {
         if (executor != null) {
             executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
         }
-        debugOutput("ENDING PROCESS " + process_name);
+        debugOutput(s, "ENDING PROCESS " + process_name);
         closeChannels();
     }
 
@@ -276,7 +303,8 @@ public class BPMNExecProcessUtils {
     }
 
     public static void fork(ProcessStatus s, String gatewayId, Consumer<ProcessStatus>... branches) {
-        String parallel_id = s.branchID + "-" + gatewayId;
+        String source_parallel_gateway_id = gatewayId;
+        String parallel_id = s.branchID + "|" + source_parallel_gateway_id + "|" + getRandomID();
         if (!parallels.containsKey(parallel_id)) {
             parallels.put(parallel_id, new ArrayList<>());
         }
@@ -285,39 +313,43 @@ public class BPMNExecProcessUtils {
         for (int i = 0; i < branches.length; ++i) {
             String branch_id;
             synchronized (BPMNExecProcessUtils.class) {
-                branch_id = parallel_id + "-" + (++parallel_branch_count);
+                String parallel_branch_uuid = getRandomID();
+                branch_id = parallel_id + "|" + parallel_branch_uuid;
                 branch_ids[i] = branch_id;
                 parallels.get(parallel_id).add(branch_id);
             }
         }
         for (int i = 0; i < branches.length; ++i) {
-            debugOutput("\t FORKING BRANCH: %s FROM PARALLEL %s", branch_ids[i], parallel_id);
+            debugOutput(s, "\t FORKING BRANCH: %s FROM PARALLEL %s", branch_ids[i], parallel_id);
             final Consumer<ProcessStatus> branch = branches[i];
             final String branch_id = branch_ids[i];
-            startThread(branch, new ProcessStatus(branch_id, gatewayId));
+            startThread(branch, s.withBranchAndcurrent(branch_id, source_parallel_gateway_id));
         }
     }
 
     public static void join(ProcessStatus s, String gatewayId, Consumer<ProcessStatus> join_branch) {
-        int delimiter_pos = s.branchID.lastIndexOf("-");
-        String parallel_id = s.branchID.substring(0, delimiter_pos);
         String branch_id = s.branchID;
-        String parallel_gateway_id = parallel_id.substring(parallel_id.lastIndexOf("-") + 1);
+        int delimiter_pos = branch_id.lastIndexOf("|");
+        String parallel_id = branch_id.substring(0, delimiter_pos);
+        String parallel_branch_uuid = branch_id.substring(delimiter_pos + 1);
+        String temp = parallel_id.substring(0, parallel_id.lastIndexOf("|"));
+        String source_parallel_gateway_id = temp.substring(temp.lastIndexOf("|") + 1);
+        String parallel_parent_branch_id = temp.substring(0, temp.lastIndexOf("|"));
 
-        debugOutput("\t JOINING BRANCH: %s OF PARALLEL %s STARTED FROM GATEWAY %s", branch_id, parallel_id, parallel_gateway_id);
+        debugOutput(s, "\t JOINING BRANCH: %s OF PARALLEL %s STARTED FROM GATEWAY %s", branch_id, parallel_id, source_parallel_gateway_id);
         synchronized (BPMNExecProcessUtils.class) {
             parallels.get(parallel_id).remove(branch_id);
-            joins.get(gatewayId).remove(s.previousStep);
+            //joins.get(gatewayId).remove(s.previousStep);
 
 //            if (joins.get(gatewayId).isEmpty()) {
 //                joins.remove(gatewayId); //andrebbe invece ricaricato in caso si percorra il jgw più volte?
-//                String parent_branch_id = parallel_id.substring(0, parallel_id.lastIndexOf("-"));
+//                String parent_branch_id = parallel_id.substring(0, parallel_id.lastIndexOf("|"));
 //                startThread(join_branch, new ProcessStatus(parent_branch_id, gatewayId));
 //            }
             if (parallels.get(parallel_id).isEmpty()) {
                 parallels.remove(parallel_id);
-                String parent_branch_id = parallel_id.substring(0, parallel_id.lastIndexOf("-"));
-                startThread(join_branch, new ProcessStatus(parent_branch_id, gatewayId));
+                debugOutput(s, "\t PARALLEL %s STARTED FROM GATEWAY %s COMPLETE, RETURNING ON BRANCH %s", parallel_id, source_parallel_gateway_id, parallel_parent_branch_id);
+                startThread(join_branch, new ProcessStatus(parallel_parent_branch_id, gatewayId));
             }
 
             stopThread();
@@ -325,8 +357,11 @@ public class BPMNExecProcessUtils {
     }
 
     public static void error(ProcessStatus s, String m, int c) {
-        debugOutput("\t ERROR %s ON BRANCH %s", m, s.branchID);
+        debugOutput(s, "\t ERROR %s ON BRANCH %s", m, s.branchID);
         globalSuccess &= false;
+        s.statusCode = c;
+        s.statusMessage = m;
+        s.statusSuccess = false;
         logResult(s, false, m, c);
         //endCurrentBranch();
         stopThread();
@@ -342,9 +377,9 @@ public class BPMNExecProcessUtils {
 
     public static void success(ProcessStatus s, String m, int c) {
         if (m != null) {
-            debugOutput("\t SUCCESS %s ON BRANCH %s", m, s.branchID);
+            debugOutput(s, "\t SUCCESS %s ON BRANCH %s", m, s.branchID);
         } else {
-            debugOutput("\t SUCCESS ON BRANCH %s", s.branchID);
+            debugOutput(s, "\t SUCCESS ON BRANCH %s", s.branchID);
         }
         globalSuccess &= true;
         logResult(s, true, m, c);
@@ -356,9 +391,9 @@ public class BPMNExecProcessUtils {
         success(s, null, 0);
     }
 
-    public static void debugOutput(String s, Object... args) {
-        String message = String.format(s, args);
-        debugChannel.println(message);
+    public static void debugOutput(ProcessStatus s, String message, Object... args) {
+        String formattedmessage = "[" + s.branchID + "] " + String.format(message, args);
+        debugChannel.println(formattedmessage);
     }
 
     public static void logInput(String name, Object value) {
@@ -383,7 +418,7 @@ public class BPMNExecProcessUtils {
 
     public static boolean assertion(ProcessStatus s, String node_id, String condition_description, boolean condition) {
         if (!condition) {
-            debugOutput("\t ASSERTION %s FAILED ON NODE %s IN BRANCH %s", condition_description, node_id, s.branchID);
+            debugOutput(s, "\t ASSERTION %s FAILED ON NODE %s IN BRANCH %s", condition_description, node_id, s.branchID);
             //stopThread();
             System.exit(1000);
             return false;

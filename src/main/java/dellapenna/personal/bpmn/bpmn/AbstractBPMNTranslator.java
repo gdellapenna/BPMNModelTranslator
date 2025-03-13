@@ -52,7 +52,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
 
     Set<FlowNode> generated_flows = new HashSet<>();
     Deque<FlowNode> flows_to_translate = new ArrayDeque<>();
-    Set<ParallelGateway> parallel_joining = new HashSet<>(); 
+    //Set<ParallelGateway> parallel_joining = new HashSet<>(); 
 
     ///
     //protected abstract T generateProcessSource(String name, List flows_code);
@@ -63,7 +63,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     protected void reset() {
         generated_flows.clear();
         flows_to_translate.clear();
-        parallel_joining.clear(); //forse va spostato nelle info?
+        //parallel_joining.clear(); //forse va spostato nelle info?
     }
 
     @Override
@@ -232,7 +232,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
                 return new BPMNDecodedNode(generateEventJoiningGatewayCode(p, t, joiningStep, info), null);
             }
             case org.camunda.bpm.model.bpmn.instance.ParallelGateway t -> {
-                parallel_joining.add(t);
+                //parallel_joining.add(t);
                 return new BPMNDecodedNode(generateParallelJoiningGatewayCode(p, t, joiningStep, info), null);
             }
             default -> {
