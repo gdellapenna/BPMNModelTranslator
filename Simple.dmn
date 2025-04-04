@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="SimpleDMN" name="SimpleDMN" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.22.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+  <decision id="SimpleTable" name="SimpleTable">
+    <decisionTable id="DecisionTable_19aqy8u">
+      <input id="Input_1">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text>in_1</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0hyxnot">
+        <inputExpression id="LiteralExpression_1n75elo" typeRef="string">
+          <text>in_2</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1jrqrji">
+        <inputExpression id="LiteralExpression_0ug2p2e" typeRef="string">
+          <text>in_3</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="out_1" typeRef="string" />
+      <output id="OutputClause_1puvpwf" name="out_2" typeRef="string" />
+      <rule id="DecisionRule_13xj8eb">
+        <inputEntry id="UnaryTests_18h3np0">
+          <text>"c_11"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_09p9379">
+          <text>"c_12"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0obemna">
+          <text>"c_13"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_04mjv5t">
+          <text>"v_11"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1vm7v9x">
+          <text>"v_12"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1fm3o5y">
+        <inputEntry id="UnaryTests_17tzr1q">
+          <text>"c_21"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0z21yed">
+          <text>"c_22"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1oo9g3d">
+          <text>"c_23"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0in8spr">
+          <text>"v_21"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_1exfv7o">
+          <text>"v_22"</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_14784ft">
+        <inputEntry id="UnaryTests_1fposwz">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_06bybx0">
+          <text></text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1hrtlds">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0nwxuhb">
+          <text>"v_31"</text>
+        </outputEntry>
+        <outputEntry id="LiteralExpression_033hmd0">
+          <text>"v_32"</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="SimpleTable">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>
