@@ -14,6 +14,10 @@ import java.util.function.Consumer;
 
 public class BPMNExecProcessUtils {
 
+    public static interface Message {
+
+    };
+
     public static class ProcessStatus {
 
         String branchID;
@@ -75,7 +79,7 @@ public class BPMNExecProcessUtils {
 
     //parallel fork/join and send/receive support data
     static Map<String, List<String>> parallels = new HashMap<>();
-    static Map<String, LinkedBlockingQueue<Object>> massage_channels = new HashMap<>();
+    static Map<String, LinkedBlockingQueue<Message>> massage_channels = new HashMap<>();
     //public static Map<String, List<String>> joins = new HashMap<>();
     private static volatile SecureRandom numberGenerator = new SecureRandom();
     private static final long MSB = 0x8000000000000000L;
@@ -168,23 +172,23 @@ public class BPMNExecProcessUtils {
         }
     }
 
-    public static void sendMessage(ProcessStatus s, String channel, Object data) {
+    public static void sendMessage(ProcessStatus s, String channel, Message message) {
         if (!massage_channels.containsKey(channel)) {
             massage_channels.put(channel, new LinkedBlockingQueue<>());
         }
         try {
-            massage_channels.get(channel).put(data);
+            massage_channels.get(channel).put(message);
         } catch (InterruptedException ex) {
             timeoutError(s);
         }
     }
 
-    public static Object receiveMessage(ProcessStatus s, String channel) {
+    public static Message receiveMessage(ProcessStatus s, String channel) {
         if (!massage_channels.containsKey(channel)) {
             massage_channels.put(channel, new LinkedBlockingQueue<>());
         }
         try {
-            Object message = massage_channels.get(channel).poll(max_wait_sync_time, TimeUnit.SECONDS);
+            Message message = massage_channels.get(channel).poll(max_wait_sync_time, TimeUnit.SECONDS);
             if (message != null) {
                 return message;
             } else {

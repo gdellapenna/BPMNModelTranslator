@@ -50,6 +50,7 @@ public class BPMNDecodedProcess {
     private final List<BPMNDecodedFlow> rawFlows = new ArrayList<>();
     private final Map<NodeProcedureType, Map<String, FunctionDefinition>> functions = new HashMap<>();
     private final List<VariableDefinition> processVariables = new ArrayList<>();
+    private final List<MessageDefinition> processMessages = new ArrayList<>();
     private final Map<FlowNode, FlowNodeInfo> processGraphMap = new HashMap<>();
 
     //private final Map<String, Map<VariableDirection, List<String>>> variableUsages = new HashMap<>();
@@ -79,6 +80,10 @@ public class BPMNDecodedProcess {
 
     public Map<NodeProcedureType, Map<String, FunctionDefinition>> getFunctions() {
         return this.functions;
+    }
+
+    public List<MessageDefinition> getMessages() {
+        return this.processMessages;
     }
 
     public List<VariableDefinition> getReadVariables() {
@@ -115,6 +120,15 @@ public class BPMNDecodedProcess {
 
     public List<String> getStartEventFlowNames() {
         return this.startEventFlowNames;
+    }
+
+    public MessageDefinition registerProcessMessage(String name) {
+        MessageDefinition g = processMessages.stream().filter(v -> v.getName().equals(name)).findFirst().orElse(null);
+        if (g == null) {
+            g = new MessageDefinition(name);
+            processMessages.add(g);
+        }
+        return g;
     }
 
 //    public Map<String, VariableDefinition> getInputs() {

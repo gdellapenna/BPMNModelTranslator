@@ -1,0 +1,20 @@
+# nodes
+S[label="S"]
+A[label="A"]
+G2[label="G2"]
+D[label="D"]
+G1[label="G1"]
+C[label="C"]
+B[label="B"]
+E[label="E"]
+
+
+# edges
+"S" -> "A"
+"A" -> "G1"
+"G2" -> "D"
+"D" -> "E"
+"G1" -> "B"
+"G1" -> "C"
+"C" -> "G2"
+"B" -> "G2"

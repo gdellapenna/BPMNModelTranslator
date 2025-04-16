@@ -39,9 +39,10 @@
     </bpmn:endEvent>
     <bpmn:sendTask id="Activity_1qr375k" name="Insert into surgeon waiting list">
       <bpmn:extensionElements>
-        <zeebe:taskDefinition type="SurgeonListMessages" />
+        <zeebe:taskDefinition type="GENERIC" />
         <zeebe:taskHeaders>
           <zeebe:header key="channel" value="SurgeonListMessages" />
+          <zeebe:header key="message" value="addPatient" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1jpmawa</bpmn:incoming>
@@ -215,9 +216,9 @@
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=PatientDismissionSurgicalUnit="can"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
   </bpmn:process>
-  <bpmn:message id="Message_1095b2h" name="SystemContinueMessages">
+  <bpmn:message id="Message_1095b2h" name="passthrough">
     <bpmn:extensionElements>
-      <zeebe:subscription correlationKey="=passthrough" />
+      <zeebe:subscription correlationKey="=SurgeonListMessages" />
     </bpmn:extensionElements>
   </bpmn:message>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">

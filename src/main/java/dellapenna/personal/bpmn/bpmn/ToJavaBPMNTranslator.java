@@ -171,12 +171,22 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 + "\nObject " + v.getName() + "=null"
                 )
                 .collect(Collectors.joining(";\n", "\n\n//Input Variables\n", ";\n\n"));
+
+        String messages = process.getMessages().stream()
+                .sorted((m1, m2) -> m1.getName().compareTo(m2.getName()))
+                .map(m -> "private static class " + "Message_" + m.getName() + " implements " + EXECUTILEXPRESSION + ".Message {"
+                + m.getParts().stream()
+                        .sorted((p1, p2) -> p1.compareTo(p2))
+                        .map(p -> "\nObject " + p + "=null;"
+                        ).collect(Collectors.joining(";\n"))
+                + "}").collect(Collectors.joining(";\n", "\n\n//Messages\n", ";\n\n"));
         String functions = process.getFunctions().values().stream()
                 .flatMap(fc -> fc.values().stream())
                 .sorted((fd1, fd2) -> fd1.name().compareTo(fd2.name()))
                 .map(fd -> generateFunctionSource(fd))
                 .collect(Collectors.joining("\n\n", "\n\n//Process Dynamics\n", "\n\n"));
         //return " class bpmn_process_" + sanitizeName(process.getName()) + " { "
+
         return """
                /*
                 * ****************************** Process Code *************************
@@ -185,6 +195,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 + " class " + sanitizeName(process.getName()) + " { "
                 + input_variables
                 + global_variables
+                + messages
                 + functions
                 + generateProcessInitSource(process, info)
                 + generateProcessGlobalAssertionsSource(process, info)
@@ -335,14 +346,33 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateSendTaskCode(BPMNDecodedProcess p, SendTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
-        String channel = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "taskHeaders")
+        String channel_name = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "taskHeaders")
                 .getDomElement().getChildElementsByNameNs(ZEEBENS, "header").stream()
                 .filter(e -> "channel".equals(e.getAttribute("key")))
                 .map(e -> e.getAttribute("value"))
                 .findAny().orElse(null);
+        String message_name = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "taskHeaders")
+                .getDomElement().getChildElementsByNameNs(ZEEBENS, "header").stream()
+                .filter(e -> "message".equals(e.getAttribute("key")))
+                .map(e -> e.getAttribute("value"))
+                .findAny().orElse(null);
 
-        code.append(generateDebugOutputStament("\t SENDING message on channel " + channel));
-        code.append(EXECUTILEXPRESSION + ".sendMessage(s,\"" + channel + "\",true)");
+        MessageDefinition message = p.registerProcessMessage(message_name);
+        code.append("Message_" + message.getName() + " m = new " + "Message_" + message.getName() + "()");
+
+        ModelElementInstance ioMapping = t.getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "ioMapping");
+        if (ioMapping != null) {
+            ioMapping.getDomElement().getChildElementsByNameNs(ZEEBENS, "input").stream().forEach(e -> {
+                String part_name = e.getAttribute("target");
+                message.getParts().add(part_name);
+                FeelTranslationInfo v_f_info = new FeelTranslationInfo();
+                String assigned_expression = e.getAttribute("source").substring(1);
+                code.append("m." + part_name + " = " + feel.translateChecked(assigned_expression, v_f_info));
+                p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, t.getId(), assigned_expression);
+            });
+        }
+        code.append(generateDebugOutputStament("\t SENDING message on channel " + channel_name));
+        code.append(EXECUTILEXPRESSION + ".sendMessage(s,\"" + channel_name + "\",m)");
 
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
@@ -351,17 +381,20 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateReceiveTaskCode(BPMNDecodedProcess p, ReceiveTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
-        String channel = t.getMessage().getName();
-        String correlationKey = t.getMessage().getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "subscription")
+        String channel_name = t.getMessage().getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "subscription")
                 .getAttributeValue("correlationKey").substring(1);
+        String message_name = t.getMessage().getName();
 
-        if (!correlationKey.equalsIgnoreCase("passthrough")) {
-            code.append(generateDebugOutputStament("\t RECEIVING message on channel " + channel));
-            code.append(EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel + "\")");
+        if (!message_name.equalsIgnoreCase("passthrough")) {
+            //MessageDefinition message = p.registerProcessMessage(message_name);
+            code.append(generateDebugOutputStament("\t RECEIVING message on channel " + channel_name));
+            code.append("Message_" + message_name + " receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\")");
         } else {
-            code.append(generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel));
+            code.append(generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel_name));
         }
-        //bisogna mappare i dati del messaggio nel codice?        
+
+        code.append(generateOutputAssignmentsCode(p, t, List.of("receivedMessage"), info));
+
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
