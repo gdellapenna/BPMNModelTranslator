@@ -153,8 +153,13 @@ class Shipment {
 // WRITTEN: Activity_1ol43bw
     Object sMode = null;
 
+//Messages
+    ;
+
+
+
 //Process Dynamics
-    public void EVENT_Event_06urgzi_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//End Event undefined length [Event_06urgzi]
+public void EVENT_Event_06urgzi_undefined_length(BPMNExecProcessUtils.ProcessStatus s) {//End Event undefined length [Event_06urgzi]
         BPMNExecProcessUtils.debugOutput(s, "End Event undefined length [Event_06urgzi]");
         BPMNExecProcessUtils.logCurrentNode("Event_06urgzi", "undefined length");
         BPMNExecProcessUtils.error(s, "Undefined Length", 1);

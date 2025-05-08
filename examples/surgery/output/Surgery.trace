@@ -1,0 +1,17 @@
+Event_1dd675w[]
+"Event_1dd675w" -> "Activity_0do0700"
+Activity_0do0700[label="User Info"]
+"Activity_0do0700" -> "Activity_1mbfbnv"
+Activity_1mbfbnv[label="Parient Admission"]
+"Activity_1mbfbnv" -> "Gateway_1hwej0w"
+Gateway_1hwej0w[label="Triage"]
+"Gateway_1hwej0w" -> "Activity_1qr375k"
+Activity_1qr375k[label="Insert into surgeon waiting list"]
+"Activity_1qr375k" -> "Activity_0ba89kz"
+Activity_0ba89kz[label="Wait for message from external software"]
+"Activity_0ba89kz" -> "Activity_1o5csdt"
+Activity_1o5csdt[label="Pre-Anesthesic evaluation"]
+"Activity_1o5csdt" -> "Gateway_01rw5bk"
+Gateway_01rw5bk[label="Patient sent back 1"]
+"Gateway_01rw5bk" -> "Event_0tlco0q"
+Event_0tlco0q[label="Return to ward (exception)"]

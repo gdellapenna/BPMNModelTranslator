@@ -318,6 +318,10 @@ class Surgery {
 // WRITTEN: Activity_1b92j4u
     Object PreAnesthesicReEvaluation = null;
 
+//Messages
+    private static class Message_addPatient implements BPMNExecProcessUtils.Message {
+    };
+
 //Process Dynamics
     public void EVENT_Event_01gw6pd_Return_to_ward__success_(BPMNExecProcessUtils.ProcessStatus s) {//End Event Return to ward (success) [Event_01gw6pd]
         BPMNExecProcessUtils.debugOutput(s, "End Event Return to ward (success) [Event_01gw6pd]");
@@ -434,7 +438,7 @@ class Surgery {
     public void TASK_Activity_0ba89kz_Wait_for_message_from_external_software(BPMNExecProcessUtils.ProcessStatus s) {//Receive Task Wait for message from external software [Activity_0ba89kz]
         BPMNExecProcessUtils.debugOutput(s, "Receive Task Wait for message from external software [Activity_0ba89kz]");
         BPMNExecProcessUtils.logCurrentNode("Activity_0ba89kz", "Wait for message from external software");
-        BPMNExecProcessUtils.debugOutput(s, "	 ASSUMING RECEPTION of message on channel SystemContinueMessages");
+        BPMNExecProcessUtils.debugOutput(s, "	 ASSUMING RECEPTION of message on channel SurgeonListMessages");
 //[outgoing edge] Activity_1o5csdt - Pre-Anesthesic evaluation
         BPMNExecProcessUtils.logTransition("Activity_0ba89kz", "Activity_1o5csdt");
         TASK_Activity_1o5csdt_Pre_Anesthesic_evaluation(s.withCurrent("Activity_0ba89kz"));
@@ -566,8 +570,9 @@ class Surgery {
     public void TASK_Activity_1qr375k_Insert_into_surgeon_waiting_list(BPMNExecProcessUtils.ProcessStatus s) {//Send Task Insert into surgeon waiting list [Activity_1qr375k]
         BPMNExecProcessUtils.debugOutput(s, "Send Task Insert into surgeon waiting list [Activity_1qr375k]");
         BPMNExecProcessUtils.logCurrentNode("Activity_1qr375k", "Insert into surgeon waiting list");
+        Message_addPatient m = new Message_addPatient();
         BPMNExecProcessUtils.debugOutput(s, "	 SENDING message on channel SurgeonListMessages");
-        BPMNExecProcessUtils.sendMessage(s, "SurgeonListMessages", true);
+        BPMNExecProcessUtils.sendMessage(s, "SurgeonListMessages", m);
 //[outgoing edge] Activity_0ba89kz - Wait for message from external software
         BPMNExecProcessUtils.logTransition("Activity_1qr375k", "Activity_0ba89kz");
         TASK_Activity_0ba89kz_Wait_for_message_from_external_software(s.withCurrent("Activity_1qr375k"));
