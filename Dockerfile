@@ -20,6 +20,5 @@ COPY ./BDTest/main.sh /usr/app/
 
 WORKDIR /usr/app
 
-#ENTRYPOINT ["java", "-jar", "BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar" ]
 ENTRYPOINT ["bash", "main.sh"]
 
