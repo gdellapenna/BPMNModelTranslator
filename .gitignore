@@ -26,7 +26,7 @@ target/
 src/test/
 *.bak
 
-edges_coverage.txt
-nodes_coverage.txt
-/examples/*/translation_output
-/examples/*/logs
+**/edges_coverage.txt
+**/nodes_coverage.txt
+/examples/**/translation_output/
+/examples/**/logs/
