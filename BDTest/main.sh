@@ -10,6 +10,7 @@ edges_coverage_def="0.95"
 stop_type_def="errors"
 continue_from_before_def=0
 only_gen_java_def=0
+override_vars_def=""
 
 dir_res=/usr/app/res
 dir_tmp=/usr/app/tmp
@@ -21,7 +22,7 @@ echo $*
 
 function usage ()
 {
-    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, both_coverage, nodes_coverage, edges_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, both_coverage or nodes_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, both_coverage or edges_coverage): '$edges_coverage_def'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.txt), continue from that point\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n", $1);}'
+    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-O override_vars_file] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, both_coverage, nodes_coverage, edges_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, both_coverage or nodes_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, both_coverage or edges_coverage): '$edges_coverage_def'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.md), continue from that point\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n\toverride_vars_file must be of the same format of inputs.properties file\n\nAll input files must be in the directory chosen for the results\n\n\n", $1);}'
     exit 1
 }
 
@@ -37,8 +38,9 @@ stop_type=$stop_type_def
 continue_from_before=$continue_from_before_def
 only_gen_java=$only_gen_java_def
 N=$N_def
+override_vars=$override_vars_def
 h=0
-while getopts :hCvN:e:d:m:M:E:t:D:T:s:n:c: OPT
+while getopts :hCvN:e:d:m:M:E:t:D:T:s:n:c:O: OPT
 do
   case "$OPT" in
     C)
@@ -77,6 +79,9 @@ do
     c)
       nodes_coverage=$OPTARG
       ;;
+    O)
+      override_vars=$OPTARG
+      ;;
     h)
       h=1
       ;;
@@ -109,6 +114,11 @@ do
     dmn_input_files=$dmn_input_files" "$dir_res/$1
     shift 1
 done
+if [ "${override_vars}" ]
+then
+    override_vars=$dir_res/$override_vars
+    test -f $override_vars || { echo `basename $override_vars` does not exist inside directory $dir_res; exit; }
+fi
 
 for file in $bpmn_input_file $dmn_input_files
 do
@@ -121,14 +131,14 @@ function init_all ()
     local output_name=`grep bpmn:process $bpmn_input_file | awk '{for (i = 1; i <= NF; i++) {if (substr($i, 1, 3) == "id=") {split($i, a, "\""); print a[2]}}}'`
     cp $bpmn_input_file $dmn_input_files $dir_tmp
     local inputs=`basename $bpmn_input_file`
-    inputs=$inputs" "`ls -1 $dir_tmp/*.dmn | awk -F/ '{print $NF}' | tr "\n" " "`
+    inputs=$inputs" "`ls -1 $dir_tmp/*.dmn 2> /dev/null | awk -F/ '{print $NF}' | tr "\n" " "`
     pushd $dir_tmp > /dev/null 2>&1
     ln -s $JAR
-    $JAVA  -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $inputs > $dir_res/init.log 2>&1
+    $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $inputs > $dir_res/init.log 2>&1
     popd > /dev/null 2>&1
     test -f $dir_tmp/${output_name}_inputs.properties || { echo Generation failed, $dir_tmp/${output_name}_inputs.properties does not exist; exit; }
     mkdir -p $dir_res/translation_output
-    cp $dir_tmp/${output_name}.java $dir_tmp/${output_name}.jar $dir_tmp/${output_name}_inputs.properties $dir_res/translation_output
+    cp $dir_tmp/${output_name}.java $dir_tmp/${output_name}.jar $dir_tmp/${output_name}_inputs.properties $dir_tmp/$output_name.graph $dir_res/translation_output
     echo ${output_name}
 }
 
@@ -147,42 +157,61 @@ function run ()
     cp $JAR .
     ln -s ../$output_name.* .
     timeout $int_timeout $JAVA  -jar ./$output_name.jar > $dir_res/logs/$t/exec.log 2>&1
-    cp $dir_tmp/exec/*output* $dir_tmp/exec/*trace $dir_res/logs/$t
+    res=$?
+    cp $dir_tmp/exec/*output* $dir_tmp/exec/*trace $dir_res/logs/$t 2> /dev/null
+    return $res
 }
 
 function gen_curr_input ()
 {
     local prop_file=$1
     local output_file=$2
+    local override_vars=$3
     python3 > $output_file <<EOF
 import random
 
-content="""`cat $prop_file`""".split("\n")
+content = """`cat $prop_file`""".split("\n")
+content_overr = """`test "$override_vars" && cat $override_vars`""".split("\n")
+content_overr_ar = {}
+for i in range(len(content_overr)):
+  if i%2 == 0:
+    save = content_overr[i].split("=")[0]
+  else:
+    content_overr_ar[save] = content_overr[i]
 for i in range(len(content)):
   if i%2 == 0:
     save = content[i].split("=")[0]
   else:
-    if content[i].split(":")[0] == "#ENUM":
-      print(save + "=" + str(random.choice(content[i].split(": ")[1].split(","))))
-    elif content[i].split(":")[0] == "#MIN":
-      min_ch = float(content[i].split()[1])
-      incl_mm = [content[i].split()[2] == "inclusive"]
-      if " / MAX" in content[i]:
-        max_ch = float(content[i].split()[5])
-        incl_mm += [content[i].split()[6] == "inclusive"]
+    if content[i] == "#" and (save in content_overr_ar):
+      type_str = content_overr_ar[save]
+    else:
+      type_str = content[i]
+    if type_str.split(":")[0] == "#ENUM":
+      print(save + "=" + str(random.choice(type_str.split(": ")[1].split(","))))
+      print(type_str)
+    elif type_str.split(":")[0] == "#MIN":
+      min_ch = float(type_str.split()[1])
+      incl_mm = [type_str.split()[2] == "INCLUSIVE"]
+      if " / MAX" in type_str:
+        max_ch = float(type_str.split()[5])
+        incl_mm += [type_str.split()[6] == "INCLUSIVE"]
       else:
         max_ch = float($max_float)
         incl_mm += [True]
       if min_ch != max_ch:
         print(save + "=" + str(random.uniform(min_ch + ($min_eps if incl_mm[0] else 0), max_ch + ($min_eps if incl_mm[1] else 0))))
       else:
-        val = float(content[i].split()[1])
+        val = float(type_str.split()[1])
         choices = [val]
         choices += [random.uniform($min_float, val - $min_eps)]
         choices += [random.uniform(val + $min_eps, $max_float)]
         print(save + "=" + str(random.choice(choices)))
-    print(content[i])
+      print(type_str)
+    else:
+      print("Unable to determine values for " + str(save))
 EOF
+    grep -q "Unable to determine values for " $output_file
+    return $?
 }
 
 #sets nodes, labels, edges, num_nodes, num_edges
@@ -255,6 +284,7 @@ else
     M=$N
 fi
 echo Maximum number of iterations to be done: $M
+echo Simply create a "(empty)" file named stop inside your examples directory if you want to abort the verification
 for ((t = 1; t <= M; t++))
 do
     echo Iteration $t
@@ -262,14 +292,20 @@ do
     then
 	rm -fr $dir_res/logs/$t
 	mkdir -p $dir_res/logs/$t
-	gen_curr_input $prop_file $dir_res/logs/$t/${bpmn}_inputs.properties
+	gen_curr_input $prop_file $dir_res/logs/$t/${bpmn}_inputs.properties $override_vars && { cat $dir_res/logs/$t/${bpmn}_inputs.properties; exit; }
 	run $t $bpmn $dir_res $dir_res/logs/$t/${bpmn}_inputs.properties $bpmn
+	last_res=$?
     fi
     update_arrays $dir_res/logs/$t/$bpmn.trace
     covs=`update_coverage $dir_res $num_nodes $num_edges`
     if [ "$stop_type" == "errors" ]
     then
-	grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties || { echo exiting because an error has been reached; break; }
+	if [ -f $dir_res/logs/$t/${bpmn}_outputs.properties ]
+	then
+	    grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties || { echo exiting because an error has been reached; break; }
+	else
+	    echo $last_res | awk '{printf("Warning: execution '$dir_res/logs/$t' failed %s\n", $1 == 124? "for timeout" : "with exit code"$1)}'
+	fi
     else
 	if [ "$stop_type" == "both_coverage" ]
 	then
