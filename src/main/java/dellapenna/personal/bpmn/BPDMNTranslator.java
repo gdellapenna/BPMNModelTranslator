@@ -35,6 +35,8 @@ import org.camunda.bpm.model.dmn.DmnModelInstance;
  */
 public class BPDMNTranslator {
 
+    private static final OutputManager outlog = new OutputManager();
+
     public static class GenerationInfo {
 
         public BPMNDecodedModel bpmn;
@@ -101,17 +103,8 @@ public class BPDMNTranslator {
             d_info = new DMNTranslationInfo();
         }
         DmnModelInstance dmnInstance = Dmn.readModelFromFile(dmn_file.toFile());
-        System.out.println("decoding DMN model " + dmn_file);
+        outlog.emit(0, "Translator", "decoding DMN model " + dmn_file);
         DMNDecodedModel<String> dmn = dt.decodeDecisionModel(dmnInstance, d_info);
-//        for (DMNDecodedTable<String> table : dmn.tables().values()) {
-//            String tableClassName = sanitizeName("dmn_dtable_" + table.id());
-//            Path output_java_file = dmn_file.toAbsolutePath().getParent().resolve(tableClassName + ".java");
-//            outputJava.write(PRE_CODE);
-//            outputJava.newLine();
-//            outputJava.newLine();
-//            outputJava.write(dt.generateDecisionTableSource(table, d_info));
-//            outputJava.write(POST_CODE);
-//        }
         return dmn;
     }
 
@@ -126,11 +119,11 @@ public class BPDMNTranslator {
         //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
 
         BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
-        System.out.println("decoding BPMN model " + bpmn_file);
+        outlog.emit(0, "Translator", "decoding BPMN model " + bpmn_file);
         return bt.decodeBpmn(bpmnInstance, dmns, b_info);
     }
 
-    public List<GenerationInfo> compile_inputs(Path output_folder, Path... files) throws IOException, FeelTranslatorException, BpmnTranslatorException, Exception {
+    public List<GenerationInfo> compile_inputs(Path output_folder, BPMNTranslationInfo t_info, Path... files) throws IOException, BDTransException {
         List<Path> dmn_files = new ArrayList<>();
         List<Path> bpmn_files = new ArrayList<>();
         List<GenerationInfo> generated_code = new ArrayList<>();
@@ -142,7 +135,7 @@ public class BPDMNTranslator {
                 case BPMN ->
                     bpmn_files.add(file);
                 default ->
-                    throw new Exception("Unknown file type: " + file.toString());
+                    throw new BDTransException("Unknown file type: " + file.toString());
             }
         }
 
@@ -157,10 +150,11 @@ public class BPDMNTranslator {
         BPMNDecodedModel[] bpmns = new BPMNDecodedModel[bpmn_files.size()];
         for (int i = 0; i < bpmn_files.size(); ++i) {
             Path bpmn_file = bpmn_files.get(i);
-            BPMNTranslationInfo b_info = new BPMNTranslationInfo();
-            b_info.setDebug(true);
-            b_info.setTrueParallel(true);
+            BPMNTranslationInfo b_info = new BPMNTranslationInfo(t_info);
+            //b_info.setDebug(true);
+            //b_info.setTrueParallel(true);
             //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
+            //b_info.addForcedInputVariable("a");
             bpmns[i] = compile_bpmn(bpmn_file, dmns, b_info);
             for (BPMNDecodedProcess process : bpmns[i].processes()) {
                 GenerationInfo gen_info = new GenerationInfo();

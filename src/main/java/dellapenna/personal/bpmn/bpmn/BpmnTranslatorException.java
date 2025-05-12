@@ -1,14 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dellapenna.personal.bpmn.bpmn;
+
+import dellapenna.personal.bpmn.BDTransException;
 
 /**
  *
  * @author giuse
  */
-public class BpmnTranslatorException extends Exception {
+public class BpmnTranslatorException extends BDTransException {
 
     public BpmnTranslatorException(String message) {
         super(message);

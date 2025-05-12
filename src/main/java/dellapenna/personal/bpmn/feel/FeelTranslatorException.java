@@ -1,14 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package dellapenna.personal.bpmn.feel;
+
+import dellapenna.personal.bpmn.BDTransException;
 
 /**
  *
  * @author giuse
  */
-public class FeelTranslatorException extends Exception {
+public class FeelTranslatorException extends BDTransException {
 
     public FeelTranslatorException(String message) {
         super(message);

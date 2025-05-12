@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class VariableDefinition {
@@ -144,5 +145,33 @@ public class VariableDefinition {
         this.usages.put(VariableDirection.WRITE, new HashSet<>());
         this.name = name;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 73 * hash + Objects.hashCode(this.name);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final VariableDefinition other = (VariableDefinition) obj;
+        return Objects.equals(this.name, other.name);
+    }
+
+  
+
+    
+    
+    
 
 }

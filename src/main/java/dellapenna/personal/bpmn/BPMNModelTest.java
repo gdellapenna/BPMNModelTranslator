@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn;
 
+import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.FeelTranslator;
@@ -50,7 +51,7 @@ public class BPMNModelTest {
     public static void main(String[] args) throws FeelTranslatorException, IOException, BpmnTranslatorException, Exception {
 
         BPDMNTranslator t = new BPDMNTranslator();
-        
+
         Path output_folder = Paths.get(".").toAbsolutePath().normalize();
 
 //        t.compile_inputs(output_folder,Path.of("surgery_tables.dmn"), Path.of("Surgery.bpmn"));
@@ -66,7 +67,10 @@ public class BPMNModelTest {
 //        t.compile_inputs(output_folder,Path.of("Events.bpmn"));
 //        t.compile_inputs(output_folder,Path.of("Parallel1Err.bpmn"));
 //        
-        t.compile_inputs(output_folder,Path.of("Simple_Message.bpmn"));
+        BPMNTranslationInfo t_info = new BPMNTranslationInfo();
+        t_info.setTrueParallel(true);
+        t_info.setDebug(true);
+        t.compile_inputs(output_folder, t_info, Path.of("Simple_Message.bpmn"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));

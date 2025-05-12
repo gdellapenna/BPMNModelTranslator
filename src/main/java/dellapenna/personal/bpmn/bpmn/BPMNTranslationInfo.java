@@ -1,6 +1,5 @@
 package dellapenna.personal.bpmn.bpmn;
 
-import dellapenna.personal.bpmn.Pair;
 import dellapenna.personal.bpmn.versim.Assertion;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +16,7 @@ public class BPMNTranslationInfo {
     private String inputsFile;
     private String outputsFile;
     private List<Assertion> globalAssertions;
+    private List<String> forcedInputVariables;
 
     //private final List<VariableDefinition> detectedInputVariables = new ArrayList<>();
     public BPMNTranslationInfo() {
@@ -26,6 +26,7 @@ public class BPMNTranslationInfo {
         inputsFile = "inputs.properties";
         outputsFile = "outputs.properties";
         globalAssertions = new ArrayList<>();
+        forcedInputVariables = new ArrayList<>();
     }
 
     public BPMNTranslationInfo(BPMNTranslationInfo other) {
@@ -34,6 +35,7 @@ public class BPMNTranslationInfo {
         this.inputsFile = other.inputsFile;
         this.outputsFile = other.outputsFile;
         this.globalAssertions = other.globalAssertions;
+        this.forcedInputVariables = other.forcedInputVariables;
     }
 
     public boolean isDebug() {
@@ -85,6 +87,14 @@ public class BPMNTranslationInfo {
 
     public List<Assertion> getGlobalAssertions() {
         return globalAssertions;
+    }
+
+    public void addForcedInputVariable(String variable) {
+        forcedInputVariables.add(variable);
+    }
+
+    public List<String> getForcedInputVariables() {
+        return forcedInputVariables;
     }
 
 }

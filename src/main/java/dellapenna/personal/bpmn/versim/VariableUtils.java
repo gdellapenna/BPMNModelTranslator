@@ -95,17 +95,7 @@ public class VariableUtils {
     public void extractVariableCostraint(String variable_expression, VariableDefinition v) throws FeelTranslatorException {
         if (!variable_expression.isBlank()) {
             Exp exp = ft.parse(variable_expression);
-            //System.out.println(exp.getClass().getName());
             if (exp instanceof Comparison c) {
-//                System.err.println(v.getName());
-//                System.err.println(variable_expression);
-//                System.err.println(c.x().getClass());
-//                System.err.println(c.y().getClass());
-//                if (c.x() instanceof Ref r) {
-//                    System.err.println(String.join(".", scala.collection.JavaConverters.asJava(r.names())));
-//                    System.err.println(String.join(".",scala.collection.JavaConverters.asJava(r.names())).equals(v.getName()));
-//                }
-
                 boolean inverse = false;
                 Exp compared_expression = null;
                 if (c.x() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
@@ -218,7 +208,7 @@ public class VariableUtils {
     }
 
     public void analyzeInputConstraints(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-        process.getFreeVariables().stream().forEach(v -> {
+        process.getFreeVariables(info).stream().forEach(v -> {
             analyzeInputConstraints(v, dmns, info);
         });
     }

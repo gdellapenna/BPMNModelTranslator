@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.camunda.bpm.model.bpmn.instance.Event;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.Gateway;
@@ -14,38 +15,38 @@ import org.camunda.bpm.model.bpmn.instance.Task;
  * @author giuse
  */
 public class BPMNDecodedProcess {
-
+    
     public enum NodeProcedureType {
         GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
     };
-
+    
     public enum VariableDirection {
         READ, WRITE, READWRITE
     };
-
+    
     public static class FlowNodeInfo {
-
+        
         FunctionDefinition generatedProcedure;
         List<FlowNode> outgoingEdges;
-
+        
         public FlowNodeInfo(FunctionDefinition generatedProcedure) {
             this.generatedProcedure = generatedProcedure;
             this.outgoingEdges = new ArrayList<>();
         }
-
+        
         public FunctionDefinition getGeneratedProcedure() {
             return generatedProcedure;
         }
-
+        
         public void setGeneratedProcedure(FunctionDefinition generatedProcedure) {
             this.generatedProcedure = generatedProcedure;
         }
-
+        
         public List<FlowNode> getOutgoingEdges() {
             return outgoingEdges;
         }
     }
-
+    
     private final String name;
     private final List<BPMNDecodedFlow> rawFlows = new ArrayList<>();
     private final Map<NodeProcedureType, Map<String, FunctionDefinition>> functions = new HashMap<>();
@@ -55,7 +56,7 @@ public class BPMNDecodedProcess {
 
     //private final Map<String, Map<VariableDirection, List<String>>> variableUsages = new HashMap<>();
     private final List<String> startEventFlowNames = new ArrayList<>();
-
+    
     public String getFlowName(FlowNode start) {
         //return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
         NodeProcedureType type = switch (start) {
@@ -71,57 +72,66 @@ public class BPMNDecodedProcess {
         //return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
         return type.toString() + "_" + start.getId() + (start.getName() != null && !start.getName().isBlank() ? "_" + start.getName() : "");
     }
-
+    
     public BPMNDecodedProcess(String name) {
         this.name = name;
         //this.processVariables.put(VariableDirection.READ, new HashMap<>());
         //this.processVariables.put(VariableDirection.WRITE, new HashMap<>());
     }
-
+    
     public Map<NodeProcedureType, Map<String, FunctionDefinition>> getFunctions() {
         return this.functions;
     }
-
+    
     public List<MessageDefinition> getMessages() {
         return this.processMessages;
     }
-
-    public List<VariableDefinition> getReadVariables() {
+    
+    private List<VariableDefinition> getReadVariables(BPMNTranslationInfo info) {
         return this.processVariables.stream()
                 .filter(v -> v.isRead())
                 .toList();
     }
 
     //written variables are automatically created at global scope
-    public List<VariableDefinition> getWrittenVariables() {
+    private List<VariableDefinition> getWrittenVariables(BPMNTranslationInfo info) {
         return this.processVariables.stream()
                 .filter(v -> v.isWritten())
                 .toList();
     }
 
-    //read but never written
-    public List<VariableDefinition> getFreeVariables() {
-        List<String> writtenVariableNames = getWrittenVariables().stream().map(v -> v.getName()).toList();
-        return getReadVariables().stream()
+    //forced or read but never written
+    public List<VariableDefinition> getFreeVariables(BPMNTranslationInfo info) {
+        List<String> writtenVariableNames = getWrittenVariables(info).stream().map(v -> v.getName()).toList();
+        return getReadVariables(info).stream()
                 .filter(v -> {
                     String wv = "";
                     String[] wvss = v.getName().split("\\.");
                     for (String wvs : wvss) {
                         wv += wvs;
-                        if (writtenVariableNames.contains(wv)) {
+                        if (writtenVariableNames.contains(wv) && !info.getForcedInputVariables().contains(wv)) {
                             return false;
                         }
                     }
                     return true;
                 }
                 ).toList();
-
     }
 
+    //not forced and written
+    public List<VariableDefinition> getBoundVariables(BPMNTranslationInfo info) {
+        //miggliorare per prendere in considerazione anche le dot expressions come per free?
+        List<VariableDefinition> writtenVariables = getWrittenVariables(info);
+        List<VariableDefinition> boundVariables = new ArrayList<>(writtenVariables);
+        return boundVariables.stream().filter(v
+                -> !info.getForcedInputVariables().contains(v.getName())
+        ).toList();
+    }
+    
     public List<String> getStartEventFlowNames() {
         return this.startEventFlowNames;
     }
-
+    
     public MessageDefinition registerProcessMessage(String name) {
         MessageDefinition g = processMessages.stream().filter(v -> v.getName().equals(name)).findFirst().orElse(null);
         if (g == null) {
@@ -147,7 +157,7 @@ public class BPMNDecodedProcess {
         }
         return g;
     }
-
+    
     public VariableDefinition registerProcessVariables(List names, VariableDirection d, String sourceId, String sourceExpression) {
         VariableDefinition v = null;
         for (Object composite_name : names) {
@@ -221,7 +231,7 @@ public class BPMNDecodedProcess {
         }
         return registerFunction(name, code, parameters, "void", type);
     }
-
+    
     public void registerNodeProcedure(FlowNode node, Code code) {
         NodeProcedureType type = switch (node) {
             case Gateway g ->
@@ -236,30 +246,30 @@ public class BPMNDecodedProcess {
         //TODO questa espressione deve essere indipendente da ToJavaBPMNTranslator
         FunctionDefinition p = registerProcedure(getFlowName(node), code, Map.of("s", ToJavaBPMNTranslator.EXECUTILEXPRESSION + ".ProcessStatus"), type);
         registerDecodedNode(node, p);
-
+        
     }
-
+    
     public void registerStartEventFlowName(String name) {
         this.startEventFlowNames.add(name);
     }
-
+    
     public void registerDecodedEdge(FlowNode source, FlowNode target) {
         registerDecodedNode(source);
         registerDecodedNode(target);
         processGraphMap.get(source).getOutgoingEdges().add(target);
     }
-
+    
     public void registerDecodedNode(FlowNode node) {
         if (!processGraphMap.containsKey(node)) {
             processGraphMap.put(node, new FlowNodeInfo(null));
         }
     }
-
+    
     public void registerDecodedNode(FlowNode node, FunctionDefinition p) {
         registerDecodedNode(node);
         processGraphMap.get(node).setGeneratedProcedure(p);
     }
-
+    
     public Map<FlowNode, FlowNodeInfo> getGraph() {
         return processGraphMap;
     }

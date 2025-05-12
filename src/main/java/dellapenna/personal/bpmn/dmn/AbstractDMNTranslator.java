@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn.dmn;
 
+import dellapenna.personal.bpmn.OutputManager;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -21,6 +22,8 @@ import org.camunda.bpm.model.dmn.instance.Rule;
  * @param <T>
  */
 public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
+    
+    private static final OutputManager outlog = new OutputManager();
 
     protected String sanitizeName(String n) {
         return n.replaceAll("[^A-Za-z0-9_]", "_");
@@ -87,7 +90,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         Map<String, DMNDecodedTable<T>> tables = new HashMap<>();
         Collection<DecisionTable> raw_tables = dmn.getModelElementsByType(DecisionTable.class);
         for (DecisionTable t : raw_tables) {
-            System.out.println("decoding desition table " + t.getId());
+            outlog.emit(1,"DMN Translator","decoding decision table " + t.getId());
             tables.put(t.getId(), decodeDecisionTable(t, info));
         }
         return new DMNDecodedModel(dmn.getDocumentElement().getAttributeValue("id"), tables);

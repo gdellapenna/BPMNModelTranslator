@@ -12,6 +12,7 @@ non parallel flow splits
 3) when the liear flow decoding reached a parallel join gw, in some way we must preepend the wait to the joined flow (getOutgoing?)  code
 
  */
+import dellapenna.personal.bpmn.OutputManager;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.ArrayDeque;
@@ -49,6 +50,8 @@ import org.camunda.bpm.model.bpmn.instance.UserTask;
  * @param
  */
 public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
+    
+    private static final OutputManager outlog = new OutputManager();
 
     Set<FlowNode> generated_flows = new HashSet<>();
     Deque<FlowNode> flows_to_translate = new ArrayDeque<>();
@@ -179,7 +182,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
 
     private BPMNDecodedNode decodeNode(BPMNDecodedProcess p, FlowNode n, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException {
         BPMNDecodedNode result;
-        System.out.println("decoding node " + n.getId());
+        outlog.emit(1,"BPMN Translator","decoding node " + n.getId());
         switch (n) {
             case org.camunda.bpm.model.bpmn.instance.Event t -> {
                 result = decodeEventNode(p, t, info);

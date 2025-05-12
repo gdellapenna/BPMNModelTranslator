@@ -45,7 +45,7 @@ public class ToJavaMainMaker {
                 */
                """;
         VariableUtils vu = new VariableUtils();
-        for (VariableDefinition v : process.getFreeVariables()) {
+        for (VariableDefinition v : process.getFreeVariables(info)) {
             vu.analyzeInputConstraints(v, dmns, info);
             result += "//" + v.getName() + ":" + v.getBounds() + "\n";
         }
@@ -55,7 +55,7 @@ public class ToJavaMainMaker {
     public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         String result = "";
         VariableUtils vu = new VariableUtils();
-        for (VariableDefinition v : process.getFreeVariables()) {
+        for (VariableDefinition v : process.getFreeVariables(info)) {
             vu.analyzeInputConstraints(v, dmns, info);
             String value = "?";
             if (v.getBounds().getCases() != null && !v.getBounds().getCases().isEmpty()) {
