@@ -18,11 +18,11 @@ public class BPMNTranslationInfo {
     private List<Assertion> globalAssertions;
     private List<String> forcedInputVariables;
 
-    //private final List<VariableDefinition> detectedInputVariables = new ArrayList<>();
+    
     public BPMNTranslationInfo() {
         debug = false;
         trace = true;
-        trueParallel = false;
+        trueParallel = true;
         inputsFile = "inputs.properties";
         outputsFile = "outputs.properties";
         globalAssertions = new ArrayList<>();
@@ -30,12 +30,14 @@ public class BPMNTranslationInfo {
     }
 
     public BPMNTranslationInfo(BPMNTranslationInfo other) {
+        this();
         this.debug = other.debug;
+        this.trace = other.trace;
         this.trueParallel = other.trueParallel;
         this.inputsFile = other.inputsFile;
         this.outputsFile = other.outputsFile;
-        this.globalAssertions = other.globalAssertions;
-        this.forcedInputVariables = other.forcedInputVariables;
+        this.globalAssertions = new ArrayList<>(other.globalAssertions);
+        this.forcedInputVariables = new ArrayList<>(other.forcedInputVariables);
     }
 
     public boolean isDebug() {

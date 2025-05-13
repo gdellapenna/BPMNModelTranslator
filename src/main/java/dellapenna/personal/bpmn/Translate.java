@@ -66,7 +66,7 @@ public class Translate {
                 if (compiler != null) {
                     //outlog.emit(2, "Compiler", "using " + compiler.description());
                     compiler.run(System.out, System.err, target_java.toString());
-                    outlog.emit(1, "Compiler", "creating jar file "+output_jar_file);
+                    outlog.emit(1, "Compiler", "creating jar file " + output_jar_file);
                     JarTool tool = new JarTool();
                     tool.startManifest();
                     tool.addToManifest("Main-Class", cn);
@@ -112,11 +112,14 @@ public class Translate {
                 .valueSeparator(',')
                 .desc("Force input variables")
                 .build());
-        options.addOption(Option.builder("sp")
+        options.addOption(Option.builder("np")
                 .desc("Use sequentialized parallel")
                 .build());
         options.addOption(Option.builder("nd")
                 .desc("Disable debug messages in generated java process")
+                .build());
+        options.addOption(Option.builder("nt")
+                .desc("Disable run trace creation in generated java process")
                 .build());
     }
 
@@ -138,6 +141,10 @@ public class Translate {
                 t_info.setDebug(!cmd.hasOption("nd"));
                 if (t_info.isDebug()) {
                     outlog.emit(0, "CommandLine", "java debug mode enabled");
+                } 
+                t_info.setTrace(!cmd.hasOption("nt"));
+                if (t_info.isTrace()) {
+                    outlog.emit(0, "CommandLine", "trace generation enabled");
                 }
                 if (cmd.hasOption("fi")) {
                     for (String v : cmd.getOptionValues("fi")) {
