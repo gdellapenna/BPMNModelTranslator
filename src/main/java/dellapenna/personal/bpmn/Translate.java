@@ -108,8 +108,7 @@ public class Translate {
         options = new Options();
         options.addOption(Option.builder("fi")
                 .argName("var_name1,var_name2,...")
-                .hasArgs()
-                .valueSeparator(',')
+                .hasArg()
                 .desc("Force input variables")
                 .build());
         options.addOption(Option.builder("np")
@@ -125,7 +124,7 @@ public class Translate {
 
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("BDTrans", options);
+        formatter.printHelp("BDTrans [<OPTIONS>] <FILES>", options);
     }
 
     public void parseCommandLine(String[] args) {
@@ -147,7 +146,7 @@ public class Translate {
                     outlog.emit(0, "CommandLine", "trace generation enabled");
                 }
                 if (cmd.hasOption("fi")) {
-                    for (String v : cmd.getOptionValues("fi")) {
+                    for (String v : cmd.getOptionValue("fi").split(",")) {
                         t_info.addForcedInputVariable(v);
                     }
                     outlog.emit(0, "CommandLine", "forcing input variables " + t_info.getForcedInputVariables().stream().collect(Collectors.joining(",")));
