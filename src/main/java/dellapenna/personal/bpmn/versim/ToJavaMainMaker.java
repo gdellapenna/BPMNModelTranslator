@@ -1,13 +1,10 @@
 package dellapenna.personal.bpmn.versim;
 
-import dellapenna.personal.bpmn.bpmn.BPMNDecodedModel;
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
-import static dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator.sanitizeName;
 import dellapenna.personal.bpmn.bpmn.VariableDefinition;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 
 /**
@@ -37,21 +34,23 @@ public class ToJavaMainMaker {
 //        return " class Executor" + " { " + mainMethod + "}";
 //    }
 
-    public String generateInputCostraintNotes(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-        String result = """
-                        
-               /*
-                * ****************************** Input Variable Constraints *************************
-                */
-               """;
-        VariableUtils vu = new VariableUtils();
-        for (VariableDefinition v : process.getFreeVariables(info)) {
-            vu.analyzeInputConstraints(v, dmns, info);
-            result += "//" + v.getName() + ":" + v.getBounds() + "\n";
-        }
-        return result;
-    }
+//    public String generateInputCostraintNotes(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+//        String result = """
+//                        
+//               /*
+//                * ****************************** Input Variable Constraints *************************
+//                */
+//               """;
+//        VariableUtils vu = new VariableUtils();
+//        for (VariableDefinition v : process.getFreeVariables(info)) {
+//            vu.analyzeInputConstraints(v, dmns, info);
+//            result += "//" + v.getName() + ":" + v.getBounds() + "\n";
+//        }
+//        return result;
+//    }
 
+    /*
+    //MIGRATE IN BPDMNTranslator
     public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         String result = "";
         VariableUtils vu = new VariableUtils();
@@ -85,5 +84,5 @@ public class ToJavaMainMaker {
 
         return result;
     }
-
+*/
 }

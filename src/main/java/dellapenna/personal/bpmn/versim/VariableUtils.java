@@ -40,7 +40,7 @@ public class VariableUtils {
 
     FeelTranslator<String> ft = new ToJavaFeelTranslator();
 
-    public void decodeVariableCostraint(String condition_expression, VariableDefinition.VariableBounds b) throws FeelTranslatorException {
+    public void decodeDMNVariableCostraint(String condition_expression, VariableDefinition.VariableBounds b) throws FeelTranslatorException {
         if (!condition_expression.isBlank()) {
             Exp exp = ft.parse(condition_expression);
             //System.out.println(exp.getClass().getName());
@@ -92,7 +92,7 @@ public class VariableUtils {
         }
     }
 
-    public void extractVariableCostraint(String variable_expression, VariableDefinition v) throws FeelTranslatorException {
+    public void decodeBPMNVariableConstraint(String variable_expression, VariableDefinition v) throws FeelTranslatorException {
         if (!variable_expression.isBlank()) {
             Exp exp = ft.parse(variable_expression);
             if (exp instanceof Comparison c) {
@@ -189,7 +189,7 @@ public class VariableUtils {
                     //System.out.print(condition_expressions.stream().collect(Collectors.joining(", ")));
                     for (String c : condition_expressions) {
                         try {
-                            decodeVariableCostraint(c, v.getBounds());
+                            decodeDMNVariableCostraint(c, v.getBounds());
                         } catch (FeelTranslatorException ex) {
                             Logger.getLogger(VariableUtils.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -197,7 +197,7 @@ public class VariableUtils {
                 }
             } else {
                 try {
-                    extractVariableCostraint(u.sourceExpression(), v);
+                    decodeBPMNVariableConstraint(u.sourceExpression(), v);
                 } catch (FeelTranslatorException ex) {
                     Logger.getLogger(VariableUtils.class.getName()).log(Level.SEVERE, null, ex);
                 }

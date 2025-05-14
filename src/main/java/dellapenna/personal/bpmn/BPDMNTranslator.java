@@ -5,12 +5,14 @@ import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
+import dellapenna.personal.bpmn.bpmn.VariableDefinition;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslationInfo;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.versim.ToJavaMainMaker;
+import dellapenna.personal.bpmn.versim.VariableUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
@@ -26,6 +29,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import org.camunda.bpm.model.bpmn.Bpmn;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.dmn.Dmn;
 import org.camunda.bpm.model.dmn.DmnModelInstance;
 
@@ -64,7 +68,7 @@ public class BPDMNTranslator {
 
     DMNTranslator<String> dt = new ToJavaDMNTranslator();
     ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
-    ToJavaMainMaker mm = new ToJavaMainMaker();
+    //ToJavaMainMaker mm = new ToJavaMainMaker();
 
     protected String sanitizeName(String n) {
         return n.replaceAll("[^A-Za-z0-9_]", "_");
@@ -178,21 +182,74 @@ public class BPDMNTranslator {
                     outputJava.newLine();
                     outputJava.newLine();
                     outputJava.write(POST_CODE);
+                    //outputJava.write(generateProcessCode(process, dmns, b_info, d_info));
                 }
 
                 //output process inputs
                 try (BufferedWriter outputProperties = new BufferedWriter(new FileWriter(gen_info.output_inputs_file.toFile()))) {
-                    outputProperties.write(mm.generateInputProperties(process, dmns, b_info));
+                    outputProperties.write(/*mm.*/generateInputProperties(process, dmns, b_info));
                 }
 
                 //output process graph
                 try (BufferedWriter outputGraph = new BufferedWriter(new FileWriter(gen_info.output_graph_file.toFile()))) {
-                    outputGraph.write(mm.generateTraceProperties(process, dmns, b_info));
+                    outputGraph.write(/*mm.*/generateProcessGraph(process, dmns, b_info));
                 }
 
                 generated_code.add(gen_info);
             }
         }
         return generated_code;
+    }
+
+    
+    //DA ATTIVARE PREVIA VERIFICA 
+    public String generateProcessCode(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns,
+            BPMNTranslationInfo b_info, DMNTranslationInfo d_info) {
+
+        String result = "";
+        result += PRE_CODE;
+        result += "\n\n";
+        for (int j = 0; j < dmns.length; ++j) {
+            result += dt.generateDecisionModelSource(dmns[j], d_info);
+        }
+        result += "\n";
+        result += bt.generateProcessSource(process, b_info);
+        result += "\n\n";
+        result += POST_CODE;
+        return result;
+    }
+
+    public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        String result = "";
+        VariableUtils vu = new VariableUtils();
+        for (VariableDefinition v : process.getFreeVariables(info)) {
+            vu.analyzeInputConstraints(v, dmns, info);
+            String value = "?";
+            if (v.getBounds().getCases() != null && !v.getBounds().getCases().isEmpty()) {
+                value = v.getBounds().getCases().toArray(new String[0])[0];
+            } else if (v.getBounds().getMin() != null) {
+                value = String.valueOf(v.getBounds().getMin() + (v.getBounds().isMinExclusive() ? 1 : 0));
+            }
+            result += v.getName() + "=" + value + "\n#" + v.getBounds() + "\n";
+        }
+        return result;
+    }
+
+    public String generateProcessGraph(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        String result = "# nodes\n";
+        for (Map.Entry<FlowNode, BPMNDecodedProcess.FlowNodeInfo> e : process.getGraph().entrySet()) {
+            FlowNode s = e.getKey();
+            result += s.getId() + "[" + (s.getName() != null ? ("label=\"" + s.getName() + "\"") : "") + "]" + "\n";
+        }
+
+        result += "\n\n# edges\n";
+        for (Map.Entry<FlowNode, BPMNDecodedProcess.FlowNodeInfo> e : process.getGraph().entrySet()) {
+            FlowNode s = e.getKey();
+            for (FlowNode t : e.getValue().getOutgoingEdges()) {
+                result += "\"" + s.getId() + "\"" + " -> " + "\"" + t.getId() + "\"" + "\n";
+            }
+        }
+
+        return result;
     }
 }

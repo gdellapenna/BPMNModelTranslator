@@ -97,10 +97,15 @@ public class VariableDefinition {
             if (cases != null && !cases.isEmpty()) {
                 result += (!result.isBlank() ? " / " : "") + "ENUM: " + String.join(",", cases);
             }
-            if (min != null) {
+            if (min != null && max != null) {
+                if (min.equals(max) && (minExclusive || maxExclusive)) {
+                    result += (!result.isBlank() ? " / " : "") + "BALL" + "(" + min + ")";
+                } else {
+                    result += (!result.isBlank() ? " / " : "") + "RANGE: " + (minExclusive ? "(" : "[") + min + "," + max + (maxExclusive ? ")" : "]");                    
+                }
+            } else if (min != null) {
                 result += (!result.isBlank() ? " / " : "") + "MIN: " + min + " " + (minExclusive ? "EXCLUSIVE" : "INCLUSIVE");
-            }
-            if (max != null) {
+            } else if (max != null) {
                 result += (!result.isBlank() ? " / " : "") + "MAX: " + max + " " + (maxExclusive ? "EXCLUSIVE" : "INCLUSIVE");
             }
             if (expressions != null && !expressions.isEmpty()) {
@@ -167,11 +172,5 @@ public class VariableDefinition {
         final VariableDefinition other = (VariableDefinition) obj;
         return Objects.equals(this.name, other.name);
     }
-
-  
-
-    
-    
-    
 
 }
