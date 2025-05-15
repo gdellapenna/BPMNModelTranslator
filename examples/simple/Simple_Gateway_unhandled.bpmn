@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1yfla97" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.22.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+  <bpmn:process id="SimpleGW" name="SimpleGW" isExecutable="true">
+    <bpmn:exclusiveGateway id="G1" name="G1">
+      <bpmn:incoming>Flow_0vva5py</bpmn:incoming>
+      <bpmn:outgoing>Flow_1afjhxi</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0bva45z</bpmn:outgoing>
+      <bpmn:outgoing>Flow_05m1zq4</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:task id="B" name="B">
+      <bpmn:incoming>Flow_1afjhxi</bpmn:incoming>
+      <bpmn:outgoing>Flow_0y6udse</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1afjhxi" name="v=&#34;x&#34;" sourceRef="G1" targetRef="B">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=v="x"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:task id="A" name="A">
+      <bpmn:incoming>Flow_155b32s</bpmn:incoming>
+      <bpmn:outgoing>Flow_0vva5py</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0vva5py" sourceRef="A" targetRef="G1" />
+    <bpmn:task id="C" name="C">
+      <bpmn:incoming>Flow_0bva45z</bpmn:incoming>
+      <bpmn:outgoing>Flow_183sbl3</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0bva45z" name="v=&#34;y&#34;" sourceRef="G1" targetRef="C">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=v="y"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:exclusiveGateway id="G2" name="G2">
+      <bpmn:incoming>Flow_0y6udse</bpmn:incoming>
+      <bpmn:incoming>Flow_183sbl3</bpmn:incoming>
+      <bpmn:incoming>Flow_15kwzzm</bpmn:incoming>
+      <bpmn:outgoing>Flow_1mzwcey</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0y6udse" sourceRef="B" targetRef="G2" />
+    <bpmn:sequenceFlow id="Flow_183sbl3" sourceRef="C" targetRef="G2" />
+    <bpmn:task id="D" name="D">
+      <bpmn:incoming>Flow_1mzwcey</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xxnj1t</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1mzwcey" sourceRef="G2" targetRef="D" />
+    <bpmn:startEvent id="S" name="S">
+      <bpmn:outgoing>Flow_155b32s</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_155b32s" sourceRef="S" targetRef="A" />
+    <bpmn:endEvent id="E" name="E">
+      <bpmn:incoming>Flow_0xxnj1t</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0xxnj1t" sourceRef="D" targetRef="E" />
+    <bpmn:task id="Activity_1jvdeqd" name="Cbis">
+      <bpmn:incoming>Flow_05m1zq4</bpmn:incoming>
+      <bpmn:outgoing>Flow_15kwzzm</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_05m1zq4" name="length(v)&#62;1" sourceRef="G1" targetRef="Activity_1jvdeqd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=length(v)&gt;1</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_15kwzzm" sourceRef="Activity_1jvdeqd" targetRef="G2" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="SimpleGW">
+      <bpmndi:BPMNShape id="Gateway_0dr2ger_di" bpmnElement="G1" isMarkerVisible="true">
+        <dc:Bounds x="345" y="155" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="342" y="143" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ltinp4_di" bpmnElement="B">
+        <dc:Bounds x="400" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_19sg9ww_di" bpmnElement="A">
+        <dc:Bounds x="220" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1i3q0fk_di" bpmnElement="C">
+        <dc:Bounds x="400" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_08e0mqr_di" bpmnElement="G2" isMarkerVisible="true">
+        <dc:Bounds x="505" y="155" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="542" y="213" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_12x7g1s_di" bpmnElement="D">
+        <dc:Bounds x="580" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0cnlzdn_di" bpmnElement="S">
+        <dc:Bounds x="152" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="166" y="205" width="8" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1xsmzo8_di" bpmnElement="E">
+        <dc:Bounds x="712" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="726" y="205" width="8" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jvdeqd_di" bpmnElement="Activity_1jvdeqd">
+        <dc:Bounds x="400" y="320" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1afjhxi_di" bpmnElement="Flow_1afjhxi">
+        <di:waypoint x="370" y="155" />
+        <di:waypoint x="370" y="120" />
+        <di:waypoint x="400" y="120" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="373" y="135" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vva5py_di" bpmnElement="Flow_0vva5py">
+        <di:waypoint x="320" y="180" />
+        <di:waypoint x="345" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0bva45z_di" bpmnElement="Flow_0bva45z">
+        <di:waypoint x="370" y="205" />
+        <di:waypoint x="370" y="240" />
+        <di:waypoint x="400" y="240" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="373" y="220" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0y6udse_di" bpmnElement="Flow_0y6udse">
+        <di:waypoint x="500" y="120" />
+        <di:waypoint x="530" y="120" />
+        <di:waypoint x="530" y="155" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_183sbl3_di" bpmnElement="Flow_183sbl3">
+        <di:waypoint x="500" y="240" />
+        <di:waypoint x="530" y="240" />
+        <di:waypoint x="530" y="205" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mzwcey_di" bpmnElement="Flow_1mzwcey">
+        <di:waypoint x="555" y="180" />
+        <di:waypoint x="580" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_155b32s_di" bpmnElement="Flow_155b32s">
+        <di:waypoint x="188" y="180" />
+        <di:waypoint x="220" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xxnj1t_di" bpmnElement="Flow_0xxnj1t">
+        <di:waypoint x="680" y="180" />
+        <di:waypoint x="712" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05m1zq4_di" bpmnElement="Flow_05m1zq4">
+        <di:waypoint x="370" y="205" />
+        <di:waypoint x="370" y="360" />
+        <di:waypoint x="400" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="372" y="293" width="56" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15kwzzm_di" bpmnElement="Flow_15kwzzm">
+        <di:waypoint x="500" y="360" />
+        <di:waypoint x="530" y="360" />
+        <di:waypoint x="530" y="205" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -21,7 +21,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     private String castToBoolean(String a) {
         return "BPMNExecTypeUtils.toboolean(" + a + ")";
     }
-    
+
     @Override
     public String translateGreaterThan(String arg1, String arg2, FeelTranslationInfo info) {
         return ((arg1 != null ? castToNumber(arg1) : "") + " > " + castToNumber(arg2));
@@ -44,7 +44,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateEqual(String arg1, String arg2, FeelTranslationInfo info) {
-        return "BPMNExecTypeUtils.equals("+((arg1 != null ? arg1 : "") + "," + arg2 + ")");
+        return "BPMNExecTypeUtils.equals(" + ((arg1 != null ? arg1 : "") + "," + arg2 + ")");
         //return ((arg1 != null ? arg1 : "") + ".equals(" + arg2 + ")");
     }
 
@@ -125,7 +125,15 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateFunctionCall(String function, List<String> arguments, FeelTranslationInfo info) {
-        return function + "(" + arguments.stream().collect(Collectors.joining(",")) + ")";
+        //TODO: add translation for other meaningful FEEL functions
+        return switch (function) {
+            case "length" ->
+                castToString(arguments.get(0)) + ".length()"; //assuming the correctness of the FEEL function arguments
+            case "abs" ->
+                "Math.abs(" + castToNumber(arguments.get(0)) + ")"; //assuming the correctness of the FEEL function arguments
+            default ->
+                function + "(" + arguments.stream().collect(Collectors.joining(",")) + ")";
+        };
     }
 
     @Override
@@ -169,7 +177,5 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     protected String translatePath(String key, String path, FeelTranslationInfo info) {
         return key + "." + path;
     }
-
-    
 
 }
