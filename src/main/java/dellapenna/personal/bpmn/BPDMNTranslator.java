@@ -11,7 +11,6 @@ import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslationInfo;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
-import dellapenna.personal.bpmn.versim.ToJavaMainMaker;
 import dellapenna.personal.bpmn.versim.VariableUtils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
