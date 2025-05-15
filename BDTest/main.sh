@@ -3,6 +3,8 @@ delta_def=0.001
 N_def=10
 min_float_def="-1000"
 max_float_def="1000"
+min_int_def="-1000"
+max_int_def="1000"
 min_eps_def=0.0001
 int_timeout_def=120
 nodes_coverage_def="0.95"
@@ -11,6 +13,8 @@ stop_type_def="errors"
 continue_from_before_def=0
 only_gen_java_def=0
 override_vars_def=""
+other_opts_cmp_def=""
+other_opts_exec_def=""
 
 dir_res=/usr/app/res
 dir_tmp=/usr/app/tmp
@@ -22,7 +26,7 @@ echo $*
 
 function usage ()
 {
-    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-O override_vars_file] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, both_coverage, nodes_coverage, edges_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, both_coverage or nodes_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, both_coverage or edges_coverage): '$edges_coverage_def'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.md), continue from that point\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n\toverride_vars_file must be of the same format of inputs.properties file\n\nAll input files must be in the directory chosen for the results\n\n\n", $1);}'
+    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-z min_int] [-Z max_int] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-V override_vars_file] [-O other_opts_compiler] [-o other_opts_exec] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_int def: '$min_int_def'\n\tmax_int def: '$max_int_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, both_coverage, nodes_coverage, edges_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, both_coverage or nodes_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, both_coverage or edges_coverage): '$edges_coverage_def'\n\tother_opts_compiler def: '$other_opts_compiler'\n\tother_opts_exec def: '$other_opts_exec'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.md), continue from that point\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n\toverride_vars_file must be of the same format of inputs.properties file\n\tin other_opts_compiler and other_opts_exec, replace spaces with colons :\n\nAll input files must be in the directory chosen for the results\n\n\n", $1);}'
     exit 1
 }
 
@@ -30,6 +34,8 @@ epsilon=$epsilon_def
 delta=$delta_def
 min_float=$min_float_def
 max_float=$max_float_def
+min_int=$min_int_def
+max_int=$max_int_def
 min_eps=$min_eps_def
 int_timeout=$int_timeout_def
 nodes_coverage=$nodes_coverage_def
@@ -39,8 +45,10 @@ continue_from_before=$continue_from_before_def
 only_gen_java=$only_gen_java_def
 N=$N_def
 override_vars=$override_vars_def
+other_opts_cmp=$other_opts_cmp_def
+other_opts_exec=$other_opts_exec_def
 h=0
-while getopts :hCvN:e:d:m:M:E:t:D:T:s:n:c:O: OPT
+while getopts :hCvN:e:d:m:M:E:t:D:T:s:n:c:V:o:O:z:Z: OPT
 do
   case "$OPT" in
     C)
@@ -64,6 +72,12 @@ do
     M)
       max_float=$OPTARG
       ;;
+    z)
+      min_int=$OPTARG
+      ;;
+    Z)
+      max_int=$OPTARG
+      ;;
     E)
       min_eps=$OPTARG
       ;;
@@ -79,8 +93,14 @@ do
     c)
       nodes_coverage=$OPTARG
       ;;
-    O)
+    V)
       override_vars=$OPTARG
+      ;;
+    O)
+      other_opts_cmp=$OPTARG
+      ;;
+    o)
+      other_opts_exec=$OPTARG
       ;;
     h)
       h=1
@@ -107,6 +127,16 @@ then
 fi
 
 test -d $dir_res || { echo Directory $dir_res must be mounted before launching; exit; }
+
+if [ "${other_opts_exec}" ]
+then
+    other_opts_exec=`echo $other_opts_exec | tr ":" " "`
+fi
+if [ "${other_opts_cmp}" ]
+then
+    other_opts_cmp=`echo $other_opts_cmp | tr ":" " "`
+fi
+
 bpmn_input_file=$dir_res/$1
 shift 1
 for file in $*
@@ -134,11 +164,16 @@ function init_all ()
     inputs=$inputs" "`ls -1 $dir_tmp/*.dmn 2> /dev/null | awk -F/ '{print $NF}' | tr "\n" " "`
     pushd $dir_tmp > /dev/null 2>&1
     ln -s $JAR
-    $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $inputs > $dir_res/init.log 2>&1
+    # echo $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs > just_to_be_sure.sh
+    # cat just_to_be_sure.sh 1>&2
+    # bash just_to_be_sure.sh > $dir_res/init.log 2>&1
+    echo $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs 1>&2
+    $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs > $dir_res/init.log 2>&1
     popd > /dev/null 2>&1
     test -f $dir_tmp/${output_name}_inputs.properties || { echo Generation failed, $dir_tmp/${output_name}_inputs.properties does not exist; exit; }
     mkdir -p $dir_res/translation_output
     cp $dir_tmp/${output_name}.java $dir_tmp/${output_name}.jar $dir_tmp/${output_name}_inputs.properties $dir_tmp/$output_name.graph $dir_res/translation_output
+    mv $dir_res/init.log $dir_res/translation_output/log
     echo ${output_name}
 }
 
@@ -156,7 +191,7 @@ function run ()
     cp $inp_file ${output_name}_inputs.properties
     cp $JAR .
     ln -s ../$output_name.* .
-    timeout $int_timeout $JAVA  -jar ./$output_name.jar > $dir_res/logs/$t/exec.log 2>&1
+    timeout $int_timeout $JAVA -jar ./$output_name.jar $other_opts_exec > $dir_res/logs/$t/exec.log 2>&1
     res=$?
     cp $dir_tmp/exec/*output* $dir_tmp/exec/*trace $dir_res/logs/$t 2> /dev/null
     return $res
@@ -170,45 +205,83 @@ function gen_curr_input ()
     python3 > $output_file <<EOF
 import random
 
+def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_float, min_eps):
+  content_overr_ar = {}
+  for i in range(len(content_overr)):
+    if i%2 == 0:
+      save = content_overr[i].split("=")[0]
+    else:
+      content_overr_ar[save] = content_overr[i]
+  for i in range(len(content)):
+    if i%2 == 0:
+      save = content[i].split("=")[0]
+    else:
+      if save in content_overr_ar:
+        type_str = content_overr_ar[save]
+      else:
+        type_str = content[i]
+      if "UNHANDLED" in type_str:
+        print("Unable to determine values for " + str(save))
+        print(type_str)
+      elif type_str.split(":")[0] == "#ENUM":
+        print(save + "=" + str(random.choice(type_str.split(": ")[1].split(","))))
+        print(type_str)
+      elif type_str.split(":")[0] == "#MIN":
+        min_ch = float(type_str.split()[1])
+        max_ch = float(max_float)
+        print(save + "=" + str(random.uniform(min_ch + (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch)))
+        print(type_str)
+      elif type_str.split(":")[0] == "#MAX":
+        max_ch = float(type_str.split()[1])
+        min_ch = float(-max_float)
+        print(save + "=" + str(random.uniform(min_ch, max_ch - (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0))))
+        print(type_str)
+      elif type_str.split(":")[0] == "#RANGE":
+        min_ch = float(type_str.split()[1].split(",")[0][1:])
+        incl_mm = [type_str.split()[1].split(",")[0][0] == "["]
+        max_ch = float(type_str.split()[1].split(",")[1][:-1])
+        incl_mm += [type_str.split()[1].split(",")[1][-1] == "]"]
+        print(save + "=" + str(random.uniform(min_ch + (min_eps if incl_mm[0] else 0), max_ch + (min_eps if incl_mm[1] else 0))))
+        print(type_str)
+      elif type_str.split("(")[0] == "#BALL":
+        val = float(type_str.split("(")[1][:-1])
+        choices = [val]
+        choices += [random.uniform(min_float, val - min_eps)]
+        choices += [random.uniform(val + min_eps, max_float)]
+        print(save + "=" + str(random.choice(choices)))
+        print(type_str)
+      elif type_str.split(":")[0] == "#MIN_INT":
+        min_ch = int(type_str.split()[1])
+        max_ch = int(max_float)
+        print(save + "=" + str(random.randint(min_ch + (1 if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch)))
+        print(type_str)
+      elif type_str.split(":")[0] == "#MAX_INT":
+        max_ch = int(type_str.split()[1])
+        min_ch = int(-max_float)
+        print(save + "=" + str(random.randint(min_ch, max_ch - (1 if (type_str.split()[2] == "INCLUSIVE") else 0))))
+        print(type_str)
+      elif type_str.split(":")[0] == "#RANGE_INT":
+        min_ch = int(type_str.split()[1].split(",")[0][1:])
+        incl_mm = [type_str.split()[1].split(",")[0][0] == "["]
+        max_ch = int(type_str.split()[1].split(",")[1][:-1])
+        incl_mm += [type_str.split()[1].split(",")[1][-1] == "]"]
+        print(save + "=" + str(random.randint(min_ch + (1 if incl_mm[0] else 0), max_ch + (1 if incl_mm[1] else 0))))
+        print(type_str)
+      elif type_str.split("(")[0] == "#BALL_INT":
+        val = int(type_str.split("(")[1][:-1])
+        choices = [val]
+        choices += [random.randint(min_int, val - 1)]
+        choices += [random.randint(val + 1, max_int)]
+        print(save + "=" + str(random.choice(choices)))
+        print(type_str)
+      else:
+        print("Internal error, unknown specification " + str(save))
+        print(type_str)
+
+
 content = """`cat $prop_file`""".split("\n")
 content_overr = """`test "$override_vars" && cat $override_vars`""".split("\n")
-content_overr_ar = {}
-for i in range(len(content_overr)):
-  if i%2 == 0:
-    save = content_overr[i].split("=")[0]
-  else:
-    content_overr_ar[save] = content_overr[i]
-for i in range(len(content)):
-  if i%2 == 0:
-    save = content[i].split("=")[0]
-  else:
-    if content[i] == "#" and (save in content_overr_ar):
-      type_str = content_overr_ar[save]
-    else:
-      type_str = content[i]
-    if type_str.split(":")[0] == "#ENUM":
-      print(save + "=" + str(random.choice(type_str.split(": ")[1].split(","))))
-      print(type_str)
-    elif type_str.split(":")[0] == "#MIN":
-      min_ch = float(type_str.split()[1])
-      incl_mm = [type_str.split()[2] == "INCLUSIVE"]
-      if " / MAX" in type_str:
-        max_ch = float(type_str.split()[5])
-        incl_mm += [type_str.split()[6] == "INCLUSIVE"]
-      else:
-        max_ch = float($max_float)
-        incl_mm += [True]
-      if min_ch != max_ch:
-        print(save + "=" + str(random.uniform(min_ch + ($min_eps if incl_mm[0] else 0), max_ch + ($min_eps if incl_mm[1] else 0))))
-      else:
-        val = float(type_str.split()[1])
-        choices = [val]
-        choices += [random.uniform($min_float, val - $min_eps)]
-        choices += [random.uniform(val + $min_eps, $max_float)]
-        print(save + "=" + str(random.choice(choices)))
-      print(type_str)
-    else:
-      print("Unable to determine values for " + str(save))
+gen_all_inputs(content, content_overr, $min_int, $max_int, $min_float, $max_float, $min_eps)
 EOF
     grep -q "Unable to determine values for " $output_file
     return $?
