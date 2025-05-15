@@ -4,7 +4,7 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public record BPMNDecodedFlow(String name, Code code, FlowNode firstStep) {
 

@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public record BPMNDecodedModel(List<BPMNDecodedProcess> processes) {
     

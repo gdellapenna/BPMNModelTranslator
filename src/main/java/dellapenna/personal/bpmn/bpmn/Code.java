@@ -6,7 +6,8 @@ import java.util.List;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
+ * @param <T>
  */
 public class Code<T> {
 

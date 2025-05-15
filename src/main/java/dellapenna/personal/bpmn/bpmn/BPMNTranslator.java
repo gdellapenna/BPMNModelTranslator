@@ -6,7 +6,7 @@ import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  * @param <T>
  */
 public interface BPMNTranslator<T> {

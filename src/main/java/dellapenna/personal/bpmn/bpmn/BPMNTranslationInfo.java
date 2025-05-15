@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class BPMNTranslationInfo {
 
@@ -18,7 +18,6 @@ public class BPMNTranslationInfo {
     private List<Assertion> globalAssertions;
     private List<String> forcedInputVariables;
 
-    
     public BPMNTranslationInfo() {
         debug = false;
         trace = true;
@@ -80,9 +79,6 @@ public class BPMNTranslationInfo {
         this.trueParallel = trueParallel;
     }
 
-//    public List<VariableDefinition> getDetectedInputVariables() {
-//        return detectedInputVariables;
-//    }
     public void addGlobalAssertion(String expression, String description) {
         globalAssertions.add(new Assertion(expression, description));
     }

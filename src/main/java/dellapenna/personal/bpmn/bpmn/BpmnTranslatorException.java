@@ -4,7 +4,7 @@ import dellapenna.personal.bpmn.BDTransException;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class BpmnTranslatorException extends BDTransException {
 

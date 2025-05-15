@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ *
+ * @author Giuseppe Della Penna
+ */
 public class VariableDefinition {
 
     public static record VariableUsageData(String sourceId, String sourceExpression) {

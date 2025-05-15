@@ -29,6 +29,10 @@ import org.camunda.bpm.model.bpmn.instance.Task;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 
+/**
+ *
+ * @author Giuseppe Della Penna
+ */
 public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
     private final static String ZEEBENS = "http://camunda.org/schema/zeebe/1.0";

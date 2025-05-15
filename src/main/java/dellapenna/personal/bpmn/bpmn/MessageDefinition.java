@@ -3,6 +3,10 @@ package dellapenna.personal.bpmn.bpmn;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ *
+ * @author Giuseppe Della Penna
+ */
 public class MessageDefinition {
 
     private String name;

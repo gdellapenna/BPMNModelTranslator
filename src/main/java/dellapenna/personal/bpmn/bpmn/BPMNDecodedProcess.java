@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.camunda.bpm.model.bpmn.instance.Event;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.Gateway;
@@ -12,7 +11,7 @@ import org.camunda.bpm.model.bpmn.instance.Task;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class BPMNDecodedProcess {
     
@@ -69,14 +68,11 @@ public class BPMNDecodedProcess {
             default ->
                 NodeProcedureType.FLOW;
         };
-        //return type.toString() + "_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
         return type.toString() + "_" + start.getId() + (start.getName() != null && !start.getName().isBlank() ? "_" + start.getName() : "");
     }
     
     public BPMNDecodedProcess(String name) {
         this.name = name;
-        //this.processVariables.put(VariableDirection.READ, new HashMap<>());
-        //this.processVariables.put(VariableDirection.WRITE, new HashMap<>());
     }
     
     public Map<NodeProcedureType, Map<String, FunctionDefinition>> getFunctions() {
@@ -141,10 +137,7 @@ public class BPMNDecodedProcess {
         return g;
     }
 
-//    public Map<String, VariableDefinition> getInputs() {
-//        return this.inputs;
-//    }
-    ////
+
     //registers a new global variable for the process and returns its internal definition
     public VariableDefinition registerProcessVariable(String name, VariableDirection d, String sourceId, String sourceExpression) {
         VariableDefinition g = processVariables.stream().filter(v -> v.getName().equals(name)).findFirst().orElse(null);
@@ -169,41 +162,7 @@ public class BPMNDecodedProcess {
         return v;
     }
 
-//    private void registerVariableUsage(Object name, VariableDirection d, String where) {
-//        if (name instanceof List l) {
-//            name = String.join(".", l);
-//        }
-//        VariableDefinition g;
-//        Map<String, VariableDefinition> t = processVariables.get(d);
-//        
-//        Map<VariableDirection, List<String>> g;
-//        if (!variableUsages.containsKey(name.toString())) {
-//            g = new HashMap<>();
-//            variableUsages.put(name.toString(), g);
-//        } else {
-//            g = variableUsages.get(name.toString());
-//        }
-//        List<String> h;
-//        if (!g.containsKey(d)) {
-//            h = new ArrayList<>();
-//            g.put(d, h);
-//        } else {
-//            h = g.get(d);
-//        }
-//        h.add(where);
-//    }
-    //registers a new input variable (from start events or user tasks)
-//    public VariableDefinition registerInputVariable(String name) {
-//        VariableDefinition i;
-//        if (!inputs.containsKey(name)) {
-//            i = new VariableDefinition(name);
-//            inputs.put(name, i);
-//        } else {
-//            i = inputs.get(name);
-//        }
-//        return i;
-//    }
-    //creates a new function to output, assigned to the specified function class, and returns its internal definition
+    //creates a new function, assigned to the specified function class, and returns its internal definition
     private FunctionDefinition registerFunction(String name, Code code, Map<String, String> parameters, String returnType, NodeProcedureType type) {
         return registerFunction(name, code, new ArrayList<>(List.of()), parameters, returnType, type);
     }
