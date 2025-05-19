@@ -1,2 +1,0 @@
-input_a=1
-#MIN: 1 INCLUSIVE / MAX 20 INCLUSIVE
