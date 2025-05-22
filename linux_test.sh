@@ -1,10 +1,11 @@
 common_opts="-t 5"
 declare -A opts
+opts["./examples/surgery"]="-s any_coverage"
 opts["./examples/simple/Simple_Loop_Alt"]="-O -fi:a"
 opts["./examples/simple/Simple_Loop_int"]="-V Simple_Loop_override.txt"
 opts["./examples/simple/Simple_Loop_float"]="-V Simple_Loop_override.txt"
 
-for d in ./examples/surgery ./examples/shipment ./examples/simple/[^R]*
+for d in ./examples/surgery ./examples/surgery.noopts ./examples/shipment ./examples/simple/[^R]*
 do
     echo Executing:
     echo ""

@@ -1,11 +1,13 @@
 $common_opts = "-t 5"
 $opts = @{
+    ".\examples\surgery" = "-s any_coverage"
     ".\examples\simple\Simple_Loop_Alt" = "-O -fi:a"
     ".\examples\simple\Simple_Loop_int" = "-V Simple_Loop_override.txt"
     ".\examples\simple\Simple_Loop_float" = "-V Simple_Loop_override.txt"
 }
 
 $directories = @(
+    ".\examples\surgery.noopts"
     ".\examples\surgery"
     ".\examples\shipment"
 )

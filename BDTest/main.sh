@@ -358,6 +358,7 @@ else
 fi
 echo Maximum number of iterations to be done: $M
 echo Simply create a "(empty)" file named stop inside your examples directory if you want to abort the verification
+final_res=0
 for ((t = 1; t <= M; t++))
 do
     echo Iteration $t
@@ -368,6 +369,8 @@ do
 	gen_curr_input $prop_file $dir_res/logs/$t/${bpmn}_inputs.properties $override_vars && { cat $dir_res/logs/$t/${bpmn}_inputs.properties; exit; }
 	run $t $bpmn $dir_res $dir_res/logs/$t/${bpmn}_inputs.properties $bpmn
 	last_res=$?
+    else
+	last_res=0 #impossible to know...
     fi
     update_arrays $dir_res/logs/$t/$bpmn.trace
     covs=`update_coverage $dir_res $num_nodes $num_edges`
@@ -375,25 +378,42 @@ do
     then
 	if [ -f $dir_res/logs/$t/${bpmn}_outputs.properties ]
 	then
-	    grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties || { echo exiting because an error has been reached; break; }
+	    grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties || { echo Exiting because execution $dir_res/logs/$t reached an error block; final_res=1; break; }
 	else
-	    echo $last_res | awk '{printf("Warning: execution '$dir_res/logs/$t' failed %s\n", $1 == 124? "for timeout" : "with exit code"$1)}'
+	    echo $last_res | awk '{printf("Exiting because execution '$dir_res/logs/$t' failed %s\n", $1 == 124? "for timeout" : "with exit code"$1)}'
+	    final_res=1
+	    break
 	fi
     else
+	if [ -f $dir_res/logs/$t/${bpmn}_outputs.properties ]
+	then
+	    grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties || { echo "Warning: execution $dir_res/logs/$t reached an error block"; final_res=1; }
+	else
+	    echo $last_res | { awk '{printf("Warning: execution '$dir_res/logs/$t' failed %s\n", $1 == 124? "for timeout" : "with exit code"$1)}'; final_res=1; }
+	fi
 	if [ "$stop_type" == "both_coverage" ]
 	then
-	    (echo $covs | awk '{exit ($1 >= '$nodes_coverage' && $2 >= '$edges_coverage');}') || { echo exiting because coverage $stop_type is enough; break; }
+	    (echo $covs | awk '{exit ($1 >= '$nodes_coverage' && $2 >= '$edges_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	elif [ "$stop_type" == "any_coverage" ]
 	then
-	    (echo $covs | awk '{ exit ($1 >= '$nodes_coverage' || $2 >= '$edges_coverage');}') || { echo exiting because coverage $stop_type is enough; break; }
+	    (echo $covs | awk '{ exit ($1 >= '$nodes_coverage' || $2 >= '$edges_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	elif [ "$stop_type" == "nodes_coverage" ]
 	then
-	    (echo $covs | awk '{ exit ($1 >= '$nodes_coverage');}') || { echo exiting because coverage $stop_type is enough; break; }
+	    (echo $covs | awk '{ exit ($1 >= '$nodes_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	elif [ "$stop_type" == "edges_coverage" ]
 	then
-	    (echo $covs | awk '{ exit ($2 >= '$edges_coverage');}') || { echo exiting because coverage $stop_type is enough; break; }
+	    (echo $covs | awk '{ exit ($2 >= '$edges_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	    #missing case is nostop...
 	fi
     fi
     test -f $dir_res/stop && { echo stop file detected; break; }
 done
+if [ $final_res -eq 2 ]
+then
+    echo Result is: PASS
+elif [ $final_res -eq 0 -a "$stop_type" == "errors" ]
+then
+    echo Result is: PASS
+else
+    echo Result is: FAIL
+fi
