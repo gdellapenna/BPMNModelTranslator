@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn.versim;
 
+import dellapenna.personal.bpmn.OutputManager;
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.VariableDefinition;
@@ -84,6 +85,7 @@ public class VariableUtils {
                 }
                 default -> {
                     b.addExpression(condition_expression); //non auto-deducibile
+                    OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+condition_expression);
                 }
             }
             //gestire gli altri operatori di confronto
@@ -106,6 +108,8 @@ public class VariableUtils {
                     compared_expression = c.x();
                 } else {
                     v.getBounds().addExpression(variable_expression); //non auto-deducibile  
+                    OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+variable_expression);
+                    
                 }
                 if (compared_expression != null) {
                     switch (exp) {
@@ -155,10 +159,12 @@ public class VariableUtils {
                                 v.getBounds().addCase(n.value() ? "true" : "false");
                             } else {
                                 v.getBounds().addExpression(variable_expression); //non auto-deducibile
+                                OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+variable_expression);
                             }
                         }
                         default -> {
                             v.getBounds().addExpression(variable_expression); //non auto-deducibile
+                            OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+variable_expression);
                         }
                     }
                 }
@@ -207,10 +213,10 @@ public class VariableUtils {
         return v.getBounds();
     }
 
-    public void analyzeInputConstraints(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-        process.getFreeVariables(info).stream().forEach(v -> {
-            analyzeInputConstraints(v, dmns, info);
-        });
-    }
+//    public void analyzeInputConstraints(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+//        process.getFreeVariables(info).stream().forEach(v -> {
+//            analyzeInputConstraints(v, dmns, info);
+//        });
+//    }
 
 }

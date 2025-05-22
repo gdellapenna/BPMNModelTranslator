@@ -219,6 +219,7 @@ public class BPDMNTranslator {
     }
 
     public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        outlog.emit(1, "Translator", "generating input properties");
         String result = "";
         VariableUtils vu = new VariableUtils();
         for (VariableDefinition v : process.getFreeVariables(info)) {
@@ -235,6 +236,7 @@ public class BPDMNTranslator {
     }
 
     public String generateProcessGraph(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
+        outlog.emit(1, "Translator", "generating process graph");
         String result = "# nodes\n";
         for (Map.Entry<FlowNode, BPMNDecodedProcess.FlowNodeInfo> e : process.getGraph().entrySet()) {
             FlowNode s = e.getKey();
