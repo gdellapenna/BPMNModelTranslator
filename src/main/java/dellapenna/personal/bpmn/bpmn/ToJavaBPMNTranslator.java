@@ -502,9 +502,21 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
+//    @Override
+//    public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
+//        Code code = generateJoiningGatewayCode(p, g, joinedflow, info);
+//        return code;
+//    }
+    //same as generateParallelJoiningGatewayCode, code must be merged with appropriate generic parameter types
     @Override
     public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
-        Code code = generateJoiningGatewayCode(p, g, joinedflow, info);
+        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
+        code.append(generateTransitionDescriptionStaments(g, joinedflow, info));
+        p.registerDecodedEdge(g, joinedflow);
+        code.append("//JOINS: " + g.getIncoming().stream().map(s -> s.getSource().getId()).collect(Collectors.joining(",")));
+        code.append(EXECUTILEXPRESSION + ".join(s,\"" + g.getId() + "\", " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
+
+        code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }
 
@@ -536,22 +548,45 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
+//    @Override
+//    public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
+//        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
+//
+//        for (int o = 0; o < splitFlows.size(); ++o) {
+//            String condition_expression = splitFlows.get(o).condition().substring(1);
+//            FeelTranslationInfo v_f_info = new FeelTranslationInfo();
+//            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, splitFlows.get(o).firstStep(), info);
+//            code.append("if "
+//                    + "(" + feel.translate(condition_expression, v_f_info) + ")" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
+//                    + "{" + generateCodeSource(splitCode)
+//                    + "} ");
+//            p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, g.getId(), condition_expression);
+//        }
+//
+//        //System.out.println(f_info.getUsedVariableNames().stream().map(cn -> String.join(".", cn)).distinct().collect(Collectors.joining(",")) + " usati nel GATEWAY " + getNodeDescription(n));
+//        code.append(generateCommonNodeExitStatements(g, info));
+//        return code;
+//    } 
     @Override
     public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
         Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
-
+        code.append("java.util.List<java.util.function.Consumer<" + EXECUTILEXPRESSION + ".ProcessStatus>> enabledBranches = new java.util.ArrayList<>()");
+        code.append("//CONDITIONALLY FORKS: " + splitFlows.stream().map(s -> s.firstStep().getId()).collect(Collectors.joining(",")));
         for (int o = 0; o < splitFlows.size(); ++o) {
             String condition_expression = splitFlows.get(o).condition().substring(1);
             FeelTranslationInfo v_f_info = new FeelTranslationInfo();
-            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, splitFlows.get(o).firstStep(), info);
             code.append("if "
                     + "(" + feel.translate(condition_expression, v_f_info) + ")" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-                    + "{" + generateCodeSource(splitCode)
-                    + "} ");
+                    + "{");
+            code.append(generateTransitionDescriptionStaments(g, splitFlows.get(o).firstStep(), info));
+            code.append("enabledBranches.add(" + "this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep())) + ")");
+            code.append("} ");
             p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, g.getId(), condition_expression);
-        }
+            p.registerDecodedEdge(g, splitFlows.get(o).firstStep());
 
-        //System.out.println(f_info.getUsedVariableNames().stream().map(cn -> String.join(".", cn)).distinct().collect(Collectors.joining(",")) + " usati nel GATEWAY " + getNodeDescription(n));
+        }
+        code.append(EXECUTILEXPRESSION + ".fork(s,\"" + g.getId() + "\",enabledBranches.toArray(java.util.function.Consumer[]::new))");
+        code.append(EXECUTILEXPRESSION + ".stopThread()");
         code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }

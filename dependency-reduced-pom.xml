@@ -46,9 +46,9 @@
     </plugins>
   </build>
   <properties>
-    <maven.compiler.target>22</maven.compiler.target>
-    <exec.mainClass>dellapenna.personal.bpmnmodeltest.BPMNModelTest</exec.mainClass>
-    <maven.compiler.source>22</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>24</maven.compiler.target>
+    <exec.mainClass>dellapenna.personal.bpmnmodeltest.BPMNModelTest</exec.mainClass>
+    <maven.compiler.source>24</maven.compiler.source>
   </properties>
 </project>

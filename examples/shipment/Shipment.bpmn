@@ -165,7 +165,7 @@
       <bpmn:incoming>Flow_0kjsbwd</bpmn:incoming>
       <bpmn:errorEventDefinition id="ErrorEventDefinition_01vu59q" errorRef="Error_1em81pn" />
     </bpmn:endEvent>
-    <bpmn:endEvent id="Event_0wjo1ye" name="unsuppoted weight">
+    <bpmn:endEvent id="Event_0wjo1ye" name="unsupported weight">
       <bpmn:incoming>Flow_1lul471</bpmn:incoming>
       <bpmn:errorEventDefinition id="ErrorEventDefinition_1gpc2i9" errorRef="Error_013qit0" />
     </bpmn:endEvent>
@@ -179,7 +179,7 @@
   <bpmn:error id="Error_013qit0" name="Unsupported Weight" errorCode="2" />
   <bpmn:error id="Error_0fiisbg" name="No Shipment" errorCode="3" />
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1nns705">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Shipment">
       <bpmndi:BPMNShape id="Gateway_0i2yujj_di" bpmnElement="Gateway_0i2yujj" isMarkerVisible="true">
         <dc:Bounds x="505" y="175" width="50" height="50" />
       </bpmndi:BPMNShape>
@@ -266,7 +266,7 @@
       <bpmndi:BPMNShape id="Event_1u0aare_di" bpmnElement="Event_0wjo1ye">
         <dc:Bounds x="672" y="292" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="661" y="335" width="58" height="27" />
+          <dc:Bounds x="659" y="335" width="62" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0pl00wf_di" bpmnElement="Event_19ylwnc">
