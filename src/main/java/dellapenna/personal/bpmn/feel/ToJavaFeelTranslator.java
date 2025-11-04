@@ -160,7 +160,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
         if (info != null) {
             info.getUsedVariableNames().add(names);
         }
-        return names.stream().collect(Collectors.joining("."));
+        return names.stream().map(p -> "get" + p.substring(0, 1).toUpperCase() + p.substring(1) + "()").collect(Collectors.joining("."));
     }
 
     @Override

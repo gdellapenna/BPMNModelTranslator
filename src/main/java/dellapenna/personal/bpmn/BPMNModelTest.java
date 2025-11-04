@@ -52,7 +52,7 @@ public class BPMNModelTest {
 
         BPDMNTranslator t = new BPDMNTranslator();
 
-        Path output_folder = Paths.get(".").toAbsolutePath().normalize();
+//        Path output_folder = Paths.get(".").toAbsolutePath().normalize();
 
 //        t.compile_inputs(output_folder,Path.of("surgery_tables.dmn"), Path.of("Surgery.bpmn"));
 //
@@ -67,13 +67,16 @@ public class BPMNModelTest {
 //        t.compile_inputs(output_folder,Path.of("Events.bpmn"));
 //        t.compile_inputs(output_folder,Path.of("Parallel1Err.bpmn"));
 //        
-        BPMNTranslationInfo t_info = new BPMNTranslationInfo();
-        t_info.setTrueParallel(true);
-        t_info.setDebug(true);
-        t.compile_inputs(output_folder, t_info, Path.of("Simple_Message.bpmn"));
+//        BPMNTranslationInfo t_info = new BPMNTranslationInfo();
+//        t_info.setTrueParallel(true);
+//        t_info.setDebug(true);
+//        t.compile_inputs(output_folder, t_info, Path.of("Simple_Message.bpmn"));
 
         //FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
         //System.out.println(ft.generateBpmnSource("a.b=c"));        
+        
+        Translate instance = new Translate();
+        instance.parseCommandLine(new String[]{"examples/simple/Simple_Loop_int/Simple_Loop.bpmn"});
     }
 }
