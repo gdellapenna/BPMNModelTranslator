@@ -1,6 +1,7 @@
 package dellapenna.personal.bpmn.feel;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -157,10 +158,26 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
     @Override
     public String translateVariableReference(List<String> names, FeelTranslationInfo info) {
+        List<String> excludeGetters;
+        int maxGetterslevel;
         if (info != null) {
             info.getUsedVariableNames().add(names);
+            excludeGetters = info.getExcludeGetters();
+            maxGetterslevel = info.getMaxGettersLevel();
+        } else {
+            excludeGetters = Collections.EMPTY_LIST;
+            maxGetterslevel = 1;
         }
-        return names.stream().map(p -> "get" + p.substring(0, 1).toUpperCase() + p.substring(1) + "()").collect(Collectors.joining("."));
+
+        String result = "";
+        for (int i = 0; i < names.size(); ++i) {
+            result += (result.isEmpty() ? "" : ".")
+                    + ((excludeGetters.contains(names.get(i)) || i > (maxGetterslevel - 1))
+                    ? names.get(i)
+                    : ("get" + names.get(i).substring(0, 1).toUpperCase() + names.get(i).substring(1) + "()"));
+        }
+        return result;
+        //return names.stream().map(p -> (!generateGetters || excludeGetters.contains(p)) ? p : ("get" + p.substring(0, 1).toUpperCase() + p.substring(1) + "()")).collect(Collectors.joining("."));
     }
 
     @Override

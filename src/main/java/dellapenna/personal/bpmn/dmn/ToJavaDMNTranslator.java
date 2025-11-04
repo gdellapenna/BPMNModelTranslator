@@ -198,7 +198,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
     ////
     @Override
     public String translateExpression(String input, String exp, DMNTranslationInfo info) throws FeelTranslatorException {
-        FeelTranslationInfo f_info = new FeelTranslationInfo();
+        FeelTranslationInfo f_info = new FeelTranslationInfo(false);
         String translation = feel.translate(input, exp, f_info);
         info.getReadVariables().addAll(f_info.getUsedVariableNames());
         return translation;
