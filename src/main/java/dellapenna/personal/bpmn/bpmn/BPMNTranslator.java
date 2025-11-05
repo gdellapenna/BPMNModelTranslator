@@ -15,6 +15,8 @@ public interface BPMNTranslator<T> {
     T translate(BpmnModelInstance bpmn, DMNDecodedModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
 
     T generateBpmnSource(BPMNDecodedModel bpmn, BPMNTranslationInfo info);
+    
+    T generateProcessSource(BPMNDecodedProcess process, BPMNTranslationInfo info);
 
     BPMNDecodedModel decodeBpmn(BpmnModelInstance bpmn, DMNDecodedModel<T>[] dmns, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
 

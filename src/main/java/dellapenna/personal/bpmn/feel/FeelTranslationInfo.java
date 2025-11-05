@@ -11,13 +11,15 @@ public class FeelTranslationInfo {
 
     private List<String> excludeGetters;
     private int maxGettersLevel;
+    private boolean generateReadNextGetters;
 
     private final List<List<String>> usedVariableNames;
 
-    public FeelTranslationInfo(boolean generateGetters) {
+    public FeelTranslationInfo() {
         this.usedVariableNames = new ArrayList<>();
         this.excludeGetters = new ArrayList<>();
-        this.maxGettersLevel = generateGetters ? 1 : 0;
+        this.maxGettersLevel = 0;
+        this.generateReadNextGetters = false;
     }
 
     public List<List<String>> getUsedVariableNames() {
@@ -38,6 +40,22 @@ public class FeelTranslationInfo {
 
     public void setMaxGettersLevel(int maxGettersLevel) {
         this.maxGettersLevel = maxGettersLevel;
+    }
+
+    public void setGenerateGetters(boolean generateGetters) {
+        if (!generateGetters) {
+            this.maxGettersLevel = 0;
+        } else if (this.maxGettersLevel <= 0) {
+            this.maxGettersLevel = 1;
+        }
+    }
+
+    public boolean isGenerateReadNextGetters() {
+        return generateReadNextGetters;
+    }
+
+    public void setGenerateReadNextGetters(boolean generateReadNextGetters) {
+        this.generateReadNextGetters = generateReadNextGetters;
     }
 
 }

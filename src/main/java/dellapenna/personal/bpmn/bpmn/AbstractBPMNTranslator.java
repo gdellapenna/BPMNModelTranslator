@@ -152,7 +152,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             //link to next step/node
             FlowNode next = decoded_node.nextStep();
             if (next != null) {
-                code.append(generateFlowJointCode(p, current, next, info));
+                code.append(generateTransitionCode(p, current, next, info));
             }
             current = next;
         }
@@ -310,7 +310,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     //////////////////
     // Generate code for specific BPMN nodes
     //////////////////
-    protected abstract Code generateFlowJointCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info);
+    protected abstract Code generateTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info);
 
     protected abstract Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
 

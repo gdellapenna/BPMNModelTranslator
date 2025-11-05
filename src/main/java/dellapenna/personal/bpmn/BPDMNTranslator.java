@@ -202,21 +202,21 @@ public class BPDMNTranslator {
 
     
     //DA ATTIVARE PREVIA VERIFICA 
-    public String generateProcessCode(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns,
-            BPMNTranslationInfo b_info, DMNTranslationInfo d_info) {
-
-        String result = "";
-        result += PRE_CODE;
-        result += "\n\n";
-        for (int j = 0; j < dmns.length; ++j) {
-            result += dt.generateDecisionModelSource(dmns[j], d_info);
-        }
-        result += "\n";
-        result += bt.generateProcessSource(process, b_info);
-        result += "\n\n";
-        result += POST_CODE;
-        return result;
-    }
+//    public String generateProcessCode(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns,
+//            BPMNTranslationInfo b_info, DMNTranslationInfo d_info) {
+//
+//        String result = "";
+//        result += PRE_CODE;
+//        result += "\n\n";
+//        for (int j = 0; j < dmns.length; ++j) {
+//            result += dt.generateDecisionModelSource(dmns[j], d_info);
+//        }
+//        result += "\n";
+//        result += bt.generateProcessSource(process, b_info);
+//        result += "\n\n";
+//        result += POST_CODE;
+//        return result;
+//    }
 
     public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         outlog.emit(1, "Translator", "generating input properties");

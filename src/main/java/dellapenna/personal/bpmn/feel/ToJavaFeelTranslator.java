@@ -160,13 +160,16 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     public String translateVariableReference(List<String> names, FeelTranslationInfo info) {
         List<String> excludeGetters;
         int maxGetterslevel;
+        boolean generateReadNextGetters;
         if (info != null) {
             info.getUsedVariableNames().add(names);
             excludeGetters = info.getExcludeGetters();
             maxGetterslevel = info.getMaxGettersLevel();
+            generateReadNextGetters = info.isGenerateReadNextGetters();
         } else {
             excludeGetters = Collections.EMPTY_LIST;
-            maxGetterslevel = 1;
+            maxGetterslevel = 0;
+            generateReadNextGetters = false;
         }
 
         String result = "";
@@ -174,7 +177,7 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
             result += (result.isEmpty() ? "" : ".")
                     + ((excludeGetters.contains(names.get(i)) || i > (maxGetterslevel - 1))
                     ? names.get(i)
-                    : ("get" + names.get(i).substring(0, 1).toUpperCase() + names.get(i).substring(1) + "()"));
+                    : ("get" + names.get(i).substring(0, 1).toUpperCase() + names.get(i).substring(1) + "(s," + (generateReadNextGetters ? "true" : "false") + ")"));
         }
         return result;
         //return names.stream().map(p -> (!generateGetters || excludeGetters.contains(p)) ? p : ("get" + p.substring(0, 1).toUpperCase() + p.substring(1) + "()")).collect(Collectors.joining("."));
