@@ -121,6 +121,24 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                         BPMNDecodedProcess.VariableDirection.READ, t.getId(), assigned_expression);
             });
         }
+
+        /* trick: emulate a read on datainputs to declare them as input parameters */
+        if (t instanceof UserTask a) {
+            p.registerProcessVariables(a.getDataOutputAssociations().stream()
+                    .map(oa -> oa.getTarget().getAttributeValue("name"))
+                    .filter(v -> !isVariableIncluded(v, localVariables))
+                    .toList(),
+                    BPMNDecodedProcess.VariableDirection.READ, t.getId(), null);
+            
+            
+        } else if (t instanceof StartEvent a) {
+            p.registerProcessVariables(a.getDataOutputAssociations().stream()
+                    .map(oa -> oa.getTarget().getAttributeValue("name"))
+                    .filter(v -> !isVariableIncluded(v, localVariables))
+                    .toList(),
+                    BPMNDecodedProcess.VariableDirection.READ, t.getId(), null);
+        }
+
         return result;
     }
 
@@ -556,7 +574,6 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
         code.append(generateOutputAssignmentsStatements(p, t, Collections.EMPTY_LIST, true, info)); //read next
         p.registerStartEventFlowName(sanitizeName(p.getFlowName(t)));
-
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }

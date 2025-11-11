@@ -95,7 +95,7 @@ public class VariableUtils {
     }
 
     public void decodeBPMNVariableConstraint(String variable_expression, VariableDefinition v) throws FeelTranslatorException {
-        if (!variable_expression.isBlank()) {
+        if (variable_expression!=null && !variable_expression.isBlank()) {
             Exp exp = ft.parse(variable_expression);
             if (exp instanceof Comparison c) {
                 boolean inverse = false;

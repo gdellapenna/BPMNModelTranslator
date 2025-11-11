@@ -200,7 +200,6 @@ public class BPDMNTranslator {
         return generated_code;
     }
 
-    
     //DA ATTIVARE PREVIA VERIFICA 
 //    public String generateProcessCode(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns,
 //            BPMNTranslationInfo b_info, DMNTranslationInfo d_info) {
@@ -217,12 +216,21 @@ public class BPDMNTranslator {
 //        result += POST_CODE;
 //        return result;
 //    }
-
     public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         outlog.emit(1, "Translator", "generating input properties");
         String result = "";
+
         VariableUtils vu = new VariableUtils();
         for (VariableDefinition v : process.getFreeVariables(info)) {
+
+            if (!v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().anyMatch(u -> u.sourceExpression() == null)) {
+                outlog.emit(OutputManager.MessageType.WARNING, 2, "Translator", "Variable " + v.getName() + " is auto-declared as input being read but never written");
+            } else {
+                v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().filter(u -> u.sourceExpression() == null).forEach(u -> {
+                    outlog.emit(OutputManager.MessageType.INFO, 2, "Translator", "Variable " + v.getName() + " is declared as data input in node " + u.sourceId());
+                });
+            }
+
             vu.analyzeInputConstraints(v, dmns, info);
             String value = "?";
             if (v.getBounds().getCases() != null && !v.getBounds().getCases().isEmpty()) {

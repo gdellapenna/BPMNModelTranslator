@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_18if82i" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.22.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_18if82i" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
   <bpmn:error id="Error_059lte9" name="Rejected" errorCode="1" />
   <bpmn:error id="Error_0xlwhc8" name="Return" errorCode="2" />
   <bpmn:collaboration id="Collaboration_1onq5lz">
@@ -7,10 +7,6 @@
   </bpmn:collaboration>
   <bpmn:process id="Surgery" isExecutable="true">
     <bpmn:laneSet id="LaneSet_0xcnair" />
-    <bpmn:task id="Activity_0do0700" name="User Info">
-      <bpmn:incoming>Flow_10vn5g9</bpmn:incoming>
-      <bpmn:outgoing>Flow_06mbmf5</bpmn:outgoing>
-    </bpmn:task>
     <bpmn:exclusiveGateway id="Gateway_1hwej0w" name="Triage" default="Flow_1jpmawa">
       <bpmn:incoming>Flow_04r8shj</bpmn:incoming>
       <bpmn:outgoing>Flow_1jpmawa</bpmn:outgoing>
@@ -215,6 +211,10 @@
     <bpmn:sequenceFlow id="Flow_028pjud" name="PatientDismissionSurgicalUnit=&#34;can&#34;" sourceRef="Gateway_058xy6d" targetRef="Event_01gw6pd">
       <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=PatientDismissionSurgicalUnit="can"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
+    <bpmn:userTask id="Activity_0do0700" name="Get patient information">
+      <bpmn:incoming>Flow_10vn5g9</bpmn:incoming>
+      <bpmn:outgoing>Flow_06mbmf5</bpmn:outgoing>
+    </bpmn:userTask>
   </bpmn:process>
   <bpmn:message id="Message_1095b2h" name="passthrough">
     <bpmn:extensionElements>
@@ -225,9 +225,6 @@
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1onq5lz">
       <bpmndi:BPMNShape id="Participant_0g1cvw9_di" bpmnElement="Participant_0g1cvw9" isHorizontal="true">
         <dc:Bounds x="160" y="80" width="2350" height="570" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1rtp3iv_di" bpmnElement="Activity_0do0700">
-        <dc:Bounds x="280" y="529" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1hwej0w_di" bpmnElement="Gateway_1hwej0w" isMarkerVisible="true">
         <dc:Bounds x="445" y="249" width="50" height="50" />
@@ -332,6 +329,10 @@
         <bpmndi:BPMNLabel>
           <dc:Bounds x="2417" y="299" width="73" height="27" />
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15vup7k_di" bpmnElement="Activity_0do0700">
+        <dc:Bounds x="280" y="529" width="100" height="80" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_10vn5g9_di" bpmnElement="Flow_10vn5g9">
         <di:waypoint x="248" y="569" />
