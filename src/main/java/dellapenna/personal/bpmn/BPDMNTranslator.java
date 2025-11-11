@@ -240,6 +240,13 @@ public class BPDMNTranslator {
             }
             result += v.getName() + "=" + value + "\n#" + v.getBounds() + "\n";
         }
+
+        for (VariableDefinition v : process.getBoundVariables(info)) {
+            if (v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().anyMatch(u -> u.sourceExpression() == null)) {
+                outlog.emit(OutputManager.MessageType.ERROR, 2, "Translator", "Variable " + v.getName() + " is declared as data input but also written");
+            }
+        }
+
         return result;
     }
 
