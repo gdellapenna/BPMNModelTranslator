@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class FeelTranslationInfo {
 

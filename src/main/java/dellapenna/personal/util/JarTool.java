@@ -1,8 +1,7 @@
-package dellapenna.personal.bpmn;
+package dellapenna.personal.util;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,12 +14,13 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 /**
+ * @author Giuseppe Della Penna
  *
- * https://www.baeldung.com/jar-create-programatically
+ * Taken from: https://www.baeldung.com/jar-create-programatically
  */
 public class JarTool {
 
-    private Manifest manifest = new Manifest();
+    private final Manifest manifest = new Manifest();
 
     public void startManifest() {
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");

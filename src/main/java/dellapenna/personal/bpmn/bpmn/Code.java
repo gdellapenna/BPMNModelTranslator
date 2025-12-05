@@ -11,8 +11,6 @@ import java.util.List;
  */
 public class Code<T> {
 
-   
-
     private final List<T> statements = new ArrayList<>();
 
     public Code() {

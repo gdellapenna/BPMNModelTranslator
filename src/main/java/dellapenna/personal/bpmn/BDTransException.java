@@ -2,7 +2,7 @@ package dellapenna.personal.bpmn;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class BDTransException extends Exception {
 
@@ -13,5 +13,5 @@ public class BDTransException extends Exception {
     public BDTransException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
 }

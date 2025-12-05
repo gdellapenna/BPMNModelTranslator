@@ -13,7 +13,7 @@ import org.camunda.feel.syntaxtree.OpenConstRangeBoundary;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  * @param <T>
  */
 public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
@@ -41,12 +41,10 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
         return result;
     }
 
-//    @Override
     protected T translateExp(Exp e, FeelTranslationInfo info) throws FeelTranslatorException {
         return translateExp(null, e, info);
     }
 
-//    @Override
     protected T translateExp(Exp input, Exp e, FeelTranslationInfo info) throws FeelTranslatorException {
         T result;
         switch (e) {
@@ -169,16 +167,9 @@ public abstract class AbstractFeelTranslator<T> implements FeelTranslator<T> {
     @Override
     public T translate(String input, String expression, FeelTranslationInfo info) throws FeelTranslatorException {
         Exp input_parsing = input != null ? parse(input) : null;
-        //if (input_parsing == null || input_parsing.isSuccess()) {
         Exp expression_parsing = parse(expression);
-        //if (expression_parsing.isSuccess() && (input_parsing == null || input_parsing.isSuccess())) {
         return translateExp(input_parsing != null ? input_parsing : null, expression_parsing, info);
-        //} else {
-        //    throw new FeelTranslatorException("Parsing error: " + expression_parsing.failure().message());
-        //}
-        //} else {
-        //    throw new FeelTranslatorException("Parsing error: " + input_parsing.failure().message());
-        //}
+
     }
 
     @Override

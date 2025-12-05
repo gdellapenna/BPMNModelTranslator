@@ -4,7 +4,7 @@ import dellapenna.personal.bpmn.BDTransException;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class FeelTranslatorException extends BDTransException {
 
@@ -15,5 +15,5 @@ public class FeelTranslatorException extends BDTransException {
     public FeelTranslatorException(String message, Throwable cause) {
         super(message, cause);
     }
-    
+
 }

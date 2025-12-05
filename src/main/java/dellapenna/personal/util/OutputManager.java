@@ -1,10 +1,10 @@
-package dellapenna.personal.bpmn;
+package dellapenna.personal.util;
 
 import java.io.PrintWriter;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class OutputManager {
 
@@ -101,7 +101,7 @@ public class OutputManager {
         this.max_message_length = max_message_length;
     }
 
-    ////
+    ///
     public String ellipsize(String text, int max) {
 
         if (text.length() <= max) {

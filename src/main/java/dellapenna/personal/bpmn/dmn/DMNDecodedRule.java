@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public record DMNDecodedRule<T>(List<DMNDecodedCondition<T>> conditions, List<DMNDecodedAssignment<T>> assignments, String comment) {
 

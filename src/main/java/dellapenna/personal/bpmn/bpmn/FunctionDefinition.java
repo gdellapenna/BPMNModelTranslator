@@ -7,6 +7,6 @@ import java.util.Map;
  *
  * @author Giuseppe Della Penna
  */
-public record FunctionDefinition<T>(String name, Code body, List<T> triggers, String returnType, Map<String,String> parameters) {
-    
+public record FunctionDefinition<T>(String name, Code body, List<T> triggers, String returnType, Map<String, String> parameters) {
+
 }

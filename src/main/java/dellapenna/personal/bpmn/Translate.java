@@ -1,5 +1,7 @@
 package dellapenna.personal.bpmn;
 
+import dellapenna.personal.util.JarTool;
+import dellapenna.personal.util.OutputManager;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +26,7 @@ import org.apache.commons.cli.ParseException;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class Translate {
 

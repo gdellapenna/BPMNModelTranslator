@@ -105,7 +105,7 @@ public class VariableDefinition {
                 if (min.equals(max) && (minExclusive || maxExclusive)) {
                     result += (!result.isBlank() ? " / " : "") + "BALL" + "(" + min + ")";
                 } else {
-                    result += (!result.isBlank() ? " / " : "") + "RANGE: " + (minExclusive ? "(" : "[") + min + "," + max + (maxExclusive ? ")" : "]");                    
+                    result += (!result.isBlank() ? " / " : "") + "RANGE: " + (minExclusive ? "(" : "[") + min + "," + max + (maxExclusive ? ")" : "]");
                 }
             } else if (min != null) {
                 result += (!result.isBlank() ? " / " : "") + "MIN: " + min + " " + (minExclusive ? "EXCLUSIVE" : "INCLUSIVE");

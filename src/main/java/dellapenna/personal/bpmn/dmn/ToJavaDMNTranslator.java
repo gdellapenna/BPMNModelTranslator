@@ -6,6 +6,10 @@ import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ *
+ * @author Giuseppe Della Penna
+ */
 public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
 
     private static final ToJavaFeelTranslator feel = new ToJavaFeelTranslator();
@@ -36,7 +40,6 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 default_present = true;
             }
             rs += " { return new " + output_record_name + "("
-                    //+ r.assignments().stream().map(a -> (a.outputName() + " = " + a.outputExpression())).collect(Collectors.joining("; "))
                     + r.assignments().stream().map(a -> ("/*" + a.outputName() + "*/" + a.outputExpression())).collect(Collectors.joining(", "))
                     + ");}";
 
@@ -45,21 +48,6 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         if (!default_present) {
             result += (!result.isBlank() ? " else " : "") + "{ BPMNExecProcessUtils.noDefaultCaseError(null);\n return null; }";
         }
-//        String result = decoded_rules.stream().map(r -> {
-//            String cond = r.conditions().stream().map(c -> (c.testExpression())).filter(s -> s != null && !s.isBlank()).collect(Collectors.joining(" && "));
-//            String rs = "";
-//            
-//            if (!cond.isBlank()) {
-//                rs += "if (" + cond + ")";
-//            } 
-//            rs += " { return new " + output_record_name + "("
-//                    //+ r.assignments().stream().map(a -> (a.outputName() + " = " + a.outputExpression())).collect(Collectors.joining("; "))
-//                    + r.assignments().stream().map(a -> ("/*" + a.outputName() + "*/" + a.outputExpression())).collect(Collectors.joining(", "))
-//                    + ");}";
-//
-//            return rs;
-//        }).collect(Collectors.joining(" else "));
-
         return result;
     }
 
@@ -87,22 +75,6 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + table.outputs().stream()
                         .map(o -> "result+=\"" + o.getKey() + "=\"+this." + o.getKey() + " ")
                         .collect(Collectors.joining(";\n", "", ";\n"))
-                //                + table.outputs().stream()
-                //                        .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
-                //                        .collect(Collectors.joining(";\n", "", ";\n"))
-                //                + "public " + resultClassName + "("
-                //                + outputs.stream()
-                //                        .map(o -> mapType(o.getTypeRef()) + " " + o.getName())
-                //                        .collect(Collectors.joining(","))
-                //                + ") {"
-                //                + outputs.stream()
-                //                        .map(o -> "this." + o.getName() + "=" + o.getName())
-                //                        .collect(Collectors.joining(";\n", "", ";\n"))
-                //                + "}\n"
-                //                + "public String toString() { String result=\"{\"; "
-                //                + outputs.stream()
-                //                        .map(o -> "result+=\"" + o.getName() + "=\"+this." + o.getName() + " ")
-                //                        .collect(Collectors.joining(";\n", "", ";\n"))
                 + "return result+\"}\";"
                 + "}\n"
                 + "}"
@@ -113,37 +85,23 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + table.inputs().stream()
                         .map(i -> "public Object" /*+ mapType(i.getInputExpression().getTypeRef())*/ + " " + sanitizeName(i.getKey()))
                         .collect(Collectors.joining(";\n", "", ";\n"))
-                //                + inputs.stream()
-                //                        .map(i -> "public Object" /*+ mapType(i.getInputExpression().getTypeRef())*/ + " " + sanitizeName(i.getInputExpression().getTextContent()))
-                //                        .collect(Collectors.joining(";\n", "", ";\n"))                
                 + "}"
                 + "\n\n"
                 //
                 + "// decision code for DMN table " + table.id() + "\n"
                 + "class " + tableClassName + " {\n\n"
-                //+ "public " + output_record_name + " " + procName + "("
                 + "public static " + resultClassName + " execute("
                 + argumentsClassName + " args"
-                /*
-                + inputs.stream()
-                        .map(i -> "Object " + sanitizeName(i.getInputExpression().getTextContent()))
-                        .collect(Collectors.joining(", "))
-                 */
                 + ") {\n\n"
                 + table.inputs().stream()
                         .map(i -> /*mapType(i.getInputExpression().getTypeRef())*/ "Object" + " " + sanitizeName(i.getKey()) + " = args." + sanitizeName(i.getKey()))
                         .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
-                /*+ inputs.stream()
-                        .map(i -> mapType(i.getInputExpression().getTypeRef()) + " " + sanitizeName(i.getInputExpression().getTextContent())
-                        + " = BPMNExecTypeUtils.to" + i.getInputExpression().getTypeRef() + "(_" + sanitizeName(i.getInputExpression().getTextContent()) + ")")
-                        .collect(Collectors.joining(";\n", "", ";\n")) + "\n"*/
                 + generateRulesSource(table.rules(), resultClassName, info)
                 + "\n}"
                 + "\n}";
 
     }
 
-    ////Classi di supporto nidificate. Dovrebbe essere necessario modificare però i nomi dei relativi tipi nella DMN
     public String generateDecisionTableSourceExp(DMNDecodedTable<String> table, DMNTranslationInfo info) {
         String tableClassName = sanitizeName("dmn_dtable_" + table.id());
         String resultClassName = tableClassName + "_result";

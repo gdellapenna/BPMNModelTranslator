@@ -5,10 +5,10 @@ import java.util.List;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class DMNTranslationInfo {
-    
+
     private final List<List<String>> readVariables = new ArrayList<>();
     private final List<List<String>> writtenVariables = new ArrayList<>();
 
@@ -27,5 +27,5 @@ public class DMNTranslationInfo {
     public List<List<String>> getWrittenVariables() {
         return writtenVariables;
     }
-    
+
 }

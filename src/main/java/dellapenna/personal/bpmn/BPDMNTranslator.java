@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn;
 
+import dellapenna.personal.util.OutputManager;
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedModel;
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
 import dellapenna.personal.bpmn.bpmn.BpmnTranslatorException;
@@ -34,7 +35,7 @@ import org.camunda.bpm.model.dmn.DmnModelInstance;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class BPDMNTranslator {
 
@@ -67,7 +68,6 @@ public class BPDMNTranslator {
 
     DMNTranslator<String> dt = new ToJavaDMNTranslator();
     ToJavaBPMNTranslator bt = new ToJavaBPMNTranslator();
-    //ToJavaMainMaker mm = new ToJavaMainMaker();
 
     protected String sanitizeName(String n) {
         return n.replaceAll("[^A-Za-z0-9_]", "_");
@@ -119,7 +119,7 @@ public class BPDMNTranslator {
         }
         b_info.setDebug(true);
         b_info.setTrueParallel(true);
-        //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
+        //b_info.addGlobalAssertion("pWeight>0", "weight is positive"); //TEST ONLY
 
         BpmnModelInstance bpmnInstance = Bpmn.readModelFromFile(bpmn_file.toFile());
         outlog.emit(0, "Translator", "decoding BPMN model " + bpmn_file);
@@ -154,10 +154,10 @@ public class BPDMNTranslator {
         for (int i = 0; i < bpmn_files.size(); ++i) {
             Path bpmn_file = bpmn_files.get(i);
             BPMNTranslationInfo b_info = new BPMNTranslationInfo(t_info);
-            //b_info.setDebug(true);
-            //b_info.setTrueParallel(true);
-            //b_info.addGlobalAssertion("pWeight>0", "weight is positive");
-            //b_info.addForcedInputVariable("a");
+            //b_info.setDebug(true); //TEST ONLY
+            //b_info.setTrueParallel(true); //TEST ONLY
+            //b_info.addGlobalAssertion("pWeight>0", "weight is positive"); //TEST ONLY
+            //b_info.addForcedInputVariable("a"); //TEST ONLY
             bpmns[i] = compile_bpmn(bpmn_file, dmns, b_info);
             for (BPMNDecodedProcess process : bpmns[i].processes()) {
                 GenerationInfo gen_info = new GenerationInfo();
@@ -216,6 +216,7 @@ public class BPDMNTranslator {
 //        result += POST_CODE;
 //        return result;
 //    }
+    
     public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         outlog.emit(1, "Translator", "generating input properties");
         String result = "";

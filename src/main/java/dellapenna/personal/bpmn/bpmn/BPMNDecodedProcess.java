@@ -53,11 +53,9 @@ public class BPMNDecodedProcess {
     private final List<MessageDefinition> processMessages = new ArrayList<>();
     private final Map<FlowNode, FlowNodeInfo> processGraphMap = new HashMap<>();
 
-    //private final Map<String, Map<VariableDirection, List<String>>> variableUsages = new HashMap<>();
     private final List<String> startEventFlowNames = new ArrayList<>();
 
     public String getFlowName(FlowNode start) {
-        //return "flow_" + (start.getName() != null && !start.getName().isBlank() ? start.getName() : start.getId());
         NodeProcedureType type = switch (start) {
             case Gateway g ->
                 NodeProcedureType.GATEWAY;
@@ -201,7 +199,7 @@ public class BPMNDecodedProcess {
             default ->
                 NodeProcedureType.FLOW;
         };
-        //TODO questa espressione deve essere indipendente da ToJavaBPMNTranslator
+        //TODO should be independent from ToJavaBPMNTranslator
         FunctionDefinition p = registerProcedure(getFlowName(node), code, Map.of("s", ToJavaBPMNTranslator.EXECUTILEXPRESSION + ".ProcessStatus"), type);
         registerDecodedNode(node, p);
 
@@ -232,16 +230,10 @@ public class BPMNDecodedProcess {
         return processGraphMap;
     }
 
-    /**
-     * @return the name
-     */
     public String getName() {
         return name;
     }
 
-    /**
-     * @return the rawFlows
-     */
     public List<BPMNDecodedFlow> getRawFlows() {
         return rawFlows;
     }

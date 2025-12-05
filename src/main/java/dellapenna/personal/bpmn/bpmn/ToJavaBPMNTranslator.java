@@ -129,8 +129,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     .filter(v -> !isVariableIncluded(v, localVariables))
                     .toList(),
                     BPMNDecodedProcess.VariableDirection.READ, t.getId(), null);
-            
-            
+
         } else if (t instanceof StartEvent a) {
             p.registerProcessVariables(a.getDataOutputAssociations().stream()
                     .map(oa -> oa.getTarget().getAttributeValue("name"))
@@ -418,7 +417,6 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 code.append(EXECUTILEXPRESSION + ".debugOutput(s,\"\t ASSIGNED " + resultVariable + " TO %s\"," + resultVariable + ")");
             }
             p.registerProcessVariable(resultVariable, BPMNDecodedProcess.VariableDirection.WRITE, t.getId(), null);
-            //in questo modo, però, una variabile di input, se viene riassegnata nel codice, non sarà più considerata tale, non potendosi capire staticamente
             p.registerProcessVariables(f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, t.getId(), assigned_expression);
         }
         code.append(generateCommonNodeExitStatements(t, info));
@@ -591,11 +589,6 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
-//    @Override
-//    public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
-//        Code code = generateJoiningGatewayCode(p, g, joinedflow, info);
-//        return code;
-//    }    
     //same as generateParallelJoiningGatewayCode, code must be merged with appropriate generic parameter types
     @Override
     public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
@@ -637,25 +630,6 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
-//    @Override
-//    public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
-//        Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
-//
-//        for (int o = 0; o < splitFlows.size(); ++o) {
-//            String condition_expression = splitFlows.get(o).condition().substring(1);
-//            FeelTranslationInfo v_f_info = new FeelTranslationInfo();
-//            Code splitCode = ToJavaBPMNTranslator.this.generateFlowJointCode(p, g, splitFlows.get(o).firstStep(), info);
-//            code.append("if "
-//                    + "(" + feel.translate(condition_expression, v_f_info) + ")" //TEMP, dobbiamo togliere l'uguale se c'è altrimenti non è un'espressione feel
-//                    + "{" + generateCodeSource(splitCode)
-//                    + "} ");
-//            p.registerProcessVariables(v_f_info.getUsedVariableNames(), BPMNDecodedProcess.VariableDirection.READ, g.getId(), condition_expression);
-//        }
-//
-//        //System.out.println(f_info.getUsedVariableNames().stream().map(cn -> String.join(".", cn)).distinct().collect(Collectors.joining(",")) + " usati nel GATEWAY " + getNodeDescription(n));
-//        code.append(generateCommonNodeExitStatements(g, info));
-//        return code;
-//    } 
     @Override
     public Code generateInclusiveGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
         Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));

@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
 
@@ -46,7 +46,6 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
     @Override
     public String translateEqual(String arg1, String arg2, FeelTranslationInfo info) {
         return "BPMNExecTypeUtils.equals(" + ((arg1 != null ? arg1 : "") + "," + arg2 + ")");
-        //return ((arg1 != null ? arg1 : "") + ".equals(" + arg2 + ")");
     }
 
     @Override

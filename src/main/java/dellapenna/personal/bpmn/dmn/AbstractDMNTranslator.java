@@ -1,6 +1,6 @@
 package dellapenna.personal.bpmn.dmn;
 
-import dellapenna.personal.bpmn.OutputManager;
+import dellapenna.personal.util.OutputManager;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import org.camunda.bpm.model.dmn.instance.Rule;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  * @param <T>
  */
 public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {

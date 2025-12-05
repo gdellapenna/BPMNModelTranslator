@@ -1,6 +1,6 @@
 package dellapenna.personal.bpmn.bpmn;
 
-import dellapenna.personal.bpmn.OutputManager;
+import dellapenna.personal.util.OutputManager;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.ArrayDeque;

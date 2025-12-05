@@ -1,11 +1,4 @@
-package dellapenna.personal.bpmn.versim;
-
-import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
-import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
-import dellapenna.personal.bpmn.bpmn.VariableDefinition;
-import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
-import java.util.Map;
-import org.camunda.bpm.model.bpmn.instance.FlowNode;
+package dellapenna.personal.bpmn.devtest;
 
 /**
  *

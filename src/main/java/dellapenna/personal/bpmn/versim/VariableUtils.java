@@ -1,6 +1,6 @@
 package dellapenna.personal.bpmn.versim;
 
-import dellapenna.personal.bpmn.OutputManager;
+import dellapenna.personal.util.OutputManager;
 import dellapenna.personal.bpmn.bpmn.BPMNDecodedProcess;
 import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.VariableDefinition;
@@ -35,7 +35,7 @@ import org.camunda.feel.syntaxtree.Ref;
 
 /**
  *
- * @author giuse
+ * @author Giuseppe Della Penna
  */
 public class VariableUtils {
 
@@ -44,7 +44,6 @@ public class VariableUtils {
     public void decodeDMNVariableCostraint(String condition_expression, VariableDefinition.VariableBounds b) throws FeelTranslatorException {
         if (!condition_expression.isBlank()) {
             Exp exp = ft.parse(condition_expression);
-            //System.out.println(exp.getClass().getName());
             switch (exp) {
                 case ConstString texp ->
                     b.addCase(texp.value());
@@ -55,7 +54,7 @@ public class VariableUtils {
                 case InputInRange texp -> {
                     ConstRangeBoundary left = texp.range().start();
                     ConstRangeBoundary right = texp.range().end();
-                    //TODO gestire gli open e i close
+                    //TODO handle open and close ranges
                     if (left.value() instanceof ConstNumber n) {
                         b.updateMin(n.value().bigDecimal().doubleValue(), (left instanceof OpenConstRangeBoundary));
                     }
@@ -85,17 +84,17 @@ public class VariableUtils {
                 }
                 default -> {
                     b.addExpression(condition_expression); //non auto-deducibile
-                    OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+condition_expression);
+                    OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + condition_expression);
                 }
             }
-            //gestire gli altri operatori di confronto
+            //TODO handle other comparisons?
         } else {
-            //qui è un don't care quindi direi che non collezioniamo alcun vincolo
+            //currantly don't care
         }
     }
 
     public void decodeBPMNVariableConstraint(String variable_expression, VariableDefinition v) throws FeelTranslatorException {
-        if (variable_expression!=null && !variable_expression.isBlank()) {
+        if (variable_expression != null && !variable_expression.isBlank()) {
             Exp exp = ft.parse(variable_expression);
             if (exp instanceof Comparison c) {
                 boolean inverse = false;
@@ -107,9 +106,9 @@ public class VariableUtils {
                     inverse = true;
                     compared_expression = c.x();
                 } else {
-                    v.getBounds().addExpression(variable_expression); //non auto-deducibile  
-                    OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+variable_expression);
-                    
+                    v.getBounds().addExpression(variable_expression); //not auto-deducible  
+                    OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + variable_expression);
+
                 }
                 if (compared_expression != null) {
                     switch (exp) {
@@ -158,13 +157,13 @@ public class VariableUtils {
                             } else if (compared_expression instanceof ConstBool n) {
                                 v.getBounds().addCase(n.value() ? "true" : "false");
                             } else {
-                                v.getBounds().addExpression(variable_expression); //non auto-deducibile
-                                OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+variable_expression);
+                                v.getBounds().addExpression(variable_expression); //not auto-deducible
+                                OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + variable_expression);
                             }
                         }
                         default -> {
-                            v.getBounds().addExpression(variable_expression); //non auto-deducibile
-                            OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: "+variable_expression);
+                            v.getBounds().addExpression(variable_expression); //not auto-deducible
+                            OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + variable_expression);
                         }
                     }
                 }
@@ -183,16 +182,11 @@ public class VariableUtils {
     }
 
     public VariableDefinition.VariableBounds analyzeInputConstraints(VariableDefinition v, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-        //System.out.print("* INPUT " + v.getName() + " USATO IN ");
-        //System.out.println(v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().map(u -> u.sourceId() + " (" + u.sourceExpression() + ")").collect(Collectors.joining(", ")));
         v.getUsages(BPMNDecodedProcess.VariableDirection.READ).stream().forEach(u -> {
             if (v.getName().equals(u.sourceExpression())) {
-                //System.out.print("DIRECT USAGE: " + u.sourceId());
                 if (u.sourceId().startsWith("$DMN$")) {
                     String[] parts = u.sourceId().substring(5).split("\\$");
-                    //System.out.print("DMN TABLE " + parts[0] + " INPUT " + parts[1] + " CASES ");
                     List<String> condition_expressions = extractDMNConstraints(dmns, parts[0], parts[1]);
-                    //System.out.print(condition_expressions.stream().collect(Collectors.joining(", ")));
                     for (String c : condition_expressions) {
                         try {
                             decodeDMNVariableCostraint(c, v.getBounds());
@@ -209,14 +203,6 @@ public class VariableUtils {
                 }
             }
         });
-        //System.out.println(v.getBounds());
         return v.getBounds();
     }
-
-//    public void analyzeInputConstraints(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
-//        process.getFreeVariables(info).stream().forEach(v -> {
-//            analyzeInputConstraints(v, dmns, info);
-//        });
-//    }
-
 }
