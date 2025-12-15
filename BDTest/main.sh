@@ -264,7 +264,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
         print("Unable to determine values for " + str(save))
         print(type_str)
       elif type_str.split(":")[0] == "#ENUM":
-	vals = str(random.choice(type_str.split(": ")[1].split(",")))
+        vals = str(random.choice(type_str.split(": ")[1].split(",")))
         for nv in range(1, num_vals):
           vals += "," + str(random.choice(type_str.split(": ")[1].split(",")))
         print(save + "=" + vals)
@@ -272,7 +272,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
       elif type_str.split(":")[0] == "#MIN":
         min_ch = float(type_str.split()[1])
         max_ch = float(max_float)
-	vals = str(random.uniform(min_ch + (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch))
+        vals = str(random.uniform(min_ch + (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch))
         for nv in range(1, num_vals):
           vals += "," + str(random.uniform(min_ch + (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch))
         print(save + "=" + vals)
@@ -280,7 +280,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
       elif type_str.split(":")[0] == "#MAX":
         max_ch = float(type_str.split()[1])
         min_ch = float(-max_float)
-	vals = str(random.uniform(min_ch, max_ch - (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0)))
+        vals = str(random.uniform(min_ch, max_ch - (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0)))
         for nv in range(1, num_vals):
           vals += "," + str(random.uniform(min_ch, max_ch - (min_eps if (type_str.split()[2] == "INCLUSIVE") else 0)))
         print(save + "=" + vals)
@@ -290,7 +290,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
         incl_mm = [type_str.split()[1].split(",")[0][0] == "["]
         max_ch = float(type_str.split()[1].split(",")[1][:-1])
         incl_mm += [type_str.split()[1].split(",")[1][-1] == "]"]
-	vals = str(random.uniform(min_ch + (min_eps if incl_mm[0] else 0), max_ch + (min_eps if incl_mm[1] else 0)))
+        vals = str(random.uniform(min_ch + (min_eps if incl_mm[0] else 0), max_ch + (min_eps if incl_mm[1] else 0)))
         for nv in range(1, num_vals):
           vals += "," + str(random.uniform(min_ch + (min_eps if incl_mm[0] else 0), max_ch + (min_eps if incl_mm[1] else 0)))
         print(save + "=" + vals)
@@ -300,7 +300,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
         choices = [val]
         choices += [random.uniform(min_float, val - min_eps)]
         choices += [random.uniform(val + min_eps, max_float)]
-	vals = str(random.choice(choices))
+        vals = str(random.choice(choices))
         for nv in range(1, num_vals):
           vals += "," + str(random.choice(choices))
         print(save + "=" + vals)
@@ -308,7 +308,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
       elif type_str.split(":")[0] == "#MIN_INT":
         min_ch = int(type_str.split()[1])
         max_ch = int(max_float)
-	vals = str(random.randint(min_ch + (1 if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch))
+        vals = str(random.randint(min_ch + (1 if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch))
         for nv in range(1, num_vals):
           vals += "," + str(random.randint(min_ch + (1 if (type_str.split()[2] == "INCLUSIVE") else 0), max_ch))
         print(save + "=" + vals)
@@ -316,7 +316,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
       elif type_str.split(":")[0] == "#MAX_INT":
         max_ch = int(type_str.split()[1])
         min_ch = int(-max_float)
-	vals = str(random.randint(min_ch, max_ch - (1 if (type_str.split()[2] == "INCLUSIVE") else 0)))
+        vals = str(random.randint(min_ch, max_ch - (1 if (type_str.split()[2] == "INCLUSIVE") else 0)))
         for nv in range(1, num_vals):
           vals += "," + str(random.randint(min_ch, max_ch - (1 if (type_str.split()[2] == "INCLUSIVE") else 0)))
         print(save + "=" + vals)
@@ -326,7 +326,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
         incl_mm = [type_str.split()[1].split(",")[0][0] == "["]
         max_ch = int(type_str.split()[1].split(",")[1][:-1])
         incl_mm += [type_str.split()[1].split(",")[1][-1] == "]"]
-	vals = str(random.randint(min_ch + (1 if incl_mm[0] else 0), max_ch + (1 if incl_mm[1] else 0)))
+        vals = str(random.randint(min_ch + (1 if incl_mm[0] else 0), max_ch + (1 if incl_mm[1] else 0)))
         for nv in range(1, num_vals):
           vals += "," + str(random.randint(min_ch + (1 if incl_mm[0] else 0), max_ch + (1 if incl_mm[1] else 0)))
         print(save + "=" + vals)
@@ -336,7 +336,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
         choices = [val]
         choices += [random.randint(min_int, val - 1)]
         choices += [random.randint(val + 1, max_int)]
-	vals = str(random.choice(choices))
+        vals = str(random.choice(choices))
         for nv in range(1, num_vals):
           vals += "," + str(random.choice(choices))
         print(save + "=" + vals)
@@ -347,7 +347,7 @@ def gen_all_inputs(content, content_overr, min_int, max_int, min_float, max_floa
 
 content = """`cat $prop_file`""".split("\n")
 content_overr = """`test "$override_vars" && cat $override_vars`""".split("\n")
-gen_all_inputs(content, content_overr, $min_int, $max_int, $min_float, $max_float, $min_eps, $list_num_vals)
+gen_all_inputs(content, content_overr, $min_int, $max_int, $min_float, $max_float, $min_eps, "$list_num_vals")
 EOF
     stats_print_fun $output_file.time.log $output_file python3 ${output_file}.tmp.py
     rm ${output_file}.tmp.py
@@ -449,15 +449,25 @@ do
 	    grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties || { echo Exiting because execution $dir_res/logs/$t reached an error block; final_res=1; break; }
 	else
 	    echo $last_res | awk '{printf("Exiting because execution '$dir_res/logs/$t' failed %s\n", $1 == 124? "for timeout" : "with exit code"$1)}'
+	    ((num_not_compl++))
 	    final_res=1
 	    break
 	fi
     else
 	if [ -f $dir_res/logs/$t/${bpmn}_outputs.properties ]
 	then
-	    grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties || { echo "Warning: execution $dir_res/logs/$t reached an error block"; final_res=1; }
+	    grep -q "output_success=true" $dir_res/logs/$t/${bpmn}_outputs.properties
+	    if [ $? -eq 0 ]
+	    then
+		((num_succ++))
+	    else
+		echo "Warning: execution $dir_res/logs/$t reached an error block"
+		((num_fail++))
+		final_res=1
+	    fi    
 	else
 	    echo $last_res | { awk '{printf("Warning: execution '$dir_res/logs/$t' failed %s\n", $1 == 124? "for timeout" : "with exit code"$1)}'; final_res=1; }
+	    ((num_not_compl++))
 	fi
 	if [ "$stop_type" == "both_coverage" ]
 	then
@@ -479,9 +489,10 @@ done
 if [ $final_res -eq 2 ]
 then
     echo Result is: PASS
-elif [ $final_res -eq 0 -a "$stop_type" == "errors" ]
+elif [ $final_res -eq 0 -a \( "$stop_type" == "errors" -o "$stop_type" == "nostop" \) ]
 then
     echo Result is: PASS
 else
     echo Result is: FAIL
 fi
+echo $num_succ $num_fail $num_not_compl | awk '{printf("Detail:\n\t%d success (%.2lf%%)\n\t%d failed (%.2lf%%)\n\t%d aborted (%.2lf%%)\n", $1, $1/($1 + $2 + $3), $2, $2/($1 + $2 + $3), $3, $3/($1 + $2 + $3))}'
