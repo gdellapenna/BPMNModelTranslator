@@ -1,0 +1,14 @@
+This project includes third-party libraries. Their original licenses are preserved and must be respected.
+ 
+Apache 2 License: 
+     - Apache Commons CLI (https://commons.apache.org/proper/commons-cli/)
+     - Camunda Platform - BPMN Model API (http://www.camunda.org/camunda-database-settings/camunda-model-apis/camunda-bpmn-model)
+     - Camunda Platform - CMMN Model API (http://www.camunda.org/camunda-database-settings/camunda-model-apis/camunda-cmmn-model)
+     - Camunda Platform - DMN Model API (http://www.camunda.org/camunda-database-settings/camunda-model-apis/camunda-dmn-model)
+     - Camunda Platform - Xml Model API (http://www.camunda.org/camunda-database-settings/camunda-model-apis/camunda-xml-model)
+     - FEEL Scala Engine (http://www.camunda.org/camunda-bpm-release-parent/feel-engine)
+     - Scala Library (https://www.scala-lang.org/)  
+
+MIT License:
+     - SLF4J API Module (http://www.slf4j.org)
+     - SLF4J NOP Provider (http://www.slf4j.org)	 
