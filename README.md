@@ -1,5 +1,8 @@
 # BDTransTest
 
+> This tool is described in the following paper:
+> Della Penna, G. and Melatti, I. (2025). Automating Execution and Verification of BPMN+DMN Business Processes. https://arxiv.org/abs/2512.15214 
+
 ## Building
 
 To build the Docker image use the following command :
