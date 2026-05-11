@@ -129,7 +129,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     .filter(v -> !isVariableIncluded(v, localVariables))
                     .toList(),
                     BPMNDecodedProcess.VariableDirection.READ, t.getId(), null);
-
+        } else if (t instanceof Task g) { //data outputs of generic tasks also addressed?
+            p.registerProcessVariables(g.getDataOutputAssociations().stream()
+                    .map(oa -> oa.getTarget().getAttributeValue("name"))
+                    .filter(v -> !isVariableIncluded(v, localVariables))
+                    .toList(),
+                    BPMNDecodedProcess.VariableDirection.READ, t.getId(), null);
         } else if (t instanceof StartEvent a) {
             p.registerProcessVariables(a.getDataOutputAssociations().stream()
                     .map(oa -> oa.getTarget().getAttributeValue("name"))
@@ -388,6 +393,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateGenericTaskCode(BPMNDecodedProcess p, Task t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        code.append(generateOutputAssignmentsStatements(p, t, Collections.EMPTY_LIST, false, info)); //no read next
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }

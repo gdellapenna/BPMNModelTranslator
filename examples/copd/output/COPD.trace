@@ -1,0 +1,60 @@
+Event_0ltqr3s[label="Patient request"]
+"Event_0ltqr3s" -> "Activity_0f1noex"
+Activity_0f1noex[label="Evaluate request"]
+"Activity_0f1noex" -> "Gateway_04ijm8v"
+Gateway_04ijm8v[label="Is the patient already staged?"]
+"Gateway_04ijm8v" -> "Activity_0ck2kiz"
+Activity_0ck2kiz[label="Examine and Interview patient"]
+"Activity_0ck2kiz" -> "Activity_1by7ohz"
+Activity_1by7ohz[label="Make working diagnosis"]
+"Activity_1by7ohz" -> "Gateway_1ifzb7i"
+Gateway_1ifzb7i[label="COPD suspected?"]
+"Gateway_1ifzb7i" -> "Activity_0wlmua1"
+Activity_0wlmua1[label="Conduct simple spirometry"]
+"Activity_0wlmua1" -> "Activity_0vfbgoy"
+Activity_0vfbgoy[label="Interpret results"]
+"Activity_0vfbgoy" -> "Gateway_065vrg8"
+Gateway_065vrg8[label="Spirometry suggestive of COPD?"]
+"Gateway_065vrg8" -> "Activity_182mdyp"
+Activity_182mdyp[label="Conduct global spirometry"]
+"Activity_182mdyp" -> "Activity_16mwits"
+Activity_16mwits[label="Make diagnosis"]
+"Activity_16mwits" -> "Gateway_0y30j11"
+Gateway_0y30j11[label="COPD diagnosed?"]
+"Gateway_0y30j11" -> "Gateway_1ik5zts"
+Gateway_1ik5zts[]
+"Gateway_1ik5zts" -> "Activity_089tja4"
+"Gateway_1ik5zts" -> "Gateway_0xkk1o6"
+Activity_089tja4[label="Conduct CAT"]
+"Activity_089tja4" -> "Gateway_0x0ocwc"
+Gateway_0xkk1o6[label="Is the patient a smoker?"]
+"Gateway_0xkk1o6" -> "Activity_0a2awzt"
+Gateway_0x0ocwc[]
+"Gateway_0x0ocwc" -> "Activity_053g4bq"
+Activity_0a2awzt[label="Smoking tests"]
+"Activity_0a2awzt" -> "Gateway_197n966"
+Gateway_197n966[]
+"Gateway_197n966" -> "Gateway_0x0ocwc"
+Gateway_0x0ocwc[]
+"Gateway_0x0ocwc" -> "Activity_053g4bq"
+Activity_053g4bq[label="Conduct pulmonary examination"]
+"Activity_053g4bq" -> "Activity_0jrklqn"
+Activity_0jrklqn[label="Test bronchodilator reversibility"]
+"Activity_0jrklqn" -> "Activity_1gs1u22"
+Activity_1gs1u22[label="Stage patient"]
+"Activity_1gs1u22" -> "Gateway_1vbgzvs"
+Gateway_1vbgzvs[]
+"Gateway_1vbgzvs" -> "Activity_0b5bgl9"
+Activity_0b5bgl9[label="Conduct BGA"]
+"Activity_0b5bgl9" -> "Gateway_0vpt9p6"
+Gateway_0vpt9p6[label="PaO2<60mmHg OR PaCO2>45mmHg?"]
+"Gateway_0vpt9p6" -> "Activity_1x6l1dw"
+Activity_1x6l1dw[label="Prescribe oxygen therapy"]
+"Activity_1x6l1dw" -> "Gateway_07g2otl"
+Gateway_07g2otl[]
+"Gateway_07g2otl" -> "Gateway_1lnx0yn"
+Gateway_1lnx0yn[]
+"Gateway_1lnx0yn" -> "Gateway_06mnf24"
+Gateway_06mnf24[]
+"Gateway_06mnf24" -> "Event_1e4tr3y"
+Event_1e4tr3y[]

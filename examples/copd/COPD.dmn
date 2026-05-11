@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0xbu3ad" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+  <decision id="InterpretSpiroResultsDT" name="InterpretSpiroResultsDT">
+    <decisionTable id="DecisionTable_0qyx2f7">
+      <input id="Input_1">
+        <inputExpression id="InputExpression_1" typeRef="string">
+          <text>something</text>
+        </inputExpression>
+      </input>
+      <output id="Output_1" name="copd" typeRef="boolean" />
+      <rule id="DecisionRule_1rizema">
+        <inputEntry id="UnaryTests_069flsn">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1ritjd7">
+          <text>true</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <decision id="StagePatientDT" name="StagePatientDT">
+    <decisionTable id="DecisionTable_0jx1rvl">
+      <input id="InputClause_0yonfhl">
+        <inputExpression id="LiteralExpression_02ecjlh" typeRef="string">
+          <text>something</text>
+        </inputExpression>
+      </input>
+      <output id="OutputClause_0n0trr9" name="stage" typeRef="number" />
+      <rule id="DecisionRule_03ee9yp">
+        <inputEntry id="UnaryTests_094o6al">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0nt6k12">
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_00xzoah">
+        <inputEntry id="UnaryTests_06g6zd9">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_02i2ej6">
+          <text>3</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_027l1jg">
+        <inputEntry id="UnaryTests_1r68if1">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0y4est9">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_119b5ig">
+        <inputEntry id="UnaryTests_1wsceox">
+          <text></text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0v9r8rv">
+          <text>1</text>
+        </outputEntry>
+      </rule>
+    </decisionTable>
+  </decision>
+  <dmndi:DMNDI>
+    <dmndi:DMNDiagram>
+      <dmndi:DMNShape dmnElementRef="InterpretSpiroResultsDT">
+        <dc:Bounds height="80" width="180" x="160" y="100" />
+      </dmndi:DMNShape>
+      <dmndi:DMNShape id="DMNShape_1bgqihu" dmnElementRef="StagePatientDT">
+        <dc:Bounds height="80" width="180" x="160" y="300" />
+      </dmndi:DMNShape>
+    </dmndi:DMNDiagram>
+  </dmndi:DMNDI>
+</definitions>

@@ -19,7 +19,9 @@ public class BPMNExecTypeUtils {
     }
 
     public static Boolean toboolean(Object o) {
-        if (o instanceof Boolean b) {
+        if (o == null) {
+            return false;
+        } else if (o instanceof Boolean b) {
             return b;
         } else if (o instanceof Number n) {
             return n.doubleValue() != 0;

@@ -1,0 +1,16 @@
+patientSmoker=true
+#ENUM: true,false
+patientAlreadyStaged=false
+#ENUM: false,true
+patientRequireHospitalization=false
+#ENUM: false,true
+COPDSuspected=true
+#ENUM: false,true
+spirometryReport=?
+#
+analyzedResults=?
+#
+COPDDiagnosed=true
+#ENUM: false,true
+paO2CO2=true
+#ENUM: true,false
