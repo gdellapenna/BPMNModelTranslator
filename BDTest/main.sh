@@ -192,14 +192,10 @@ function init_all ()
     inputs=$inputs" "`ls -1 $dir_tmp/*.dmn 2> /dev/null | awk -F/ '{print $NF}' | tr "\n" " "`
     pushd $dir_tmp > /dev/null 2>&1
     ln -s $JAR
-    # echo $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs > just_to_be_sure.sh
-    # cat just_to_be_sure.sh 1>&2
-    # bash just_to_be_sure.sh > $dir_res/init.log 2>&1
     echo $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs 1>&2
-    # $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs > $dir_res/init.log 2>&1
     stats_print_fun $dir_res/init.time.log $dir_res/init.log  $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs
     popd > /dev/null 2>&1
-    test -f $dir_tmp/${output_name}_inputs.properties || { echo Generation failed, $dir_tmp/${output_name}_inputs.properties does not exist; exit; }
+    test -f $dir_tmp/${output_name}_inputs.properties || { echo Generation failed, $dir_tmp/${output_name}_inputs.properties does not exist; return; }
     mkdir -p $dir_res/translation_output
     cp $dir_tmp/${output_name}.java $dir_tmp/${output_name}.jar $dir_tmp/${output_name}_inputs.properties $dir_tmp/$output_name.graph $dir_res/translation_output
     mv $dir_res/init.log $dir_res/translation_output/log
@@ -408,6 +404,7 @@ function update_coverage ()
 }
 
 bpmn=`init_all`
+(echo $bpmn | awk '{exit (NF >= 2)}') || { echo $bpmn; exit; }
 test $only_gen_java -eq 1 && { echo Source Java files generated, exiting; exit; }
 prop_file=$dir_tmp/${bpmn}_inputs.properties
 #echo BPMN and prop: $bpmn $prop_file

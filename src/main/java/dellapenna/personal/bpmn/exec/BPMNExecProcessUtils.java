@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -21,7 +23,11 @@ public class BPMNExecProcessUtils {
     public static class ProcessStatus {
 
         String branchID;
-        String previousStep;
+        //
+        String previousStep; //NO MORE USED?
+        //
+        public String boundaryWatchID = "";
+        //
         boolean statusSuccess;
         String statusMessage;
         int statusCode;
@@ -39,8 +45,16 @@ public class BPMNExecProcessUtils {
             return n;
         }
 
+        public ProcessStatus withBoundaryAndcurrent(String boundaryWatchID, String current) {
+            ProcessStatus n = new ProcessStatus(this);
+            n.boundaryWatchID = boundaryWatchID;
+            n.previousStep = current;
+            return n;
+        }
+
         public ProcessStatus(String branchID) {
             this.branchID = branchID;
+            this.boundaryWatchID = null;
             this.previousStep = "";
             this.statusSuccess = true;
             this.statusMessage = "OK";
@@ -50,6 +64,7 @@ public class BPMNExecProcessUtils {
         public ProcessStatus(ProcessStatus parent) {
             this();
             this.branchID = parent.branchID;
+            this.boundaryWatchID = parent.boundaryWatchID;
             this.previousStep = parent.previousStep;
             this.statusSuccess = parent.statusSuccess;
             this.statusMessage = parent.statusMessage;
@@ -81,11 +96,15 @@ public class BPMNExecProcessUtils {
     static Map<String, List<String>> parallels = new HashMap<>();
     static Map<String, LinkedBlockingQueue<Message>> massage_channels = new HashMap<>();
     //public static Map<String, List<String>> joins = new HashMap<>();
+    //boundary events support data
+    static Map<String, Future> threadRegistry = new HashMap<>();
+    //to avoid copncurrency issues, we register the calcelled threads and do not start them later, if reqiested
+    static Map<String, Future> cancelledThreadRegistry = new HashMap<>();
     private static volatile SecureRandom numberGenerator = new SecureRandom();
     private static final long MSB = 0x8000000000000000L;
     //static int parallel_branch_count = 0;
     static Integer active_threads_count = 0;
-    public static int max_wait_sync_time = 10;
+    public static int max_wait_sync_time = 10000;
     static ExecutorService executor = null;
     //
 
@@ -116,7 +135,11 @@ public class BPMNExecProcessUtils {
         try {
             traceChannel = new java.io.PrintStream(name + ".trace");
         } catch (FileNotFoundException ex) {
-            ///
+
+        
+    
+
+    ///
         }
     }
 
@@ -124,7 +147,11 @@ public class BPMNExecProcessUtils {
         try {
             resultChannel = new java.io.PrintStream(name + ".result");
         } catch (FileNotFoundException ex) {
-            ///
+
+        
+    
+
+    ///
         }
     }
 
@@ -132,7 +159,11 @@ public class BPMNExecProcessUtils {
         try {
             debugChannel = new java.io.PrintStream(name + ".debug");
         } catch (FileNotFoundException ex) {
-            ///
+
+        
+    
+
+    ///
         }
     }
 
@@ -184,19 +215,27 @@ public class BPMNExecProcessUtils {
     }
 
     public static Message receiveMessage(ProcessStatus s, String channel) {
+        return receiveMessage(s, channel, max_wait_sync_time, true);
+    }
+
+    public static Message receiveMessage(ProcessStatus s, String channel, int timeout, boolean triggerTimeout) {
         if (!massage_channels.containsKey(channel)) {
             massage_channels.put(channel, new LinkedBlockingQueue<>());
         }
         try {
-            Message message = massage_channels.get(channel).poll(max_wait_sync_time, TimeUnit.SECONDS);
+            Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
             if (message != null) {
                 return message;
             } else {
-                timeoutError(s);
+                if (triggerTimeout) {
+                    timeoutError(s);
+                }
                 return null;
             }
         } catch (InterruptedException ex) {
-            timeoutError(s);
+            if (triggerTimeout) {
+                timeoutError(s);
+            }
             return null;
         }
     }
@@ -234,6 +273,23 @@ public class BPMNExecProcessUtils {
             executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
         }
         debugOutput(s, "ENDING PROCESS " + process_name);
+
+        System.out.println(active_threads_count);
+        System.out.println(threadRegistry.size());
+
+        Set<Thread> threads = Thread.getAllStackTraces().keySet();
+        threads.stream()
+                .filter(t -> t.isAlive() && !t.isDaemon())
+                .forEach(t -> {
+                    System.out.println("Thread vivo: " + t.getName()
+                            + "  stato=" + t.getState()
+                            + "  daemon=" + t.isDaemon());
+                    // stampa anche lo stack trace
+                    for (StackTraceElement e : t.getStackTrace()) {
+                        System.out.println("    at " + e);
+                    }
+                });
+
         closeChannels();
     }
 
@@ -254,7 +310,7 @@ public class BPMNExecProcessUtils {
 //        while (active_threads_count > 0) {
 //            try {
 //                Thread.sleep(10);
-////            try {
+    ////            try {
 ////                active_threads_count.wait();
 ////            } catch (InterruptedException ex) {
 ////                debugOutput("INTERNAL ERROR: THREAD INTERRUPTED");
@@ -272,25 +328,46 @@ public class BPMNExecProcessUtils {
 //        debugOutput("ENDING PROCESS");
 //        //System.exit(Integer.parseInt(outputs.getProperty("code", "0")));
 //    }
+    
     public static void startThread(Consumer<ProcessStatus> branch, ProcessStatus s) {
+        startThread(branch, s, s.branchID);
+    }
+
+    public static void startThread(Consumer<ProcessStatus> branch, ProcessStatus s, String threadID) {
         synchronized (BPMNExecProcessUtils.class) {
+            if (cancelledThreadRegistry.containsKey(threadID)) {
+                System.out.print("thread " + threadID + " not starting since is has been already cancelled");
+                return;
+            }
             active_threads_count++;
             //active_threads_count.notifyAll();
         }
         if (executor != null) {
-            executor.submit(() -> branch.accept(s));
+            Future thread = executor.submit(() -> branch.accept(s));
+            //debugOutput(s,"\t STARTING THREAD " + threadID);            
+            System.out.println("\t STARTING THREAD " + threadID);
+            synchronized (BPMNExecProcessUtils.class) {
+                threadRegistry.put(threadID, thread);
+            }
         } else {
             branch.accept(s);
         }
     }
 
     public static void startThread(Runnable branch, ProcessStatus s) {
+        startThread(branch, s, s.branchID);
+    }
+
+    public static void startThread(Runnable branch, ProcessStatus s, String threadID) {
         synchronized (BPMNExecProcessUtils.class) {
             active_threads_count++;
             //active_threads_count.notifyAll();
         }
         if (executor != null) {
-            executor.submit(branch);
+            Future thread = executor.submit(branch);
+            synchronized (BPMNExecProcessUtils.class) {
+                threadRegistry.put(threadID, thread);
+            }
         } else {
             branch.run();
         }
@@ -303,6 +380,35 @@ public class BPMNExecProcessUtils {
         }
         if (executor != null) {
             Thread.currentThread().interrupt();
+        }
+    }
+
+    public static void stopThread(Future thread) {
+        System.out.println(thread);
+        if (thread != null) {
+            synchronized (BPMNExecProcessUtils.class) {
+                active_threads_count--;
+                //active_threads_count.notifyAll();
+            }
+            thread.cancel(true);
+        }
+        System.out.println(thread);
+    }
+
+    public static void stopThread(String threadID) {
+        Future thread;
+        synchronized (BPMNExecProcessUtils.class) {
+            thread = threadRegistry.get(threadID);
+            threadRegistry.remove(threadID);
+            cancelledThreadRegistry.put(threadID, thread);
+        }
+        if (thread != null) {
+            //debugOutput(s,"\t CACELLING THREAD " + threadID);            
+            System.out.println("\t CACELLING THREAD " + threadID);
+            stopThread(thread);
+        }
+        synchronized (BPMNExecProcessUtils.class) {
+            cancelledThreadRegistry.put(threadID, thread);
         }
     }
 
@@ -357,6 +463,26 @@ public class BPMNExecProcessUtils {
             }
 
             stopThread();
+        }
+    }
+
+    public static void forkBoundaryWatch(BPMNExecProcessUtils.ProcessStatus s, String taskid, Consumer<BPMNExecProcessUtils.ProcessStatus> normalflow, Consumer<BPMNExecProcessUtils.ProcessStatus> boundaryflow) {
+        debugOutput(s, "\t STARTING " + taskid + " BOUNDARY EVENT HANDLER");
+
+        String boundaryWatchID = taskid + "_B";
+        String watcher_thread_id = boundaryWatchID + "_W";
+        String normal_thread_id = boundaryWatchID + "_N";
+        debugOutput(s, "\t FORKING NORMAL EXECUTION BRANCH %s for activity %s", normal_thread_id, taskid);
+        startThread(normalflow, s.withBoundaryAndcurrent(boundaryWatchID, "Activity_05h597z"), normal_thread_id);
+        debugOutput(s, "\t FORKING BOUNDARY WATCH BRANCH %s for activity %s", watcher_thread_id, taskid);
+        startThread(boundaryflow, s.withBoundaryAndcurrent(boundaryWatchID, "Activity_05h597z"), watcher_thread_id);
+    }
+
+    public static void resolveBoundaryWatch(BPMNExecProcessUtils.ProcessStatus s, boolean normal) {
+        System.out.println("RBW " + s.boundaryWatchID + " " + normal);
+        if (s.boundaryWatchID != null) {
+            stopThread(s.boundaryWatchID + (normal ? "_N" : "_W"));
+            s.boundaryWatchID = null;
         }
     }
 

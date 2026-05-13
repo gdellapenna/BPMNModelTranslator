@@ -1,16 +1,19 @@
 package dellapenna.personal.bpmn.bpmn;
 
+import static dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator.EXECUTILEXPRESSION;
 import dellapenna.personal.util.OutputManager;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.camunda.bpm.model.bpmn.BpmnModelInstance;
+import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
 import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.camunda.bpm.model.bpmn.instance.EndEvent;
 import org.camunda.bpm.model.bpmn.instance.Event;
@@ -30,6 +33,7 @@ import org.camunda.bpm.model.bpmn.instance.ServiceTask;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.Task;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
+import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 
 /**
  *
@@ -144,11 +148,40 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
 //                n.getIncoming().add(virtualSequence);
 //                n = virtualGateway;
 //            }
+
+            //collect boundary events for this node
+            //find parent process: boundary elements are not children of the task
+            ModelElementInstance parent = current.getParentElement();
+            String current_id = current.getId();
+            while (parent != null && !(parent instanceof Process)) {
+                parent = parent.getParentElement();
+            }
+            Process process = (Process) parent; //si assume sempre non nullo
+            List<BPMNDecodedBoundaryFlow> boundaryFlows = process.getChildElementsByType(BoundaryEvent.class).stream()
+                    .map(e -> (BoundaryEvent) e)
+                    .filter(be -> current_id.equals(be.getAttributeValue("attachedToRef")))
+                    .map(be -> new BPMNDecodedBoundaryFlow(current_id, be, be.getOutgoing().iterator().next().getTarget())) //assume one and only one outgoing flow
+                    .toList();
+            if (!boundaryFlows.isEmpty()) {
+                for (BPMNDecodedBoundaryFlow bf : boundaryFlows) {
+                    flows_to_translate.addFirst(bf.firstStep()); //schedule flow for decoding
+                }
+                Code boundaryWatcherCode = generateBoundaryEventsCode(p, current, boundaryFlows, info);
+                p.registerNodeProcedure(current, boundaryWatcherCode, p.BOUNDED_NODE_BOUNDARY_NAME_VARIANT);
+
+                Code boundaryDispatcherCode = generateBoundaryDispatcherCode(p, current, info);
+                p.registerNodeProcedure(current, boundaryDispatcherCode, p.BOUNDED_NODE_DISPATCHER_NAME_VARIANT);
+            }
+            //
+
             Code code = new Code<T>();
             BPMNDecodedNode decoded_node = decodeNode(p, current, info);
             code.append(decoded_node.code());
             generated_flows.add(current);
-            p.registerNodeProcedure(current, code);
+            p.registerNodeProcedure(current, code, (!boundaryFlows.isEmpty() ? p.BOUNDED_NODE_NORMAL_NAME_VARIANT : ""));
+            if (!boundaryFlows.isEmpty()) {
+                code.append(EXECUTILEXPRESSION + ".resolveBoundaryWatch(s, false)");
+            }
             //link to next step/node
             FlowNode next = decoded_node.nextStep();
             if (next != null) {
@@ -347,4 +380,8 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     protected abstract Code generateEndEventCode(BPMNDecodedProcess p, EndEvent t, BPMNTranslationInfo info) throws BpmnTranslatorException;
 
     protected abstract Code generateStartEventCode(BPMNDecodedProcess p, StartEvent t, BPMNTranslationInfo info) throws BpmnTranslatorException;
+
+    protected abstract Code generateBoundaryEventsCode(BPMNDecodedProcess p, FlowNode ownerNode, List<BPMNDecodedBoundaryFlow> boundaryFlows, BPMNTranslationInfo info);
+
+    protected abstract Code generateBoundaryDispatcherCode(BPMNDecodedProcess p, FlowNode ownerNode, BPMNTranslationInfo info);
 }

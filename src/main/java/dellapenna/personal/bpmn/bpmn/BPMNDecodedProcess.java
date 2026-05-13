@@ -15,6 +15,10 @@ import org.camunda.bpm.model.bpmn.instance.Task;
  */
 public class BPMNDecodedProcess {
 
+    public final String BOUNDED_NODE_BOUNDARY_NAME_VARIANT = "Boundary";
+    public final String BOUNDED_NODE_DISPATCHER_NAME_VARIANT = "";
+    public final String BOUNDED_NODE_NORMAL_NAME_VARIANT = "Standard";
+
     public enum NodeProcedureType {
         GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
     };
@@ -56,6 +60,10 @@ public class BPMNDecodedProcess {
     private final List<String> startEventFlowNames = new ArrayList<>();
 
     public String getFlowName(FlowNode start) {
+        return getFlowName(start, "");
+    }
+
+    public String getFlowName(FlowNode start, String variantName) {
         NodeProcedureType type = switch (start) {
             case Gateway g ->
                 NodeProcedureType.GATEWAY;
@@ -66,7 +74,7 @@ public class BPMNDecodedProcess {
             default ->
                 NodeProcedureType.FLOW;
         };
-        return type.toString() + "_" + start.getId() + (start.getName() != null && !start.getName().isBlank() ? "_" + start.getName() : "");
+        return type.toString() + "_" + start.getId() + (start.getName() != null && !start.getName().isBlank() ? "_" + start.getName() : "") + (!variantName.isBlank() ? ("_" + variantName) : "");
     }
 
     public BPMNDecodedProcess(String name) {
@@ -181,14 +189,18 @@ public class BPMNDecodedProcess {
     }
 
     //creates a new procedure to output, assigned to the specified function class, and returns its internal definition
-    private FunctionDefinition registerProcedure(String name, Code code, Map<String, String> parameters, NodeProcedureType type) {
+    public FunctionDefinition registerProcedure(String name, Code code, Map<String, String> parameters, NodeProcedureType type) {
         if (code == null) {
             code = new Code();
         }
         return registerFunction(name, code, parameters, "void", type);
     }
 
-    public void registerNodeProcedure(FlowNode node, Code code) {
+    public FunctionDefinition registerNodeProcedure(FlowNode node, Code code) {
+        return registerNodeProcedure(node, code, "");
+    }
+
+    public FunctionDefinition registerNodeProcedure(FlowNode node, Code code, String variantName) {
         NodeProcedureType type = switch (node) {
             case Gateway g ->
                 NodeProcedureType.GATEWAY;
@@ -200,8 +212,9 @@ public class BPMNDecodedProcess {
                 NodeProcedureType.FLOW;
         };
         //TODO should be independent from ToJavaBPMNTranslator
-        FunctionDefinition p = registerProcedure(getFlowName(node), code, Map.of("s", ToJavaBPMNTranslator.EXECUTILEXPRESSION + ".ProcessStatus"), type);
+        FunctionDefinition p = registerProcedure(getFlowName(node, variantName), code, Map.of("s", ToJavaBPMNTranslator.EXECUTILEXPRESSION + ".ProcessStatus"), type);
         registerDecodedNode(node, p);
+        return p;
 
     }
 
