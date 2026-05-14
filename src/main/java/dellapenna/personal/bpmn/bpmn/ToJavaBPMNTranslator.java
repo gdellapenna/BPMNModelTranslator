@@ -1,5 +1,7 @@
 package dellapenna.personal.bpmn.bpmn;
 
+import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.BOUNDARYWATCHER;
+import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.NORMAL;
 import dellapenna.personal.bpmn.versim.Assertion;
 import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
@@ -8,7 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.camunda.bpm.model.bpmn.instance.BoundaryEvent;
 import org.camunda.bpm.model.bpmn.instance.BusinessRuleTask;
 import org.camunda.bpm.model.bpmn.instance.EndEvent;
 import org.camunda.bpm.model.bpmn.instance.ErrorEventDefinition;
@@ -28,7 +29,6 @@ import org.camunda.bpm.model.bpmn.instance.ServiceTask;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.Task;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
-import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 
 /**
@@ -400,63 +400,11 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     // Generation code for specific BPMN nodes    
     //TASKS
     
-    @Override
-    public Code generateBoundaryDispatcherCode(BPMNDecodedProcess p, FlowNode ownerNode, BPMNTranslationInfo info) {
-        Code code = new Code();
-
-        //find parent process: boundary elements are not children of the task
-        ModelElementInstance parent = ownerNode.getParentElement();
-        while (parent != null && !(parent instanceof Process)) {
-            parent = parent.getParentElement();
-        }
-        Process process = (Process) parent; //si assume sempre non nullo
-
-        List<BoundaryEvent> boundaryEvents = process.getChildElementsByType(BoundaryEvent.class).stream()
-                .map(e -> (BoundaryEvent) e)
-                .filter(be -> ownerNode.getId().equals(be.getAttributeValue("attachedToRef")))
-                .collect(Collectors.toList());
-
-        //"this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep()));
-        code.append(EXECUTILEXPRESSION + ".forkBoundaryWatch(s, \"" + ownerNode.getId() + "\",this::" + sanitizeName(p.getFlowName(ownerNode, p.BOUNDED_NODE_NORMAL_NAME_VARIANT)) + ",this::" + sanitizeName(p.getFlowName(ownerNode, p.BOUNDED_NODE_BOUNDARY_NAME_VARIANT)) + ")");
-        code.append(EXECUTILEXPRESSION + ".stopThread()");
-        return code;
-    }
-
-    @Override
-    public Code generateBoundaryEventsCode(BPMNDecodedProcess p, FlowNode ownerNode, List<BPMNDecodedBoundaryFlow> boundaryFlows, BPMNTranslationInfo info) {
-        Code code = new Code();
-        String boundaryFlowsCode = boundaryFlows.stream()
-                .map(bf -> {
-                    EventDefinition e = bf.event().getEventDefinitions().iterator().next(); //should be only one!
-                    String event_source = "";
-                    if (e instanceof MessageEventDefinition me) {
-                        String channel_name = me.getMessage().getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "subscription").getAttributeValue("correlationKey").substring(1);
-                        String message_name = me.getMessage().getName();
-                        MessageDefinition message = p.registerProcessMessage(message_name);
-                        event_source += generateDebugOutputStament("\t CHECKING message on channel " + channel_name) + ";";
-                        if (!message_name.equalsIgnoreCase("passthrough")) {
-                            event_source += "Message_" + message_name + " receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\",50,false);"
-                                    + "if (receivedMessage != null)";
-                        } else {
-                            event_source += generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel_name) + ";";
-                        }
-                        //code.append(generateOutputAssignmentsStatements(p, t, List.of("receivedMessage"), false, info)); //no read next
-                    }
-                    event_source += "{"
-                            + generateDebugOutputStament("\t BOUNDARY EVENT " + bf.event().getName() + " ON ACTIVITY " + getNodeDescription(ownerNode) + " HIT") + ";"
-                            + EXECUTILEXPRESSION + ".resolveBoundaryWatch(s, true);\n"
-                            + generateCodeSource(generateTransitionCode(p, ownerNode, bf.firstStep(), info))
-                            + "break; }";
-                    return event_source;
-                }).collect(Collectors.joining("\n"));
-
-        code.append("try{ while(true) {" + boundaryFlowsCode + "} } catch(InterruptedException e) { }");
-        return code;
-    }
-
+    
+    
     @Override
     public Code generateGenericTaskCode(BPMNDecodedProcess p, Task t, BPMNTranslationInfo info) {
-        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+        Code code = new Code(generateCommonNodeEntryStaments(t, info));
 
         code.append(generateDummyWorkloadStament());
 
@@ -656,6 +604,66 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         p.registerStartEventFlowName(sanitizeName(p.getFlowName(t)));
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
+    }
+
+    //BOUNDARY EVENTS    
+    @Override
+    public Code generateBoundaryDispatcherCode(BPMNDecodedProcess p, FlowNode ownerNode, BPMNTranslationInfo info) {
+        Code code = new Code();
+        code.append(EXECUTILEXPRESSION + ".forkBoundary(s, \"" + ownerNode.getId() + "\",this::" + sanitizeName(p.getFlowName(ownerNode, NORMAL.toString())) + ",this::" + sanitizeName(p.getFlowName(ownerNode, BOUNDARYWATCHER.toString())) + ")");
+        code.append(EXECUTILEXPRESSION + ".stopThread()");
+        return code;
+    }
+
+    @Override
+    public Code generateBoundaryEventsCode(BPMNDecodedProcess p, FlowNode ownerNode, List<BPMNDecodedBoundaryFlow> boundaryFlows, BPMNTranslationInfo info) {
+        Code code = new Code();
+        String boundary_flows_code = boundaryFlows.stream()
+                .map(bf -> {
+                    EventDefinition e = bf.event().getEventDefinitions().iterator().next(); //should be only one!
+                    String event_source = "";
+                    if (e instanceof MessageEventDefinition me) {
+                        String channel_name = me.getMessage().getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "subscription").getAttributeValue("correlationKey").substring(1);
+                        String message_name = me.getMessage().getName();
+                        MessageDefinition message = p.registerProcessMessage(message_name);
+                        //event_source += generateDebugOutputStament("\t CHECKING message on channel " + channel_name) + ";";
+                        if (!message_name.equalsIgnoreCase("passthrough")) {
+                            event_source += "Message_" + message_name + " receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\",50,false);"
+                                    + "if (receivedMessage != null)";
+                        } else {
+                            event_source += generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel_name) + ";";
+                        }
+                        //code.append(generateOutputAssignmentsStatements(p, t, List.of("receivedMessage"), false, info)); //no read next
+                    }
+                    event_source += "{"
+                            + "if (!Thread.currentThread().isInterrupted()) { "
+                            + generateDebugOutputStament("HIT BOUNDARY EVENT " + bf.event().getName() + " ON " + getNodeDescription(ownerNode)) + ";"
+                            + EXECUTILEXPRESSION + ".killBoundary(s);\n"
+                            + generateCodeSource(generateTransitionCode(p, ownerNode, bf.firstStep(), info))
+                            + "}\n break; }";
+                    return event_source;
+                }).collect(Collectors.joining("\n"));
+
+        code.set("try{ while(!Thread.currentThread().isInterrupted()) {" + boundary_flows_code + "} } catch (Exception e) {"
+                + "if (e instanceof InterruptedException)  Thread.currentThread().interrupt();"
+                + "else throw (e instanceof RuntimeException re ? re : new RuntimeException(e));"
+                + "}");
+        return code;
+    }
+
+    @Override
+    public Code generateBoundaryNormalCompletionCode(BPMNDecodedProcess p, FlowNode ownerNode, Code originalCode, List<BPMNDecodedBoundaryFlow> boundaryFlows, BPMNTranslationInfo info) {
+        Code code = new Code("if (!Thread.currentThread().isInterrupted()) " + EXECUTILEXPRESSION + ".killBoundary(s)");
+        return code;
+    }
+
+    @Override
+    public void finalizeBoundaryNormalCode(BPMNDecodedProcess p, FlowNode ownerNode, Code code, BPMNTranslationInfo info) {
+        String guarded_source = "try{\n " + generateCodeSource(code) + "} catch (Exception e) {"
+                + "if (e instanceof InterruptedException)  Thread.currentThread().interrupt();"
+                + "else throw (e instanceof RuntimeException re ? re : new RuntimeException(e));"
+                + "}";
+        code.set(guarded_source);
     }
 
     // GATEWAYS

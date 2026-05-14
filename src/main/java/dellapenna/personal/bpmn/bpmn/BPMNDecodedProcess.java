@@ -15,10 +15,6 @@ import org.camunda.bpm.model.bpmn.instance.Task;
  */
 public class BPMNDecodedProcess {
 
-    public final String BOUNDED_NODE_BOUNDARY_NAME_VARIANT = "Boundary";
-    public final String BOUNDED_NODE_DISPATCHER_NAME_VARIANT = "";
-    public final String BOUNDED_NODE_NORMAL_NAME_VARIANT = "Standard";
-
     public enum NodeProcedureType {
         GATEWAY, EVENT, TASK, FLOW, GETTER, GENERAL
     };

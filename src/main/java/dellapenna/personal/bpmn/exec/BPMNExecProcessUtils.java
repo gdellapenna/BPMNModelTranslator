@@ -22,11 +22,30 @@ public class BPMNExecProcessUtils {
 
     public static class ProcessStatus {
 
+        public enum BoundaryRole {
+            NORMAL("Standard"), DISPATCHER(""), BOUNDARYWATCHER("Boundary");
+
+            private final String flowVariantlabel;
+
+            BoundaryRole(String flowVariantlabel
+            ) {
+                this.flowVariantlabel = flowVariantlabel;
+            }
+
+            @Override
+
+            public String toString() {
+                return flowVariantlabel;
+            }
+
+        };
+
         String branchID;
         //
         String previousStep; //NO MORE USED?
         //
-        public String boundaryWatchID = "";
+        public String boundaryID;
+        public BoundaryRole boundaryRole;
         //
         boolean statusSuccess;
         String statusMessage;
@@ -45,16 +64,18 @@ public class BPMNExecProcessUtils {
             return n;
         }
 
-        public ProcessStatus withBoundaryAndcurrent(String boundaryWatchID, String current) {
+        public ProcessStatus withBoundaryAndcurrent(String boundaryID, BoundaryRole boundaryRole, String current) {
             ProcessStatus n = new ProcessStatus(this);
-            n.boundaryWatchID = boundaryWatchID;
+            n.boundaryID = boundaryID;
+            n.boundaryRole = boundaryRole;
             n.previousStep = current;
             return n;
         }
 
         public ProcessStatus(String branchID) {
             this.branchID = branchID;
-            this.boundaryWatchID = null;
+            this.boundaryID = null;
+            this.boundaryRole = null;
             this.previousStep = "";
             this.statusSuccess = true;
             this.statusMessage = "OK";
@@ -64,7 +85,8 @@ public class BPMNExecProcessUtils {
         public ProcessStatus(ProcessStatus parent) {
             this();
             this.branchID = parent.branchID;
-            this.boundaryWatchID = parent.boundaryWatchID;
+            this.boundaryID = parent.boundaryID;
+            this.boundaryRole = parent.boundaryRole;
             this.previousStep = parent.previousStep;
             this.statusSuccess = parent.statusSuccess;
             this.statusMessage = parent.statusMessage;
@@ -222,22 +244,24 @@ public class BPMNExecProcessUtils {
         if (!massage_channels.containsKey(channel)) {
             massage_channels.put(channel, new LinkedBlockingQueue<>());
         }
-        //try {
-        Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
-        if (message != null) {
-            return message;
-        } else {
+        try {
+            Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
+            if (message != null) {
+                return message;
+            } else {
+                if (triggerTimeout) {
+                    timeoutError(s);
+                }
+                return null;
+            }
+        } catch (InterruptedException ex) {
             if (triggerTimeout) {
                 timeoutError(s);
+            } else {
+                throw ex; //rethrow
             }
             return null;
         }
-//        } catch (InterruptedException ex) {
-//            if (triggerTimeout) {
-//                timeoutError(s);
-//            }
-//            return null;
-//        }
     }
 
 //    public static void initJoin(String g, String... l) {
@@ -352,7 +376,7 @@ public class BPMNExecProcessUtils {
                     if (entry.getValue() == thread) {
                         threadEntry = entry.getKey();
                     }
-                }                
+                }
                 if (threadEntry != null) {
                     futureRegistry.put(threadEntry, null);
                 }
@@ -428,23 +452,27 @@ public class BPMNExecProcessUtils {
         }
     }
 
-    public static void forkBoundaryWatch(BPMNExecProcessUtils.ProcessStatus s, String taskid, Consumer<BPMNExecProcessUtils.ProcessStatus> normalflow, Consumer<BPMNExecProcessUtils.ProcessStatus> boundaryflow) {
-        debugOutput(s, "\t STARTING " + taskid + " BOUNDARY EVENT HANDLER");
-
-        String boundaryWatchID = taskid + "_B_" + getRandomID();
-        String watcher_thread_id = boundaryWatchID + "_W";
-        String normal_thread_id = boundaryWatchID + "_N";
-        debugOutput(s, "\t FORKING NORMAL EXECUTION BRANCH %s for activity %s", normal_thread_id, taskid);
-        startThread(normalflow, s.withBoundaryAndcurrent(boundaryWatchID, "Activity_05h597z"), normal_thread_id);
-        debugOutput(s, "\t FORKING BOUNDARY WATCH BRANCH %s for activity %s", watcher_thread_id, taskid);
-        startThread(boundaryflow, s.withBoundaryAndcurrent(boundaryWatchID, "Activity_05h597z"), watcher_thread_id);
+    public static void forkBoundary(BPMNExecProcessUtils.ProcessStatus s, String taskid, Consumer<BPMNExecProcessUtils.ProcessStatus> normalflow, Consumer<BPMNExecProcessUtils.ProcessStatus> boundaryflow) {
+        synchronized (BPMNExecProcessUtils.class) {
+            debugOutput(s, "\t STARTING " + taskid + " BOUNDARY EVENT HANDLER");
+            String boundaryWatchID = taskid + "_B_" + getRandomID();
+            String watcher_thread_id = boundaryWatchID + "_" + ProcessStatus.BoundaryRole.BOUNDARYWATCHER.toString();
+            String normal_thread_id = boundaryWatchID + "_" + ProcessStatus.BoundaryRole.NORMAL.toString();
+            debugOutput(s, "\t FORKING NORMAL EXECUTION BRANCH %s for activity %s", normal_thread_id, taskid);
+            startThread(normalflow, s.withBoundaryAndcurrent(boundaryWatchID, ProcessStatus.BoundaryRole.NORMAL, "Activity_05h597z"), normal_thread_id);
+            debugOutput(s, "\t FORKING BOUNDARY WATCH BRANCH %s for activity %s", watcher_thread_id, taskid);
+            startThread(boundaryflow, s.withBoundaryAndcurrent(boundaryWatchID, ProcessStatus.BoundaryRole.BOUNDARYWATCHER, "Activity_05h597z"), watcher_thread_id);
+        }
     }
 
-    public static void resolveBoundaryWatch(BPMNExecProcessUtils.ProcessStatus s, boolean normal) {
-        //System.out.println("RBW " + s.boundaryWatchID + " " + normal);
-        if (s.boundaryWatchID != null) {
-            stopThread(s.boundaryWatchID + (normal ? "_N" : "_W"));
-            s.boundaryWatchID = null;
+    public static void killBoundary(BPMNExecProcessUtils.ProcessStatus s) {
+        synchronized (BPMNExecProcessUtils.class) {
+            if (s.boundaryID != null) {
+                String boundaryThreadName = s.boundaryID + "_" + ((s.boundaryRole == ProcessStatus.BoundaryRole.BOUNDARYWATCHER) ? ProcessStatus.BoundaryRole.NORMAL.toString() : ProcessStatus.BoundaryRole.BOUNDARYWATCHER.toString());
+                stopThread(boundaryThreadName);
+                s.boundaryID = null;
+                s.boundaryRole = null;
+            }
         }
     }
 
@@ -484,7 +512,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void debugOutput(ProcessStatus s, String message, Object... args) {
-        String formattedmessage = /*"T-"+System.currentTimeMillis()+": "+*/"[" + s.branchID + "] " + String.format(message, args);
+        String formattedmessage = /*"T-"+System.currentTimeMillis()+": "+*/ "[" + s.branchID + (s.boundaryID != null && s.boundaryRole == ProcessStatus.BoundaryRole.BOUNDARYWATCHER ? " (BOUNDARY)" : "") + "] " + String.format(message, args);
         debugChannel.println(formattedmessage);
     }
 

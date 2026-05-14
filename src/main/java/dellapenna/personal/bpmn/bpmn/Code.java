@@ -14,22 +14,22 @@ public class Code<T> {
     private final List<T> statements = new ArrayList<>();
 
     public Code() {
-        this.statements.clear();
+        clear();
     }
 
     public Code(List<T> statements) {
         this();
-        this.statements.addAll(statements);
+        set(statements);
     }
 
     public Code(T... statements) {
         this();
-        Collections.addAll(this.statements, statements);
+        set(statements);
     }
 
     public Code(Code other) {
         this();
-        this.statements.addAll(other.statements);
+        set(other);
     }
 
     public List<T> getStatements() {
@@ -50,6 +50,25 @@ public class Code<T> {
 
     public void prepend(T statement) {
         this.statements.add(0, statement);
+    }
+
+    public void set(List<T> statements) {
+        clear();
+        this.statements.addAll(statements);
+    }
+
+    public void set(Code code) {
+        clear();
+        this.statements.addAll(code.statements);
+    }
+
+    public void set(T... statements) {
+        clear();
+        Collections.addAll(this.statements, statements);
+    }
+
+    public void clear() {
+        this.statements.clear();
     }
 
     public boolean isEmpty() {
