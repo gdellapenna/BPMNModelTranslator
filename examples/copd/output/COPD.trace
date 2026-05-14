@@ -27,10 +27,10 @@ Gateway_1ik5zts[]
 "Gateway_1ik5zts" -> "Gateway_0xkk1o6"
 Activity_089tja4[label="Conduct CAT"]
 "Activity_089tja4" -> "Gateway_0x0ocwc"
-Gateway_0xkk1o6[label="Is the patient a smoker?"]
-"Gateway_0xkk1o6" -> "Activity_0a2awzt"
 Gateway_0x0ocwc[]
 "Gateway_0x0ocwc" -> "Activity_053g4bq"
+Gateway_0xkk1o6[label="Is the patient a smoker?"]
+"Gateway_0xkk1o6" -> "Activity_0a2awzt"
 Activity_0a2awzt[label="Smoking tests"]
 "Activity_0a2awzt" -> "Gateway_197n966"
 Gateway_197n966[]

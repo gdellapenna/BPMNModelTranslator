@@ -71,6 +71,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return EXECUTILEXPRESSION + ".debugOutput(s,\"" + message + "\")";
     }
 
+    private String generateDummyWorkloadStament() {
+        //return "Thread.sleep(10); //emulate some work to avoid cocncurrency issues";
+        return "//do something";
+
+    }
+
     private Code generateTransitionDescriptionStaments(FlowNode source, FlowNode target, BPMNTranslationInfo info) {
         Code code = new Code<String>();
         code.append("//[outgoing edge] " + target.getId() + ((target.getName() != null && !target.getName().isBlank()) ? (" - " + target.getName()) : ""));
@@ -92,6 +98,11 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (info != null && !info.getGlobalAssertions().isEmpty()) {
             code.append("globalAssert(s,\"" + n.getId() + "\")");
         }
+        return code;
+    }
+
+    private Code generateCommonNodeExitStatements(FlowNode n, BPMNTranslationInfo info) {
+        Code code = new Code<String>();
         return code;
     }
 
@@ -147,11 +158,6 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         }
 
         return result;
-    }
-
-    private Code generateCommonNodeExitStatements(FlowNode n, BPMNTranslationInfo info) {
-        Code code = new Code<String>();
-        return code;
     }
 
     private String getNodeDescription(FlowNode n) {
@@ -411,7 +417,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 .collect(Collectors.toList());
 
         //"this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep()));
-        code.append(EXECUTILEXPRESSION + ".forkBoundaryWatch(s, \"" + ownerNode.getId() + "\",this::" + p.getFlowName(ownerNode,p.BOUNDED_NODE_NORMAL_NAME_VARIANT)+ ",this::" + p.getFlowName(ownerNode, p.BOUNDED_NODE_BOUNDARY_NAME_VARIANT) + ")");
+        code.append(EXECUTILEXPRESSION + ".forkBoundaryWatch(s, \"" + ownerNode.getId() + "\",this::" + sanitizeName(p.getFlowName(ownerNode, p.BOUNDED_NODE_NORMAL_NAME_VARIANT)) + ",this::" + sanitizeName(p.getFlowName(ownerNode, p.BOUNDED_NODE_BOUNDARY_NAME_VARIANT)) + ")");
         code.append(EXECUTILEXPRESSION + ".stopThread()");
         return code;
     }
@@ -436,19 +442,24 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                         }
                         //code.append(generateOutputAssignmentsStatements(p, t, List.of("receivedMessage"), false, info)); //no read next
                     }
-                    event_source += "{" + EXECUTILEXPRESSION + ".resolveBoundaryWatch(s, true);\n"
+                    event_source += "{"
+                            + generateDebugOutputStament("\t BOUNDARY EVENT " + bf.event().getName() + " ON ACTIVITY " + getNodeDescription(ownerNode) + " HIT") + ";"
+                            + EXECUTILEXPRESSION + ".resolveBoundaryWatch(s, true);\n"
                             + generateCodeSource(generateTransitionCode(p, ownerNode, bf.firstStep(), info))
                             + "break; }";
                     return event_source;
                 }).collect(Collectors.joining("\n"));
 
-        code.append("while(true) {" + boundaryFlowsCode + "}");
+        code.append("try{ while(true) {" + boundaryFlowsCode + "} } catch(InterruptedException e) { }");
         return code;
     }
 
     @Override
     public Code generateGenericTaskCode(BPMNDecodedProcess p, Task t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+
+        code.append(generateDummyWorkloadStament());
+
         code.append(generateOutputAssignmentsStatements(p, t, Collections.EMPTY_LIST, false, info)); //no read next
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
@@ -457,6 +468,9 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateManualTaskCode(BPMNDecodedProcess p, ManualTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+
+        code.append(generateDummyWorkloadStament());
+
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
@@ -488,6 +502,9 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateServiceTaskCode(BPMNDecodedProcess p, ServiceTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+
+        code.append(generateDummyWorkloadStament());
+
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
@@ -552,6 +569,9 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateUserTaskCode(BPMNDecodedProcess p, UserTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+
+        code.append(generateDummyWorkloadStament());
+
         code.append(generateOutputAssignmentsStatements(p, t, Collections.EMPTY_LIST, true, info)); //read next
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
@@ -806,9 +826,13 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info) {
         Code code = new Code<String>();
-        code.append(generateTransitionDescriptionStaments(current, next, info));
+
         p.registerDecodedEdge(current, next);
-        code.append(sanitizeName(p.getFlowName(next)) + "(s.withCurrent(\"" + current.getId() + "\"))");
+        String transition_code
+                = generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
+                + sanitizeName(p.getFlowName(next)) + "(s.withCurrent(\"" + current.getId() + "\"));";
+
+        code.append("if (!Thread.currentThread().isInterrupted()) {" + transition_code + "}");
         return code;
     }
 

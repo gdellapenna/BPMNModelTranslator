@@ -1,82 +1,86 @@
 # nodes
-Gateway_0dbyzwb[]
-Activity_1by7ohz[label="Make working diagnosis"]
-Activity_1x6l1dw[label="Prescribe oxygen therapy"]
-Activity_0wlmua1[label="Conduct simple spirometry"]
 Activity_0b5bgl9[label="Conduct BGA"]
 Activity_0vfbgoy[label="Interpret results"]
-Gateway_197n966[]
-Event_1e4tr3y[]
-Activity_0scqf41[label="Evaluate hospitalization"]
-Gateway_0vpt9p6[label="PaO2<60mmHg OR PaCO2>45mmHg?"]
 Gateway_0ue46bu[label="Does patient require hospitalization?"]
-Activity_0jrklqn[label="Test bronchodilator reversibility"]
-Gateway_07g2otl[]
-Gateway_04ijm8v[label="Is the patient already staged?"]
-Activity_182mdyp[label="Conduct global spirometry"]
 Activity_0f1noex[label="Evaluate request"]
-Gateway_0xkk1o6[label="Is the patient a smoker?"]
+Activity_0jrklqn[label="Test bronchodilator reversibility"]
+Activity_0wlmua1[label="Conduct simple spirometry"]
 Gateway_0x0ocwc[]
-Activity_089tja4[label="Conduct CAT"]
-Activity_16mwits[label="Make diagnosis"]
-Gateway_1ik5zts[]
-Gateway_1vbgzvs[]
-Activity_0xf0odk[label="Prescribe therapy"]
-Activity_1pl6nde[label="Treat exacerbations"]
-Activity_1gs1u22[label="Stage patient"]
-Activity_19eeyaj[label="Plan an examination"]
-Gateway_0y30j11[label="COPD diagnosed?"]
-Gateway_065vrg8[label="Spirometry suggestive of COPD?"]
 Gateway_1lnx0yn[]
-Activity_0ck2kiz[label="Examine and Interview patient"]
+Activity_19eeyaj[label="Plan an examination"]
+Gateway_06mnf24[]
+Activity_0xf0odk[label="Prescribe therapy"]
+Event_1e4tr3y[]
+Gateway_0xkk1o6[label="Is the patient a smoker?"]
+Gateway_0vpt9p6[label="PaO2<60mmHg OR PaCO2>45mmHg?"]
+Activity_089tja4[label="Conduct CAT"]
+Gateway_1ik5zts[]
+Activity_1gs1u22[label="Stage patient"]
+Gateway_07g2otl[]
 Event_0ltqr3s[label="Patient request"]
 Activity_0a2awzt[label="Smoking tests"]
-Gateway_1ifzb7i[label="COPD suspected?"]
-Gateway_06mnf24[]
+Activity_0ck2kiz[label="Examine and Interview patient"]
+Activity_1pl6nde[label="Treat exacerbations"]
+Gateway_065vrg8[label="Spirometry suggestive of COPD?"]
+Activity_182mdyp[label="Conduct global spirometry"]
+Activity_1by7ohz[label="Make working diagnosis"]
 Activity_053g4bq[label="Conduct pulmonary examination"]
+Activity_16mwits[label="Make diagnosis"]
+Gateway_0y30j11[label="COPD diagnosed?"]
+Gateway_04ijm8v[label="Is the patient already staged?"]
+Activity_0scqf41[label="Evaluate hospitalization"]
+Gateway_1vbgzvs[]
+Event_1faj9xw[]
+Gateway_0dbyzwb[]
+Activity_1nq5pji[label="Refresh calendar"]
+Activity_1x6l1dw[label="Prescribe oxygen therapy"]
+Gateway_1ifzb7i[label="COPD suspected?"]
+Gateway_197n966[]
 
 
 # edges
-"Gateway_0dbyzwb" -> "Activity_19eeyaj"
-"Activity_1by7ohz" -> "Gateway_1ifzb7i"
-"Activity_1x6l1dw" -> "Gateway_07g2otl"
-"Activity_0wlmua1" -> "Activity_0vfbgoy"
 "Activity_0b5bgl9" -> "Gateway_0vpt9p6"
 "Activity_0vfbgoy" -> "Gateway_065vrg8"
-"Gateway_197n966" -> "Gateway_0x0ocwc"
-"Activity_0scqf41" -> "Gateway_0ue46bu"
-"Gateway_0vpt9p6" -> "Activity_1x6l1dw"
-"Gateway_0vpt9p6" -> "Gateway_07g2otl"
 "Gateway_0ue46bu" -> "Activity_0xf0odk"
 "Gateway_0ue46bu" -> "Activity_1pl6nde"
-"Activity_0jrklqn" -> "Activity_1gs1u22"
-"Gateway_07g2otl" -> "Gateway_1lnx0yn"
-"Gateway_04ijm8v" -> "Activity_0ck2kiz"
-"Gateway_04ijm8v" -> "Activity_0scqf41"
-"Activity_182mdyp" -> "Activity_16mwits"
 "Activity_0f1noex" -> "Gateway_04ijm8v"
+"Activity_0jrklqn" -> "Activity_1gs1u22"
+"Activity_0wlmua1" -> "Activity_0vfbgoy"
+"Gateway_0x0ocwc" -> "Activity_053g4bq"
+"Gateway_1lnx0yn" -> "Gateway_06mnf24"
+"Activity_19eeyaj" -> "Activity_1nq5pji"
+"Activity_19eeyaj" -> "Gateway_06mnf24"
+"Gateway_06mnf24" -> "Event_1e4tr3y"
+"Activity_0xf0odk" -> "Gateway_0dbyzwb"
 "Gateway_0xkk1o6" -> "Activity_0a2awzt"
 "Gateway_0xkk1o6" -> "Gateway_197n966"
-"Gateway_0x0ocwc" -> "Activity_053g4bq"
+"Gateway_0vpt9p6" -> "Activity_1x6l1dw"
+"Gateway_0vpt9p6" -> "Gateway_07g2otl"
 "Activity_089tja4" -> "Gateway_0x0ocwc"
-"Activity_16mwits" -> "Gateway_0y30j11"
 "Gateway_1ik5zts" -> "Activity_089tja4"
 "Gateway_1ik5zts" -> "Gateway_0xkk1o6"
-"Gateway_1vbgzvs" -> "Gateway_1lnx0yn"
-"Gateway_1vbgzvs" -> "Activity_0b5bgl9"
-"Activity_0xf0odk" -> "Gateway_0dbyzwb"
-"Activity_1pl6nde" -> "Gateway_0dbyzwb"
 "Activity_1gs1u22" -> "Gateway_1vbgzvs"
-"Activity_19eeyaj" -> "Gateway_06mnf24"
-"Gateway_0y30j11" -> "Gateway_06mnf24"
-"Gateway_0y30j11" -> "Gateway_1ik5zts"
-"Gateway_065vrg8" -> "Activity_182mdyp"
-"Gateway_065vrg8" -> "Gateway_06mnf24"
-"Gateway_1lnx0yn" -> "Gateway_06mnf24"
-"Activity_0ck2kiz" -> "Activity_1by7ohz"
+"Gateway_07g2otl" -> "Gateway_1lnx0yn"
 "Event_0ltqr3s" -> "Activity_0f1noex"
 "Activity_0a2awzt" -> "Gateway_197n966"
+"Activity_0ck2kiz" -> "Activity_1by7ohz"
+"Activity_1pl6nde" -> "Gateway_0dbyzwb"
+"Gateway_065vrg8" -> "Activity_182mdyp"
+"Gateway_065vrg8" -> "Gateway_06mnf24"
+"Activity_182mdyp" -> "Activity_16mwits"
+"Activity_1by7ohz" -> "Gateway_1ifzb7i"
+"Activity_053g4bq" -> "Activity_0jrklqn"
+"Activity_16mwits" -> "Gateway_0y30j11"
+"Gateway_0y30j11" -> "Gateway_06mnf24"
+"Gateway_0y30j11" -> "Gateway_1ik5zts"
+"Gateway_04ijm8v" -> "Activity_0ck2kiz"
+"Gateway_04ijm8v" -> "Activity_0scqf41"
+"Activity_0scqf41" -> "Gateway_0ue46bu"
+"Gateway_1vbgzvs" -> "Gateway_1lnx0yn"
+"Gateway_1vbgzvs" -> "Activity_0b5bgl9"
+"Gateway_0dbyzwb" -> "Activity_19eeyaj"
+"Activity_1nq5pji" -> "Event_1faj9xw"
+"Activity_1x6l1dw" -> "Gateway_07g2otl"
 "Gateway_1ifzb7i" -> "Activity_0wlmua1"
 "Gateway_1ifzb7i" -> "Gateway_06mnf24"
-"Gateway_06mnf24" -> "Event_1e4tr3y"
-"Activity_053g4bq" -> "Activity_0jrklqn"
+"Gateway_197n966" -> "Gateway_0x0ocwc"

@@ -115,6 +115,9 @@ public class VariableDefinition {
             if (expressions != null && !expressions.isEmpty()) {
                 result += (!result.isBlank() ? " / " : "") + "UNHANDLED: " + String.join(",", expressions);
             }
+            if (result.isBlank()) {
+                result = "UNHANDLED";
+            }
             return result;
         }
 

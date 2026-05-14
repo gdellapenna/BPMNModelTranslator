@@ -1,16 +1,24 @@
-patientSmoker=true
-#ENUM: true,false
 patientAlreadyStaged=false
 #ENUM: false,true
 patientRequireHospitalization=false
 #ENUM: false,true
+anamnesisReport=?
+#UNHANDLED
+patientSmoker=true
+#ENUM: true,false
 COPDSuspected=true
 #ENUM: false,true
-spirometryReport=?
-#
-analyzedResults=?
-#
+spirometryReport=true
+#ENUM: true,false
+analyzedResults=BAD
+#ENUM: BAD,GOOD
 COPDDiagnosed=true
 #ENUM: false,true
-paO2CO2=true
-#ENUM: true,false
+BRTReport=LevelB
+#ENUM: LevelB,LevelA
+FEV1FVC=Value1
+#ENUM: Value1,Value2
+paO2=60.0
+#BALL(60.0)
+paCO2=46.0
+#BALL(45.0)

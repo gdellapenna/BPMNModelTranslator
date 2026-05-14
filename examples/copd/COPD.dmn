@@ -1,19 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0xbu3ad" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+<definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0xbu3ad" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.22.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
   <decision id="InterpretSpiroResultsDT" name="InterpretSpiroResultsDT">
     <decisionTable id="DecisionTable_0qyx2f7">
       <input id="Input_1">
-        <inputExpression id="InputExpression_1" typeRef="string">
-          <text>something</text>
+        <inputExpression id="InputExpression_1" typeRef="boolean">
+          <text>spirometryResult</text>
         </inputExpression>
       </input>
       <output id="Output_1" name="copd" typeRef="boolean" />
       <rule id="DecisionRule_1rizema">
         <inputEntry id="UnaryTests_069flsn">
-          <text></text>
+          <text>true</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_1ritjd7">
           <text>true</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_1313ggt">
+        <inputEntry id="UnaryTests_1hho68a">
+          <text>false</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0kfsxlv">
+          <text>false</text>
         </outputEntry>
       </rule>
     </decisionTable>
@@ -22,40 +30,130 @@
     <decisionTable id="DecisionTable_0jx1rvl">
       <input id="InputClause_0yonfhl">
         <inputExpression id="LiteralExpression_02ecjlh" typeRef="string">
-          <text>something</text>
+          <text>BRTReport</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_1qelapa">
+        <inputExpression id="LiteralExpression_0yrd8mj" typeRef="string">
+          <text>analyzedResults</text>
+        </inputExpression>
+      </input>
+      <input id="InputClause_0fyf3e6">
+        <inputExpression id="LiteralExpression_00hgbil" typeRef="string">
+          <text>FEV1FVC</text>
         </inputExpression>
       </input>
       <output id="OutputClause_0n0trr9" name="stage" typeRef="number" />
       <rule id="DecisionRule_03ee9yp">
         <inputEntry id="UnaryTests_094o6al">
-          <text>false</text>
+          <text>"LevelA"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0oowp6p">
+          <text>"GOOD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_098irky">
+          <text>"Value1"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0nt6k12">
-          <text>4</text>
+          <text>1</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_04wn0fo">
+        <inputEntry id="UnaryTests_1bxc5i7">
+          <text>"LevelA"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1uq1wcn">
+          <text>"GOOD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0cim1wx">
+          <text>"Value2"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_1mac469">
+          <text>2</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_00xzoah">
         <inputEntry id="UnaryTests_06g6zd9">
-          <text>false</text>
+          <text>"LevelA"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0m7dw68">
+          <text>"BAD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0xjjl00">
+          <text>"Value1"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_02i2ej6">
+          <text>2</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_11g9hsf">
+        <inputEntry id="UnaryTests_10klhta">
+          <text>"LevelA"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_146f4yc">
+          <text>"BAD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_109ti42">
+          <text>"Value2"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_110jc6f">
           <text>3</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_027l1jg">
         <inputEntry id="UnaryTests_1r68if1">
-          <text>false</text>
+          <text>"LevelB"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_18yadg8">
+          <text>"GOOD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0u8po0m">
+          <text>"Value1"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0y4est9">
-          <text>2</text>
+          <text>3</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_0v5mimx">
+        <inputEntry id="UnaryTests_0oz3jwl">
+          <text>"LevelB"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0c14564">
+          <text>"GOOD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1hi8muh">
+          <text>"Value2"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_15rqz7j">
+          <text>4</text>
         </outputEntry>
       </rule>
       <rule id="DecisionRule_119b5ig">
         <inputEntry id="UnaryTests_1wsceox">
-          <text></text>
+          <text>"LevelB"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0pvolgu">
+          <text>"BAD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_1lf9l0l">
+          <text>"Value1"</text>
         </inputEntry>
         <outputEntry id="LiteralExpression_0v9r8rv">
-          <text>1</text>
+          <text>4</text>
+        </outputEntry>
+      </rule>
+      <rule id="DecisionRule_077kclx">
+        <inputEntry id="UnaryTests_1mr1sjj">
+          <text>"LevelB"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_0brea5i">
+          <text>"BAD"</text>
+        </inputEntry>
+        <inputEntry id="UnaryTests_05q37rj">
+          <text>"Value2"</text>
+        </inputEntry>
+        <outputEntry id="LiteralExpression_0xkyhoc">
+          <text>4</text>
         </outputEntry>
       </rule>
     </decisionTable>

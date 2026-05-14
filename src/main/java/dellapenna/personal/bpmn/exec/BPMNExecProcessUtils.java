@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -97,9 +97,9 @@ public class BPMNExecProcessUtils {
     static Map<String, LinkedBlockingQueue<Message>> massage_channels = new HashMap<>();
     //public static Map<String, List<String>> joins = new HashMap<>();
     //boundary events support data
-    static Map<String, Future> threadRegistry = new HashMap<>();
+    static Map<String, Future> futureRegistry = new HashMap<>();
     //to avoid copncurrency issues, we register the calcelled threads and do not start them later, if reqiested
-    static Map<String, Future> cancelledThreadRegistry = new HashMap<>();
+    //static Map<String, Future> cancelledThreadRegistry = new HashMap<>();
     private static volatile SecureRandom numberGenerator = new SecureRandom();
     private static final long MSB = 0x8000000000000000L;
     //static int parallel_branch_count = 0;
@@ -214,30 +214,30 @@ public class BPMNExecProcessUtils {
         }
     }
 
-    public static Message receiveMessage(ProcessStatus s, String channel) {
+    public static Message receiveMessage(ProcessStatus s, String channel) throws InterruptedException {
         return receiveMessage(s, channel, max_wait_sync_time, true);
     }
 
-    public static Message receiveMessage(ProcessStatus s, String channel, int timeout, boolean triggerTimeout) {
+    public static Message receiveMessage(ProcessStatus s, String channel, int timeout, boolean triggerTimeout) throws InterruptedException {
         if (!massage_channels.containsKey(channel)) {
             massage_channels.put(channel, new LinkedBlockingQueue<>());
         }
-        try {
-            Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
-            if (message != null) {
-                return message;
-            } else {
-                if (triggerTimeout) {
-                    timeoutError(s);
-                }
-                return null;
-            }
-        } catch (InterruptedException ex) {
+        //try {
+        Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
+        if (message != null) {
+            return message;
+        } else {
             if (triggerTimeout) {
                 timeoutError(s);
             }
             return null;
         }
+//        } catch (InterruptedException ex) {
+//            if (triggerTimeout) {
+//                timeoutError(s);
+//            }
+//            return null;
+//        }
     }
 
 //    public static void initJoin(String g, String... l) {
@@ -255,160 +255,122 @@ public class BPMNExecProcessUtils {
             debugOutput(s, "STARTING PROCESS " + process_name);
             startThread(start, s);
         }
+        //wait for process threads to finish
         while (active_threads_count > 0) {
             try {
                 Thread.sleep(10);
-//            try {
-//                active_threads_count.wait();
-//            } catch (InterruptedException ex) {
-//                debugOutput("INTERNAL ERROR: THREAD INTERRUPTED");
-//            }
             } catch (InterruptedException ex) {
                 //
             }
         }
+
         logResult(s, globalSuccess, null, 0);
+
         saveExternalOutputs();
+
         if (executor != null) {
-            executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
+            executor.shutdown();
         }
+
         debugOutput(s, "ENDING PROCESS " + process_name);
 
-        System.out.println(active_threads_count);
-        System.out.println(threadRegistry.size());
-
-        Set<Thread> threads = Thread.getAllStackTraces().keySet();
-        threads.stream()
-                .filter(t -> t.isAlive() && !t.isDaemon())
-                .forEach(t -> {
-                    System.out.println("Thread vivo: " + t.getName()
-                            + "  stato=" + t.getState()
-                            + "  daemon=" + t.isDaemon());
-                    // stampa anche lo stack trace
-                    for (StackTraceElement e : t.getStackTrace()) {
-                        System.out.println("    at " + e);
-                    }
-                });
-
+//        Set<Thread> threads = Thread.getAllStackTraces().keySet();
+//        threads.stream()
+//                .filter(t -> t.isAlive() && !t.isDaemon())
+//                .forEach(t -> {
+//                    System.out.println("Live thread: " + t.getName()
+//                            + "  state=" + t.getState()
+//                            + "  daemon=" + t.isDaemon());
+//                    for (StackTraceElement e : t.getStackTrace()) {
+//                        System.out.println("    at " + e);
+//                    }
+//                });
         closeChannels();
     }
 
-//    public static void initProcess(ProcessStatus s, Runnable main) {
-//        debugOutput("INITIALIZING PROCESS");
-//        loadExternalInputs();
-//        main.run();
-//    }
-//
-//    public static void startProcess(ProcessStatus s, Consumer<ProcessStatus> main) {
-//        debugOutput("STARTING PROCESS");
-//        //main.accept(s); //andrebbe lanciato in un thread... indagare perchè si blocca sul sync...
-//        startThread(main, s.branchID);
-//    }
-//
-//    public static void endProcess(ProcessStatus s) {
-//        //non può essere synchronized altrimenti bloccherebbe tutto... meglio usare un semaforo?        
-//        while (active_threads_count > 0) {
-//            try {
-//                Thread.sleep(10);
-    ////            try {
-////                active_threads_count.wait();
-////            } catch (InterruptedException ex) {
-////                debugOutput("INTERNAL ERROR: THREAD INTERRUPTED");
-////            }
-//            } catch (InterruptedException ex) {
-//                //
-//            }
-//        }
-//
-//        logResult(s, globalSuccess, null, 0);
-//        saveExternalOutputs();
-//        if (executor != null) {
-//            executor.shutdown(); //forse viene invocato troppo presto? bisogna esser certi che i branch thread siano terminati...
-//        }
-//        debugOutput("ENDING PROCESS");
-//        //System.exit(Integer.parseInt(outputs.getProperty("code", "0")));
-//    }
-    
     public static void startThread(Consumer<ProcessStatus> branch, ProcessStatus s) {
         startThread(branch, s, s.branchID);
     }
 
     public static void startThread(Consumer<ProcessStatus> branch, ProcessStatus s, String threadID) {
         synchronized (BPMNExecProcessUtils.class) {
-            if (cancelledThreadRegistry.containsKey(threadID)) {
-                System.out.print("thread " + threadID + " not starting since is has been already cancelled");
-                return;
-            }
+//            if (futureRegistry.containsKey(threadID)) {
+//                System.out.print("thread " + threadID + " not starting since is has been already started or cancelled");
+//                return;
+//            }
             active_threads_count++;
             //active_threads_count.notifyAll();
-        }
-        if (executor != null) {
-            Future thread = executor.submit(() -> branch.accept(s));
-            //debugOutput(s,"\t STARTING THREAD " + threadID);            
-            System.out.println("\t STARTING THREAD " + threadID);
-            synchronized (BPMNExecProcessUtils.class) {
-                threadRegistry.put(threadID, thread);
+            if (executor != null) {
+                Future thread = executor.submit(() -> branch.accept(s));
+                //debugOutput(s, "\t STARTING THREAD " + threadID);
+                //System.out.println("\t STARTING THREAD " + threadID);
+                synchronized (BPMNExecProcessUtils.class) {
+                    futureRegistry.put(threadID, thread);
+                }
+            } else {
+                branch.accept(s);
             }
-        } else {
-            branch.accept(s);
         }
     }
 
-    public static void startThread(Runnable branch, ProcessStatus s) {
-        startThread(branch, s, s.branchID);
-    }
-
-    public static void startThread(Runnable branch, ProcessStatus s, String threadID) {
-        synchronized (BPMNExecProcessUtils.class) {
-            active_threads_count++;
-            //active_threads_count.notifyAll();
-        }
-        if (executor != null) {
-            Future thread = executor.submit(branch);
-            synchronized (BPMNExecProcessUtils.class) {
-                threadRegistry.put(threadID, thread);
-            }
-        } else {
-            branch.run();
-        }
-    }
-
+//    public static void startThread(Runnable branch, ProcessStatus s) {
+//        startThread(branch, s, s.branchID);
+//    }
+//    public static void startThread(Runnable branch, ProcessStatus s, String threadID) {
+//        synchronized (BPMNExecProcessUtils.class) {
+//            active_threads_count++;
+//            //active_threads_count.notifyAll();
+//            if (executor != null) {
+//                Future thread = executor.submit(branch);
+//                synchronized (BPMNExecProcessUtils.class) {
+//                    futureRegistry.put(threadID, thread);
+//                }
+//            } else {
+//                branch.run();
+//            }
+//        }
+//    }
     public static void stopThread() {
         synchronized (BPMNExecProcessUtils.class) {
             active_threads_count--;
             //active_threads_count.notifyAll();
-        }
-        if (executor != null) {
-            Thread.currentThread().interrupt();
+            if (executor != null) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
     public static void stopThread(Future thread) {
-        System.out.println(thread);
-        if (thread != null) {
-            synchronized (BPMNExecProcessUtils.class) {
+        synchronized (BPMNExecProcessUtils.class) {
+            if (thread != null) {
                 active_threads_count--;
                 //active_threads_count.notifyAll();
+                thread.cancel(true);
+                //
+                String threadEntry = null;
+                for (Map.Entry<String, Future> entry : futureRegistry.entrySet()) {
+                    if (entry.getValue() == thread) {
+                        threadEntry = entry.getKey();
+                    }
+                }                
+                if (threadEntry != null) {
+                    futureRegistry.put(threadEntry, null);
+                }
             }
-            thread.cancel(true);
         }
-        System.out.println(thread);
     }
 
     public static void stopThread(String threadID) {
-        Future thread;
         synchronized (BPMNExecProcessUtils.class) {
-            thread = threadRegistry.get(threadID);
-            threadRegistry.remove(threadID);
-            cancelledThreadRegistry.put(threadID, thread);
-        }
-        if (thread != null) {
-            //debugOutput(s,"\t CACELLING THREAD " + threadID);            
-            System.out.println("\t CACELLING THREAD " + threadID);
-            stopThread(thread);
-        }
-        synchronized (BPMNExecProcessUtils.class) {
-            cancelledThreadRegistry.put(threadID, thread);
+            Future thread;
+            thread = futureRegistry.get(threadID);
+            //threadRegistry.remove(threadID);
+            futureRegistry.put(threadID, null);
+            if (thread != null) {
+                //debugOutput(s,"\t CANCELLING THREAD " + threadID);            
+                //System.out.println("\t CANCELLING THREAD " + threadID);
+                stopThread(thread);
+            }
         }
     }
 
@@ -469,7 +431,7 @@ public class BPMNExecProcessUtils {
     public static void forkBoundaryWatch(BPMNExecProcessUtils.ProcessStatus s, String taskid, Consumer<BPMNExecProcessUtils.ProcessStatus> normalflow, Consumer<BPMNExecProcessUtils.ProcessStatus> boundaryflow) {
         debugOutput(s, "\t STARTING " + taskid + " BOUNDARY EVENT HANDLER");
 
-        String boundaryWatchID = taskid + "_B";
+        String boundaryWatchID = taskid + "_B_" + getRandomID();
         String watcher_thread_id = boundaryWatchID + "_W";
         String normal_thread_id = boundaryWatchID + "_N";
         debugOutput(s, "\t FORKING NORMAL EXECUTION BRANCH %s for activity %s", normal_thread_id, taskid);
@@ -479,7 +441,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void resolveBoundaryWatch(BPMNExecProcessUtils.ProcessStatus s, boolean normal) {
-        System.out.println("RBW " + s.boundaryWatchID + " " + normal);
+        //System.out.println("RBW " + s.boundaryWatchID + " " + normal);
         if (s.boundaryWatchID != null) {
             stopThread(s.boundaryWatchID + (normal ? "_N" : "_W"));
             s.boundaryWatchID = null;
@@ -522,7 +484,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void debugOutput(ProcessStatus s, String message, Object... args) {
-        String formattedmessage = "[" + s.branchID + "] " + String.format(message, args);
+        String formattedmessage = /*"T-"+System.currentTimeMillis()+": "+*/"[" + s.branchID + "] " + String.format(message, args);
         debugChannel.println(formattedmessage);
     }
 

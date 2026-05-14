@@ -89,84 +89,96 @@ public class VariableUtils {
             }
             //TODO handle other comparisons?
         } else {
-            //currantly don't care
+            //currently don't care
         }
+    }
+
+    public boolean decodeBPMNVariableConstraint(Exp exp, VariableDefinition v) throws FeelTranslatorException {
+        if (exp instanceof Comparison c) {
+            boolean inverse = false;
+            Exp compared_expression = null;
+            if (c.x() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
+                inverse = false;
+                compared_expression = c.y();
+            } else if (c.y() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
+                inverse = true;
+                compared_expression = c.x();
+            } else {
+                return false;
+            }
+            if (compared_expression != null) {
+                switch (exp) {
+                    case GreaterThan texp -> {
+                        if (compared_expression instanceof ConstNumber n) {
+                            if (!inverse) {
+                                v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), true);
+                            } else {
+                                v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), true);
+                            }
+                        }
+                    }
+                    case LessThan texp -> {
+                        if (compared_expression instanceof ConstNumber n) {
+                            if (!inverse) {
+                                v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), true);
+                            } else {
+                                v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), true);
+                            }
+
+                        }
+                    }
+                    case GreaterOrEqual texp -> {
+                        if (compared_expression instanceof ConstNumber n) {
+                            if (!inverse) {
+                                v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), false);
+                            } else {
+                                v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), false);
+                            }
+                        }
+                    }
+                    case LessOrEqual texp -> {
+                        if (compared_expression instanceof ConstNumber n) {
+                            if (!inverse) {
+                                v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), false);
+                            } else {
+                                v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), false);
+                            }
+                        }
+                    }
+                    case Equal texp -> {
+                        if (compared_expression instanceof ConstNumber n) {
+                            v.getBounds().updateRange(n.value().bigDecimal().doubleValue());
+                        } else if (compared_expression instanceof ConstString n) {
+                            v.getBounds().addCase(n.value());
+                        } else if (compared_expression instanceof ConstBool n) {
+                            v.getBounds().addCase(n.value() ? "true" : "false");
+                        } else {
+                            return false;
+                        }
+                    }
+                    default -> {
+                        return false;
+                    }
+                }
+            }
+        } else if (exp instanceof org.camunda.feel.syntaxtree.Conjunction log) {            
+            return decodeBPMNVariableConstraint(log.x(), v) || decodeBPMNVariableConstraint(log.y(), v);
+        } else if (exp instanceof org.camunda.feel.syntaxtree.Disjunction log) {
+            return decodeBPMNVariableConstraint(log.x(), v) || decodeBPMNVariableConstraint(log.y(), v);
+        } else if (exp instanceof org.camunda.feel.syntaxtree.Not log) {
+            return decodeBPMNVariableConstraint(log.x(), v);
+        } else {
+            return false;
+        }
+        return true;
     }
 
     public void decodeBPMNVariableConstraint(String variable_expression, VariableDefinition v) throws FeelTranslatorException {
         if (variable_expression != null && !variable_expression.isBlank()) {
             Exp exp = ft.parse(variable_expression);
-            if (exp instanceof Comparison c) {
-                boolean inverse = false;
-                Exp compared_expression = null;
-                if (c.x() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
-                    inverse = false;
-                    compared_expression = c.y();
-                } else if (c.y() instanceof Ref r && String.join(".", scala.collection.JavaConverters.asJava(r.names())).equals(v.getName())) {
-                    inverse = true;
-                    compared_expression = c.x();
-                } else {
-                    v.getBounds().addExpression(variable_expression); //not auto-deducible  
-                    OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + variable_expression);
-
-                }
-                if (compared_expression != null) {
-                    switch (exp) {
-                        case GreaterThan texp -> {
-                            if (compared_expression instanceof ConstNumber n) {
-                                if (!inverse) {
-                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), true);
-                                } else {
-                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), true);
-                                }
-                            }
-                        }
-                        case LessThan texp -> {
-                            if (compared_expression instanceof ConstNumber n) {
-                                if (!inverse) {
-                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), true);
-                                } else {
-                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), true);
-                                }
-
-                            }
-                        }
-                        case GreaterOrEqual texp -> {
-                            if (compared_expression instanceof ConstNumber n) {
-                                if (!inverse) {
-                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), false);
-                                } else {
-                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), false);
-                                }
-                            }
-                        }
-                        case LessOrEqual texp -> {
-                            if (compared_expression instanceof ConstNumber n) {
-                                if (!inverse) {
-                                    v.getBounds().updateMax(n.value().bigDecimal().doubleValue(), false);
-                                } else {
-                                    v.getBounds().updateMin(n.value().bigDecimal().doubleValue(), false);
-                                }
-                            }
-                        }
-                        case Equal texp -> {
-                            if (compared_expression instanceof ConstNumber n) {
-                                v.getBounds().updateRange(n.value().bigDecimal().doubleValue());
-                            } else if (compared_expression instanceof ConstString n) {
-                                v.getBounds().addCase(n.value());
-                            } else if (compared_expression instanceof ConstBool n) {
-                                v.getBounds().addCase(n.value() ? "true" : "false");
-                            } else {
-                                v.getBounds().addExpression(variable_expression); //not auto-deducible
-                                OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + variable_expression);
-                            }
-                        }
-                        default -> {
-                            v.getBounds().addExpression(variable_expression); //not auto-deducible
-                            OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + variable_expression);
-                        }
-                    }
-                }
+            if (!decodeBPMNVariableConstraint(exp, v)) {
+                v.getBounds().addExpression(variable_expression); //not auto-deducible  
+                OutputManager.getInstance().emit(OutputManager.MessageType.WARNING, 2, "unhandled expression: " + variable_expression);
             }
         }
     }
