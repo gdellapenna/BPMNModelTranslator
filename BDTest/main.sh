@@ -186,7 +186,7 @@ function stats_print_fun ()
 
 function init_all ()
 {
-    local output_name=`grep bpmn:process $bpmn_input_file | awk '{for (i = 1; i <= NF; i++) {if (substr($i, 1, 3) == "id=") {split($i, a, "\""); print a[2]}}}'`
+    # local output_name=`grep bpmn:process $bpmn_input_file | awk '{for (i = 1; i <= NF; i++) {if (substr($i, 1, 3) == "id=") {split($i, a, "\""); print a[2]}}}'`
     cp $bpmn_input_file $dmn_input_files $dir_tmp
     local inputs=`basename $bpmn_input_file`
     inputs=$inputs" "`ls -1 $dir_tmp/*.dmn 2> /dev/null | awk -F/ '{print $NF}' | tr "\n" " "`
@@ -195,10 +195,13 @@ function init_all ()
     echo $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs 1>&2
     stats_print_fun $dir_res/init.time.log $dir_res/init.log  $JAVA -jar ./BPMNModelTranslator-1.0-SNAPSHOT-shaded.jar $other_opts_cmp $inputs
     popd > /dev/null 2>&1
+    #ls -lR $dir_tmp
+    local output_name=`grep "input variables written to" $dir_res/init.log | awk '{print $NF}' | awk -F/ '{print $NF}' | sed -e 's/_inputs.properties//'`
     test -f $dir_tmp/${output_name}_inputs.properties || { echo Generation failed, $dir_tmp/${output_name}_inputs.properties does not exist; return; }
     mkdir -p $dir_res/translation_output
     cp $dir_tmp/${output_name}.java $dir_tmp/${output_name}.jar $dir_tmp/${output_name}_inputs.properties $dir_tmp/$output_name.graph $dir_res/translation_output
     mv $dir_res/init.log $dir_res/translation_output/log
+    mv $dir_res/init.time.log $dir_res/translation_output/time.log
     echo ${output_name}
 }
 
@@ -404,7 +407,7 @@ function update_coverage ()
 }
 
 bpmn=`init_all`
-(echo $bpmn | awk '{exit (NF >= 2)}') || { echo $bpmn; exit; }
+(echo $bpmn | awk '{exit (NF >= 2)}') || { echo "$bpmn"; exit; }
 test $only_gen_java -eq 1 && { echo Source Java files generated, exiting; exit; }
 prop_file=$dir_tmp/${bpmn}_inputs.properties
 #echo BPMN and prop: $bpmn $prop_file
