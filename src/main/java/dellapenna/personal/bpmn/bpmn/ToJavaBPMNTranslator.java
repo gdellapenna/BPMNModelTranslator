@@ -503,7 +503,10 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (!message_name.equalsIgnoreCase("passthrough")) {
             //MessageDefinition message = p.registerProcessMessage(message_name);
             code.append(generateDebugOutputStament("\t RECEIVING message on channel " + channel_name));
-            code.append("Message_" + message_name + " receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\")");
+            code.append("Message_" + message_name + " receivedMessage;");
+            code.append("try { "
+                    + "receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\");"
+                    + "} catch (InterruptedException ex) {" + EXECUTILEXPRESSION + ".timeoutError(s); receivedMessage = null; }");
         } else {
             code.append(generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel_name));
         }

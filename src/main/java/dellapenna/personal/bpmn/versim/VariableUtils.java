@@ -161,10 +161,14 @@ public class VariableUtils {
                     }
                 }
             }
-        } else if (exp instanceof org.camunda.feel.syntaxtree.Conjunction log) {            
-            return decodeBPMNVariableConstraint(log.x(), v) || decodeBPMNVariableConstraint(log.y(), v);
+        } else if (exp instanceof org.camunda.feel.syntaxtree.Conjunction log) {
+            boolean a = decodeBPMNVariableConstraint(log.x(), v);
+            boolean b = decodeBPMNVariableConstraint(log.y(), v);
+            return (a || b);
         } else if (exp instanceof org.camunda.feel.syntaxtree.Disjunction log) {
-            return decodeBPMNVariableConstraint(log.x(), v) || decodeBPMNVariableConstraint(log.y(), v);
+            boolean a = decodeBPMNVariableConstraint(log.x(), v);
+            boolean b = decodeBPMNVariableConstraint(log.y(), v);
+            return (a || b);
         } else if (exp instanceof org.camunda.feel.syntaxtree.Not log) {
             return decodeBPMNVariableConstraint(log.x(), v);
         } else {

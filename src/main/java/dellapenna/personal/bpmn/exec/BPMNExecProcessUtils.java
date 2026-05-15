@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -244,7 +243,7 @@ public class BPMNExecProcessUtils {
         if (!massage_channels.containsKey(channel)) {
             massage_channels.put(channel, new LinkedBlockingQueue<>());
         }
-        try {
+        //try {
             Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
             if (message != null) {
                 return message;
@@ -254,19 +253,17 @@ public class BPMNExecProcessUtils {
                 }
                 return null;
             }
-        } catch (InterruptedException ex) {
+        /*} catch (InterruptedException ex) {
             if (triggerTimeout) {
                 timeoutError(s);
             } else {
                 throw ex; //rethrow
             }
             return null;
-        }
+        }*/
     }
 
-//    public static void initJoin(String g, String... l) {
-//        joins.put(g, new ArrayList<>(Arrays.asList(l)));
-//    }
+
     public static void executeProcess(String name, Runnable init, Consumer<ProcessStatus> start) {
         process_name = name;
         ProcessStatus s = new ProcessStatus();
