@@ -463,8 +463,8 @@ public class BPMNExecProcessUtils {
     }
 
     public static void killBoundary(BPMNExecProcessUtils.ProcessStatus s) {
-        synchronized (BPMNExecProcessUtils.class) {
-            if (s.boundaryID != null) {
+        synchronized (BPMNExecProcessUtils.class) {            
+            if (!Thread.currentThread().isInterrupted() && s.boundaryID != null) {
                 String boundaryThreadName = s.boundaryID + "_" + ((s.boundaryRole == ProcessStatus.BoundaryRole.BOUNDARYWATCHER) ? ProcessStatus.BoundaryRole.NORMAL.toString() : ProcessStatus.BoundaryRole.BOUNDARYWATCHER.toString());
                 stopThread(boundaryThreadName);
                 s.boundaryID = null;

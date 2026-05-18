@@ -143,6 +143,10 @@ public class Translate {
                 if (t_info.isDebug()) {
                     outlog.emit(0, "CommandLine", "java debug mode enabled");
                 } 
+                t_info.setDummyWorkload(cmd.hasOption("dw"));
+                if (t_info.isDummyWorkload()) {
+                    outlog.emit(0, "CommandLine", "generating dummy workload for empty tasks");
+                } 
                 t_info.setTrace(!cmd.hasOption("nt"));
                 if (t_info.isTrace()) {
                     outlog.emit(0, "CommandLine", "trace generation enabled");

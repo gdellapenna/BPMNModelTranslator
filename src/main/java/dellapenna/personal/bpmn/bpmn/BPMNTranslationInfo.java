@@ -13,6 +13,7 @@ public class BPMNTranslationInfo {
     private boolean debug;
     private boolean trace;
     private boolean trueParallel;
+    private boolean dummyWorkload;
     private String inputsFile;
     private String outputsFile;
     private List<Assertion> globalAssertions;
@@ -22,6 +23,7 @@ public class BPMNTranslationInfo {
         debug = false;
         trace = true;
         trueParallel = true;
+        dummyWorkload = false;
         inputsFile = "inputs.properties";
         outputsFile = "outputs.properties";
         globalAssertions = new ArrayList<>();
@@ -33,6 +35,7 @@ public class BPMNTranslationInfo {
         this.debug = other.debug;
         this.trace = other.trace;
         this.trueParallel = other.trueParallel;
+        this.dummyWorkload = other.dummyWorkload;
         this.inputsFile = other.inputsFile;
         this.outputsFile = other.outputsFile;
         this.globalAssertions = new ArrayList<>(other.globalAssertions);
@@ -77,6 +80,14 @@ public class BPMNTranslationInfo {
 
     public void setTrueParallel(boolean trueParallel) {
         this.trueParallel = trueParallel;
+    }
+
+    public boolean isDummyWorkload() {
+        return dummyWorkload;
+    }
+
+    public void setDummyWorkload(boolean dummyWorkload) {
+        this.dummyWorkload = dummyWorkload;
     }
 
     public void addGlobalAssertion(String expression, String description) {

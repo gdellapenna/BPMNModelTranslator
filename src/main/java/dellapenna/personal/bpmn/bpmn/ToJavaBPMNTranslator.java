@@ -71,10 +71,12 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return EXECUTILEXPRESSION + ".debugOutput(s,\"" + message + "\")";
     }
 
-    private String generateDummyWorkloadStament() {
-        //return "Thread.sleep(10); //emulate some work to avoid cocncurrency issues";
-        return "//do something";
-
+    private String generateDummyWorkloadStatement(BPMNTranslationInfo info) {
+        if (info.isDummyWorkload()) {
+            return "try {Thread.sleep(10);} catch (InterruptedException ex)  {Thread.currentThread().interrupt();}";
+        } else {
+            return "//do something";
+        }
     }
 
     private Code generateTransitionDescriptionStaments(FlowNode source, FlowNode target, BPMNTranslationInfo info) {
@@ -406,7 +408,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     public Code generateGenericTaskCode(BPMNDecodedProcess p, Task t, BPMNTranslationInfo info) {
         Code code = new Code(generateCommonNodeEntryStaments(t, info));
 
-        code.append(generateDummyWorkloadStament());
+        code.append(generateDummyWorkloadStatement(info));
 
         code.append(generateOutputAssignmentsStatements(p, t, Collections.EMPTY_LIST, false, info)); //no read next
         code.append(generateCommonNodeExitStatements(t, info));
@@ -417,7 +419,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     public Code generateManualTaskCode(BPMNDecodedProcess p, ManualTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
 
-        code.append(generateDummyWorkloadStament());
+        code.append(generateDummyWorkloadStatement(info));
 
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
@@ -451,7 +453,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     public Code generateServiceTaskCode(BPMNDecodedProcess p, ServiceTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
 
-        code.append(generateDummyWorkloadStament());
+        code.append(generateDummyWorkloadStatement(info));
 
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
@@ -521,7 +523,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     public Code generateUserTaskCode(BPMNDecodedProcess p, UserTask t, BPMNTranslationInfo info) {
         Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
 
-        code.append(generateDummyWorkloadStament());
+        code.append(generateDummyWorkloadStatement(info));
 
         code.append(generateOutputAssignmentsStatements(p, t, Collections.EMPTY_LIST, true, info)); //read next
         code.append(generateCommonNodeExitStatements(t, info));
