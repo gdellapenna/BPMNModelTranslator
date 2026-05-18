@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn.bpmn;
 
+import dellapenna.personal.bpmn.exec.BPMNExecProcessUtils;
 import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.BOUNDARYWATCHER;
 import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.NORMAL;
 import dellapenna.personal.bpmn.versim.Assertion;
@@ -642,10 +643,17 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     }
                     event_source += "{"
                             + "if (!Thread.currentThread().isInterrupted()) { "
-                            + generateDebugOutputStament("HIT BOUNDARY EVENT " + bf.event().getName() + " ON " + getNodeDescription(ownerNode)) + ";"
-                            + EXECUTILEXPRESSION + ".killBoundary(s);\n"
-                            + generateCodeSource(generateTransitionCode(p, ownerNode, bf.firstStep(), info))
-                            + "}\n break; }";
+                            + generateDebugOutputStament("HIT BOUNDARY EVENT " + bf.event().getName() + " ON " + getNodeDescription(ownerNode)) + ";";
+                    if (bf.event().cancelActivity()) { //interrupting
+                        event_source += EXECUTILEXPRESSION + ".killBoundary(s);\n"
+                                + generateCodeSource(generateTransitionCode(p, ownerNode, bf.firstStep(), info))
+                                + "}\n break;";
+                    } else { //not interrupting
+                        p.registerDecodedEdge(ownerNode, bf.firstStep());
+                        event_source += EXECUTILEXPRESSION + ".fork(s.withResetBoundary()," + "s.boundaryID," + "this::" + sanitizeName(p.getFlowName(bf.firstStep())) + ");\n"
+                                + "}\n";
+                    }
+                    event_source += "}";
                     return event_source;
                 }).collect(Collectors.joining("\n"));
 

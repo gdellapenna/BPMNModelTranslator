@@ -3,6 +3,7 @@ package dellapenna.personal.bpmn.exec;
 import java.io.FileNotFoundException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,13 @@ public class BPMNExecProcessUtils {
             return n;
         }
 
+        public ProcessStatus withResetBoundary() {
+            ProcessStatus n = new ProcessStatus(this);
+            n.boundaryID = null;
+            n.boundaryRole = null;
+            return n;
+        }
+
         public ProcessStatus(String branchID) {
             this.branchID = branchID;
             this.boundaryID = null;
@@ -130,7 +138,10 @@ public class BPMNExecProcessUtils {
     //
 
     public static String getRandomID() {
-        return Long.toHexString(MSB | numberGenerator.nextLong()) + Long.toHexString(MSB | numberGenerator.nextLong());
+        byte[] bytes = new byte[16];
+        numberGenerator.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        //return Long.toHexString(MSB | numberGenerator.nextLong()) + Long.toHexString(MSB | numberGenerator.nextLong());
     }
 
     public static void enableTrueParallel() {
@@ -244,15 +255,15 @@ public class BPMNExecProcessUtils {
             massage_channels.put(channel, new LinkedBlockingQueue<>());
         }
         //try {
-            Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
-            if (message != null) {
-                return message;
-            } else {
-                if (triggerTimeout) {
-                    timeoutError(s);
-                }
-                return null;
+        Message message = massage_channels.get(channel).poll(timeout, TimeUnit.MILLISECONDS);
+        if (message != null) {
+            return message;
+        } else {
+            if (triggerTimeout) {
+                timeoutError(s);
             }
+            return null;
+        }
         /*} catch (InterruptedException ex) {
             if (triggerTimeout) {
                 timeoutError(s);
@@ -262,7 +273,6 @@ public class BPMNExecProcessUtils {
             return null;
         }*/
     }
-
 
     public static void executeProcess(String name, Runnable init, Consumer<ProcessStatus> start) {
         process_name = name;
@@ -413,7 +423,7 @@ public class BPMNExecProcessUtils {
             }
         }
         for (int i = 0; i < branches.length; ++i) {
-            debugOutput(s, "\t FORKING BRANCH: %s FROM PARALLEL %s", branch_ids[i], parallel_id);
+            debugOutput(s, "\t FORKING BRANCH %s FROM ACTIVITY %s", branch_ids[i], parallel_id);
             final Consumer<ProcessStatus> branch = branches[i];
             final String branch_id = branch_ids[i];
             startThread(branch, s.withBranchAndcurrent(branch_id, source_parallel_gateway_id));
@@ -429,7 +439,7 @@ public class BPMNExecProcessUtils {
         String source_parallel_gateway_id = temp.substring(temp.lastIndexOf("|") + 1);
         String parallel_parent_branch_id = temp.substring(0, temp.lastIndexOf("|"));
 
-        debugOutput(s, "\t JOINING BRANCH: %s OF PARALLEL %s STARTED FROM GATEWAY %s", branch_id, parallel_id, source_parallel_gateway_id);
+        debugOutput(s, "\t JOINING BRANCH %s OF PARALLEL %s STARTED FROM GATEWAY %s", branch_id, parallel_id, source_parallel_gateway_id);
         synchronized (BPMNExecProcessUtils.class) {
             parallels.get(parallel_id).remove(branch_id);
             //joins.get(gatewayId).remove(s.previousStep);
@@ -463,7 +473,7 @@ public class BPMNExecProcessUtils {
     }
 
     public static void killBoundary(BPMNExecProcessUtils.ProcessStatus s) {
-        synchronized (BPMNExecProcessUtils.class) {            
+        synchronized (BPMNExecProcessUtils.class) {
             if (!Thread.currentThread().isInterrupted() && s.boundaryID != null) {
                 String boundaryThreadName = s.boundaryID + "_" + ((s.boundaryRole == ProcessStatus.BoundaryRole.BOUNDARYWATCHER) ? ProcessStatus.BoundaryRole.NORMAL.toString() : ProcessStatus.BoundaryRole.BOUNDARYWATCHER.toString());
                 stopThread(boundaryThreadName);

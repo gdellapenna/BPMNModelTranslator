@@ -122,6 +122,9 @@ public class Translate {
         options.addOption(Option.builder("nt")
                 .desc("Disable run trace creation in generated java process")
                 .build());
+        options.addOption(Option.builder("dw")
+                .desc("Generate dummy workload for empty tasks")
+                .build());
     }
 
     public void printHelp() {
