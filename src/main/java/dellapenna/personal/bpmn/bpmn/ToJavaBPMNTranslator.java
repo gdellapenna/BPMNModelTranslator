@@ -1,6 +1,5 @@
 package dellapenna.personal.bpmn.bpmn;
 
-import dellapenna.personal.bpmn.exec.BPMNExecProcessUtils;
 import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.BOUNDARYWATCHER;
 import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.NORMAL;
 import dellapenna.personal.bpmn.versim.Assertion;
@@ -848,13 +847,24 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info) {
         Code code = new Code<String>();
-
+        /*
         p.registerDecodedEdge(current, next);
         String transition_code
                 = generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
                 + sanitizeName(p.getFlowName(next)) + "(s.withCurrent(\"" + current.getId() + "\"));";
 
         code.append("if (!Thread.currentThread().isInterrupted()) {" + transition_code + "}");
+         */
+
+        p.registerDecodedEdge(current, next);
+        code.set(
+                generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
+                + EXECUTILEXPRESSION + ".goTo(s,"
+                + "\"" + current.getId() + "\","
+                + "\"" + next.getId() + "\","
+                + "this::" + sanitizeName(p.getFlowName(next)) + ","
+                + ((info != null && info.isDebug()) ? "true" : "false") + ");"
+        );
         return code;
     }
 

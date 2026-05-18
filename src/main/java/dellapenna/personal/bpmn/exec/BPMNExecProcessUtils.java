@@ -405,6 +405,15 @@ public class BPMNExecProcessUtils {
         }
     }
 
+    public static void goTo(ProcessStatus s, String currentNodeId, String nextNodeId, Consumer<ProcessStatus> nextNodeProc, boolean debug) {
+        if (!Thread.currentThread().isInterrupted()) {
+            if (debug) {
+                BPMNExecProcessUtils.logTransition(currentNodeId, nextNodeId);
+            }
+            nextNodeProc.accept(s.withCurrent(currentNodeId));
+        }
+    }
+
     public static void fork(ProcessStatus s, String gatewayId, Consumer<ProcessStatus>... branches) {
         String source_parallel_gateway_id = gatewayId;
         String parallel_id = s.branchID + "|" + source_parallel_gateway_id + "|" + getRandomID();
