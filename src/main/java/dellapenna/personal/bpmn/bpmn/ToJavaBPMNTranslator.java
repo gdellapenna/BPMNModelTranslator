@@ -650,7 +650,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                                 + "}\n break;";
                     } else { //not interrupting
                         p.registerDecodedEdge(ownerNode, bf.firstStep());
-                        event_source += EXECUTILEXPRESSION + ".fork(s.withResetBoundary()," + "s.boundaryID," + "this::" + sanitizeName(p.getFlowName(bf.firstStep())) + ");\n"
+                        event_source += generateCodeSource(generateTransitionDescriptionStaments(ownerNode, bf.firstStep(), info))
+                                + EXECUTILEXPRESSION + ".fork(s.withResetBoundary()," + "s.boundaryID," + "this::" + sanitizeName(p.getFlowName(bf.firstStep())) + ");\n"
                                 + "}\n";
                     }
                     event_source += "}";
