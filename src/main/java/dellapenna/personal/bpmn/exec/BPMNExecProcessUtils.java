@@ -407,9 +407,9 @@ public class BPMNExecProcessUtils {
 
     public static void goTo(ProcessStatus s, String currentNodeId, String nextNodeId, Consumer<ProcessStatus> nextNodeProc, boolean debug) {
         if (!Thread.currentThread().isInterrupted()) {
-            if (debug) {
-                BPMNExecProcessUtils.logTransition(currentNodeId, nextNodeId);
-            }
+//            if (debug) {
+//                BPMNExecProcessUtils.logTransition(currentNodeId, nextNodeId);
+//            }
             nextNodeProc.accept(s.withCurrent(currentNodeId));
         }
     }
