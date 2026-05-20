@@ -8,6 +8,8 @@ import dellapenna.personal.bpmn.bpmn.BPMNTranslationInfo;
 import dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator;
 import dellapenna.personal.bpmn.bpmn.VariableDefinition;
 import dellapenna.personal.bpmn.dmn.DMNDecodedModel;
+import dellapenna.personal.bpmn.dmn.DMNDecodedRule;
+import dellapenna.personal.bpmn.dmn.DMNDecodedTable;
 import dellapenna.personal.bpmn.dmn.DMNTranslator;
 import dellapenna.personal.bpmn.dmn.DMNTranslationInfo;
 import dellapenna.personal.bpmn.dmn.ToJavaDMNTranslator;
@@ -147,6 +149,11 @@ public class BPDMNTranslator {
         DMNDecodedModel<String>[] dmns = new DMNDecodedModel[dmn_files.size()];
         for (int i = 0; i < dmn_files.size(); ++i) {
             dmns[i] = compile_dmn(dmn_files.get(i), d_info);
+            Path output_rules_file = output_folder.resolve(dmn_files.get(i).getFileName() + ".rules");
+            //output table rules
+            try (BufferedWriter outputRules = new BufferedWriter(new FileWriter(output_rules_file.toFile()))) {
+                outputRules.write(generateDMNModelDescription(dmns[i]));
+            }
         }
 
         //decode BPMNs
@@ -216,7 +223,6 @@ public class BPDMNTranslator {
 //        result += POST_CODE;
 //        return result;
 //    }
-    
     public String generateInputProperties(BPMNDecodedProcess process, DMNDecodedModel<String>[] dmns, BPMNTranslationInfo info) {
         outlog.emit(1, "Translator", "generating input properties");
         String result = "";
@@ -267,6 +273,18 @@ public class BPDMNTranslator {
             }
         }
 
+        return result;
+    }
+
+    private String generateDMNModelDescription(DMNDecodedModel<String> dmn) {
+        outlog.emit(1, "Translator", "generating DMN model description " + dmn.id());
+        String result = "";
+        for (DMNDecodedTable<String> t : dmn.tables().values()) {
+            result += "# table " + t.id() + "\n";
+            for (DMNDecodedRule<String> r : t.rules()) {
+                result += t.id() + "(" + r.id() + ")" + " #" + r.index() + "\n";
+            }
+        }
         return result;
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_13vrr8d" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.24.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_13vrr8d" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.22.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.5.0">
   <bpmn:process id="COPD" name="COPD" isExecutable="true">
     <bpmn:userTask id="Activity_0f1noex" name="Evaluate request">
       <bpmn:incoming>Flow_0jza4uj</bpmn:incoming>
@@ -42,9 +42,6 @@
         <bpmn:sourceRef>DataObjectReference_1vpq50p</bpmn:sourceRef>
         <bpmn:targetRef>Property_1ta1muj</bpmn:targetRef>
       </bpmn:dataInputAssociation>
-      <bpmn:dataOutputAssociation id="DataOutputAssociation_1vwm2h0">
-        <bpmn:targetRef>DataObjectReference_0vimr5q</bpmn:targetRef>
-      </bpmn:dataOutputAssociation>
     </bpmn:userTask>
     <bpmn:userTask id="Activity_19eeyaj" name="Plan an examination">
       <bpmn:incoming>Flow_0sunkfq</bpmn:incoming>
@@ -65,8 +62,8 @@
       <bpmn:extensionElements>
         <zeebe:calledDecision decisionId="InterpretSpiroResultsDT" resultVariable="interpretSpiroResultsResult" />
         <zeebe:ioMapping>
-          <zeebe:input source="=spirometryReport" target="spirometryResult" />
-          <zeebe:output source="=interpretSpiroResultsResult.copd" target="spirometryCOPDSuggestive" />
+          <zeebe:input source="=spirometryReport" target="spirometryReport" />
+          <zeebe:output source="=interpretSpiroResultsResult.analyzedResults" target="analyzedResults" />
         </zeebe:ioMapping>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0hy1h1n</bpmn:incoming>
@@ -141,7 +138,7 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_086xuqd" sourceRef="Activity_1by7ohz" targetRef="Gateway_1ifzb7i" />
     <bpmn:sequenceFlow id="Flow_0rj8xhe" name="YES" sourceRef="Gateway_1ifzb7i" targetRef="Activity_0wlmua1">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=COPDSuspected=true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=anamnesisReport="COPDSuspected"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:exclusiveGateway id="Gateway_06mnf24">
       <bpmn:incoming>Flow_0s0smhs</bpmn:incoming>
@@ -152,7 +149,7 @@
       <bpmn:outgoing>Flow_0dt138r</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0s0smhs" name="NO" sourceRef="Gateway_1ifzb7i" targetRef="Gateway_06mnf24">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=COPDSuspected=false</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=anamnesisReport="COPDNOTSuspected"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_0hy1h1n" sourceRef="Activity_0wlmua1" targetRef="Activity_0vfbgoy" />
     <bpmn:exclusiveGateway id="Gateway_065vrg8" name="Spirometry suggestive of COPD?">
@@ -162,10 +159,10 @@
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0tysxla" sourceRef="Activity_0vfbgoy" targetRef="Gateway_065vrg8" />
     <bpmn:sequenceFlow id="Flow_1633240" name="YES" sourceRef="Gateway_065vrg8" targetRef="Activity_182mdyp">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=spirometryCOPDSuggestive=true</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=analyzedResults="COPDNOTSuggestive"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_09kp4ch" name="NO" sourceRef="Gateway_065vrg8" targetRef="Gateway_06mnf24">
-      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=spirometryCOPDSuggestive=false</bpmn:conditionExpression>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">=analyzedResults="COPDSuggestive"</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_07kjvx8" sourceRef="Activity_182mdyp" targetRef="Activity_16mwits" />
     <bpmn:exclusiveGateway id="Gateway_0y30j11" name="COPD diagnosed?">
@@ -324,8 +321,6 @@
     <bpmn:endEvent id="Event_1faj9xw">
       <bpmn:incoming>Flow_15r8sfz</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:dataObjectReference id="DataObjectReference_0vimr5q" name="COPDSuspected" dataObjectRef="DataObject_057vxn9" />
-    <bpmn:dataObject id="DataObject_057vxn9" />
     <bpmn:dataObjectReference id="DataObjectReference_0pcfsg7" name="patientRequireHospitalization" dataObjectRef="DataObject_0nyqtz6" />
     <bpmn:dataObject id="DataObject_0nyqtz6" />
     <bpmn:dataObjectReference id="DataObjectReference_1vy1qvg" name="COPDDiagnosed" dataObjectRef="DataObject_0skq2ts" />
@@ -530,12 +525,6 @@
       <bpmndi:BPMNShape id="Event_0l1mzyn_di" bpmnElement="Event_1faj9xw">
         <dc:Bounds x="832" y="972" width="36" height="36" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DataObjectReference_0vimr5q_di" bpmnElement="DataObjectReference_0vimr5q" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
-        <dc:Bounds x="182" y="490" width="36" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="158" y="547" width="84" height="14" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObjectReference_0pcfsg7_di" bpmnElement="DataObjectReference_0pcfsg7" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
         <dc:Bounds x="642" y="295" width="36" height="50" />
         <bpmndi:BPMNLabel>
@@ -560,12 +549,6 @@
           <dc:Bounds x="1087" y="1632" width="27" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DataObjectReference_0k5p98h_di" bpmnElement="DataObjectReference_0k5p98h" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
-        <dc:Bounds x="312" y="155" width="36" height="50" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="289" y="212" width="82" height="27" />
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="DataObjectReference_0xcmybd_di" bpmnElement="DataObjectReference_0xcmybd" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
         <dc:Bounds x="1082" y="1655" width="36" height="50" />
         <bpmndi:BPMNLabel>
@@ -578,6 +561,12 @@
           <dc:Bounds x="418" y="502" width="88" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataObjectReference_0k5p98h_di" bpmnElement="DataObjectReference_0k5p98h" bioc:stroke="#0d4372" bioc:fill="#bbdefb" color:background-color="#bbdefb" color:border-color="#0d4372">
+        <dc:Bounds x="362" y="200" width="36" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="339" y="257" width="82" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_1qzlq96_di" bpmnElement="Event_1yhqo18">
         <dc:Bounds x="832" y="742" width="36" height="36" />
         <bpmndi:BPMNLabel>
@@ -585,8 +574,8 @@
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="DataOutputAssociation_0u8v7g7_di" bpmnElement="DataOutputAssociation_0u8v7g7">
-        <di:waypoint x="470" y="218" />
-        <di:waypoint x="348" y="189" />
+        <di:waypoint x="470" y="230" />
+        <di:waypoint x="398" y="230" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutputAssociation_14xd8ht_di" bpmnElement="DataOutputAssociation_14xd8ht">
         <di:waypoint x="380" y="427" />
@@ -603,10 +592,6 @@
       <bpmndi:BPMNEdge id="DataInputAssociation_1molx1t_di" bpmnElement="DataInputAssociation_1molx1t">
         <di:waypoint x="442" y="477" />
         <di:waypoint x="380" y="501" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DataOutputAssociation_1vwm2h0_di" bpmnElement="DataOutputAssociation_1vwm2h0">
-        <di:waypoint x="280" y="520" />
-        <di:waypoint x="218" y="520" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="DataOutputAssociation_0yntezl_di" bpmnElement="DataOutputAssociation_0yntezl">
         <di:waypoint x="520" y="632" />

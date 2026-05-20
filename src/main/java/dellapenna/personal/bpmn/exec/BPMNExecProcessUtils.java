@@ -528,6 +528,10 @@ public class BPMNExecProcessUtils {
         outputs.setProperty(name, (value != null ? value.toString() : "<NULL>"));
     }
 
+    public static void logDMNRuleHit(String table_id, String rule_id, int index) {
+        traceChannel.println("#DMN hit " + table_id + "(" + rule_id + ")" + " [" + index + "]");
+    }
+
     public static void logTransition(String source, String target) {
         traceChannel.println("\"" + source + "\" -> \"" + target + "\"");
     }

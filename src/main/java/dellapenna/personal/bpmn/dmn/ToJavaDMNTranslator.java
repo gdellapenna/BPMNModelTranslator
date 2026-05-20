@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn.dmn;
 
+import static dellapenna.personal.bpmn.bpmn.ToJavaBPMNTranslator.EXECUTILEXPRESSION;
 import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
@@ -27,7 +28,8 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
         };
     }
 
-    private String generateRulesSource(List<DMNDecodedRule<String>> decoded_rules, String output_record_name, DMNTranslationInfo info) {
+    private String generateRulesSource(DMNDecodedTable<String> table, String output_record_name, DMNTranslationInfo info) {
+        List<DMNDecodedRule<String>> decoded_rules = table.rules();
         boolean default_present = false;
         String result = "";
         for (DMNDecodedRule<String> r : decoded_rules) {
@@ -39,9 +41,10 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
             } else {
                 default_present = true;
             }
-            rs += " { return new " + output_record_name + "("
+             rs += " { " + EXECUTILEXPRESSION + ".logDMNRuleHit(\""+table.id()+"\",\""+r.id()+"\","+r.index()+");"
+                    + "return new " + output_record_name + "("
                     + r.assignments().stream().map(a -> ("/*" + a.outputName() + "*/" + a.outputExpression())).collect(Collectors.joining(", "))
-                    + ");}";
+                    + ");}";	
 
             result += (!result.isBlank() ? " else " : "") + rs;
         }
@@ -96,7 +99,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + table.inputs().stream()
                         .map(i -> /*mapType(i.getInputExpression().getTypeRef())*/ "Object" + " " + sanitizeName(i.getKey()) + " = args." + sanitizeName(i.getKey()))
                         .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
-                + generateRulesSource(table.rules(), resultClassName, info)
+                + generateRulesSource(table, resultClassName, info)
                 + "\n}"
                 + "\n}";
 
@@ -147,7 +150,7 @@ public class ToJavaDMNTranslator extends AbstractDMNTranslator<String> {
                 + table.inputs().stream()
                         .map(i -> "Object" + " " + sanitizeName(i.getKey()) + " = args." + sanitizeName(i.getKey()))
                         .collect(Collectors.joining(";\n", "", ";\n")) + "\n"
-                + generateRulesSource(table.rules(), resultClassName, info)
+                + generateRulesSource(table, resultClassName, info)
                 + "\n}"
                 + "\n}";
 
