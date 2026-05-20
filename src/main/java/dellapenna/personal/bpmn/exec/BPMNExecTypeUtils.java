@@ -1,5 +1,8 @@
 package dellapenna.personal.bpmn.exec;
 
+import java.util.Collections;
+import java.util.Map;
+
 public class BPMNExecTypeUtils {
 
     public static Double tonumber(Object o) {
@@ -29,6 +32,16 @@ public class BPMNExecTypeUtils {
             return Boolean.valueOf(o.toString());
 
         }
+    }
+
+    public static Map<String, Object> tocontext(Object o) {
+        if (o != null) {
+            if (o instanceof Map m
+                    && m.keySet().stream().allMatch(k -> k instanceof String)) {
+                return m;
+            }
+        }
+        return Collections.EMPTY_MAP; //o un errore?
     }
 
     public static boolean equals(Object o1, Object o2) {

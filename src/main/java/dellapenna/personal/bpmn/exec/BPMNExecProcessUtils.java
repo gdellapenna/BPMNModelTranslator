@@ -541,6 +541,10 @@ public class BPMNExecProcessUtils {
         traceChannel.println("\"" + source + "\" -> \"" + target + "\"");
     }
 
+    public static void logDMNRuleHit(String table_id, String rule_id, int index) {
+        traceChannel.println("#DMN hit " + table_id + "(" + rule_id + ")" + " [" + index + "]");
+    }
+
     public static void logCurrentNode(String id, String description) {
         traceChannel.println(id + "[" + (description != null && !description.isBlank() ? ("label=\"" + description + "\"") : "") + "]");
     }

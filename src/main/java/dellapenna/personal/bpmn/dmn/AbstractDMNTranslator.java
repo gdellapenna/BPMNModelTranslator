@@ -22,7 +22,7 @@ import org.camunda.bpm.model.dmn.instance.Rule;
  * @param <T>
  */
 public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
-    
+
     private static final OutputManager outlog = new OutputManager();
 
     protected String sanitizeName(String n) {
@@ -40,6 +40,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         lhsinfo.getReadVariables().clear(); //ignored
         rhsinfo.getReadVariables().clear();
 
+        int rule_index = 0;
         for (Rule r : raw_rules) {
             String rule_comment = r.getDescription() != null ? r.getDescription().getTextContent() : "";
             int ref_counter = 0;
@@ -70,7 +71,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
                         o.getTextContent()
                 ));
             }
-            rules.add(new DMNDecodedRule<>(rule_conditions, rule_assignments, rule_comment));
+            rules.add(new DMNDecodedRule<>(r.getId(), rule_index++, rule_conditions, rule_assignments, rule_comment));
         }
 
         List<SimpleImmutableEntry<String, String>> inputs = t.getInputs().stream()
@@ -90,7 +91,7 @@ public abstract class AbstractDMNTranslator<T> implements DMNTranslator<T> {
         Map<String, DMNDecodedTable<T>> tables = new HashMap<>();
         Collection<DecisionTable> raw_tables = dmn.getModelElementsByType(DecisionTable.class);
         for (DecisionTable t : raw_tables) {
-            outlog.emit(1,"DMN Translator","decoding decision table " + t.getId());
+            outlog.emit(1, "DMN Translator", "decoding decision table " + t.getId());
             tables.put(t.getId(), decodeDecisionTable(t, info));
         }
         return new DMNDecodedModel(dmn.getDocumentElement().getAttributeValue("id"), tables);

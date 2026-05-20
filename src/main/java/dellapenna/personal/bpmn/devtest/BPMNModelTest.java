@@ -71,11 +71,11 @@ public class BPMNModelTest {
 //        t_info.setDebug(true);
 //        t.compile_inputs(output_folder, t_info, Path.of("Simple_Message.bpmn"));
 
-        //FeelTranslator ft = new ToJavaFeelTranslator();
+        FeelTranslator ft = new ToJavaFeelTranslator();
         //System.out.println(ft.generateBpmnSource("abs(x)>1 and (a=\"w\" or (b in [1..4]))"));
-        //System.out.println(ft.generateBpmnSource("a.b=c"));        
-        
-        Translate instance = new Translate();
-        instance.parseCommandLine(new String[]{"examples/simple/Simple_Loop_int/Simple_Loop.bpmn"});
+        //System.out.println(ft.generateBpmnSource("a.b=c"));
+        Object translate = ft.translate("q.w = a.b.c",null);
+        //Translate instance = new Translate();
+        //instance.parseCommandLine(new String[]{"examples/simple/Simple_Loop_int/Simple_Loop.bpmn"});
     }
 }
