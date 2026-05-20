@@ -2,16 +2,12 @@ patientAlreadyStaged=false
 #ENUM: false,true
 patientRequireHospitalization=false
 #ENUM: false,true
-anamnesisReport=?
-#UNHANDLED
+anamnesisReport=COPDSuspected
+#ENUM: COPDNOTSuspected,COPDSuspected
 patientSmoker=true
 #ENUM: true,false
-COPDSuspected=true
-#ENUM: false,true
 spirometryReport=true
 #ENUM: true,false
-analyzedResults=BAD
-#ENUM: BAD,GOOD
 COPDDiagnosed=true
 #ENUM: false,true
 BRTReport=LevelB
