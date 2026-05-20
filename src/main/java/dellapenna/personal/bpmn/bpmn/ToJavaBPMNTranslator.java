@@ -28,6 +28,7 @@ import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
 import org.camunda.bpm.model.bpmn.instance.ScriptTask;
 import org.camunda.bpm.model.bpmn.instance.SendTask;
 import org.camunda.bpm.model.bpmn.instance.ServiceTask;
+import org.camunda.bpm.model.bpmn.instance.SignalEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.Task;
 import org.camunda.bpm.model.bpmn.instance.TimerEventDefinition;
@@ -162,7 +163,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     .toList(),
                     BPMNDecodedProcess.VariableDirection.READ, t.getId(), null);
         }
-        
+
         return result;
     }
 
@@ -618,32 +619,38 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     }
 
     //OTHER EVENTS HELPERS
-    private Code generateMessageEventCatchCode(BPMNDecodedProcess p, MessageEventDefinition me, BPMNTranslationInfo info) throws BpmnTranslatorException {
+    private Code generateMessageEventCatchCode(BPMNDecodedProcess p, MessageEventDefinition me, BPMNTranslationInfo info, boolean live, String action) throws BpmnTranslatorException {
         Code code = new Code();
         String channel_name = me.getMessage().getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "subscription").getAttributeValue("correlationKey").substring(1);
         String message_name = me.getMessage().getName();
 
+        //live wait mode (if using this event in parallel with others) MUST BE COMPLETED!
+        code.append("Message_" + message_name + " receivedMessage;");
         if (!message_name.equalsIgnoreCase("passthrough")) {
             MessageDefinition message = p.registerProcessMessage(message_name);
             code.append(generateDebugOutputStament("\t RECEIVING message on channel " + channel_name));
-            code.append("Message_" + message_name + " receivedMessage;");
-            code.append("try { "
-                    + "receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\");"
-                    + "} catch (InterruptedException ex)  {Thread.currentThread().interrupt();}");
+            String check_source = "receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\""
+                    + ((!live) ? ");" : ",50,false);");
+            code.append("try { " + check_source + "} catch (InterruptedException ex)  {receivedMessage=null; Thread.currentThread().interrupt();}");
+            if (action != null) {
+                code.append("if (receivedMessage != null)" + action); //DOES NOT WORK FOR BOUNDARY (live) MODE... MUST EXIT ALSO IF isInterrupted
+            }
         } else {
             code.append(generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel_name));
         }
+
         return code;
     }
 
-    private Code generateTimerEventCatchCode(BPMNDecodedProcess p, TimerEventDefinition te, BPMNTranslationInfo info, boolean live) throws BpmnTranslatorException {
+    private Code generateTimerEventCatchCode(BPMNDecodedProcess p, TimerEventDefinition te, BPMNTranslationInfo info, boolean live, String action) throws BpmnTranslatorException {
         Code code = new Code();
         if (te.getTimeDuration() != null) {
             long waitTime = Duration.parse(te.getTimeDuration().getTextContent()).toMillis();
             if (!live) {
                 code.append("try { Thread.sleep(" + waitTime + "); } catch (InterruptedException ex)  {Thread.currentThread().interrupt();}");
             } else {
-                //live wait mode (if using this event in parallel with others)
+                //live wait mode (if using this event in parallel with others)... 
+                //TO BE REWRITTEN (while loop should not be here and timer init sould be at the beginning of the multiple check block)
                 code.append("long enter_time = System.currentTimeMillis()");
                 code.append("while (!Thread.currentThread().isInterrupted()) {if (System.currentTimeMillis() - enter_time >= " + waitTime + ") break; }");
             }
@@ -654,6 +661,23 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
+// TO BE COMPLETED    
+//    private Code generateSignalEventCatchCode(BPMNDecodedProcess p, SignalEventDefinition ts, BPMNTranslationInfo info, boolean live) throws BpmnTranslatorException {
+//        Code code = new Code();
+//        String signal_name = ts.getSignal().getName();
+//        if (!signal_name.equalsIgnoreCase("passthrough")) {
+//            SignalDefinition signal = p.registerProcessSignal(signal_name);
+//            code.append(generateDebugOutputStament("\t CHECKING for signal " + signal_name));
+//            if (!live) {
+//                code.append("try {" + EXECUTILEXPRESSION + ".checkSignal(s,\"" + signal_name + "\"); } catch (InterruptedException ex)  {Thread.currentThread().interrupt();}");
+//            } else {
+//                code.append("try {" + EXECUTILEXPRESSION + ".checkSignal(s,\"" + signal_name + "\",50,false); } catch (InterruptedException ex)  {Thread.currentThread().interrupt();}");
+//            }
+//        } else {
+//            code.append(generateDebugOutputStament("\t ASSUMING signal " + signal_name));
+//        }
+//        return code;
+//    }
     //INTERMEDIATE CATCH EVENTS
     @Override
     protected Code generateIntermediateCatchEventCode(BPMNDecodedProcess p, IntermediateCatchEvent t, BPMNTranslationInfo info) throws BpmnTranslatorException {
@@ -661,9 +685,9 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
         EventDefinition e = t.getEventDefinitions().iterator().next(); //should be only one!
         if (e instanceof MessageEventDefinition me) {
-            code.append(generateMessageEventCatchCode(p, me, info));
+            code.append(generateMessageEventCatchCode(p, me, info, false,null));
         } else if (e instanceof TimerEventDefinition te) {
-            code.append(generateTimerEventCatchCode(p, te, info, false));
+            code.append(generateTimerEventCatchCode(p, te, info, false, null));
         } else if (e != null) {
             throw new BpmnTranslatorException("Cannot translate event of type " + e.getClass().getName());
         } else {
