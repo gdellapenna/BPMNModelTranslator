@@ -9,7 +9,9 @@ min_eps_def=0.0001
 int_timeout_def=120
 nodes_coverage_def="0.95"
 edges_coverage_def="0.95"
+rules_coverage_def="0.95"
 stop_type_def="errors"
+stop_types=""
 continue_from_before_def=0
 only_gen_java_def=0
 override_vars_def=""
@@ -28,7 +30,7 @@ echo $*
 
 function usage ()
 {
-    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-S] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-z min_int] [-Z max_int] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-V override_vars_file] [-l list_num_vals] [-O other_opts_compiler] [-o other_opts_exec] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_int def: '$min_int_def'\n\tmax_int def: '$max_int_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, both_coverage, nodes_coverage, edges_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, both_coverage or nodes_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, both_coverage or edges_coverage): '$edges_coverage_def'\n\tlist_num_vals def (n:var_1:k_1:....:var_m:k_m means list of size n for all vars, k_i for var_i only): '$list_num_vals_def'\n\tother_opts_compiler def: '$other_opts_compiler'\n\tother_opts_exec def: '$other_opts_exec'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.md), continue from that point\n\tIf -S is given, also add information on resources usage in logs\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n\toverride_vars_file must be of the same format of inputs.properties file\n\tin other_opts_compiler and other_opts_exec, replace spaces with colons :\n\nAll input files must be in the directory chosen for the results\n\n\n", $1);}'
+    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-S] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-z min_int] [-Z max_int] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-V override_vars_file] [-l list_num_vals] [-O other_opts_compiler] [-o other_opts_exec] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_int def: '$min_int_def'\n\tmax_int def: '$max_int_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, nodes_coverage, edges_coverage, rules_coverage, nodes_edges_coverage, edges_rules_coverage, nodes_rules_coverage, all_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, nodes_coverage, nodes_edges_coverage, nodes_rules_coverage, all_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, edges_coverage, nodes_edges_coverage, edges_rules_coverage, all_coverage): '$edges_coverage_def'\n\trules_coverage def (only if -s any_coverage, rules_coverage, edges_rules_coverage, nodes_rules_coverage, all_coverage): '$rules_coverage_def'\n\tlist_num_vals def (n:var_1:k_1:....:var_m:k_m means list of size n for all vars, k_i for var_i only): '$list_num_vals_def'\n\tother_opts_compiler def: '$other_opts_compiler'\n\tother_opts_exec def: '$other_opts_exec'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.md), continue from that point\n\tIf -S is given, also add information on resources usage in logs\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n\toverride_vars_file must be of the same format of inputs.properties file\n\tin other_opts_compiler and other_opts_exec, replace spaces with colons :\n\nAll input files must be in the directory chosen for the results\n\n\n", $1);}'
     exit 1
 }
 
@@ -199,10 +201,10 @@ function init_all ()
     local output_name=`grep "input variables written to" $dir_res/init.log | awk '{print $NF}' | awk -F/ '{print $NF}' | sed -e 's/_inputs.properties//'`
     test -f $dir_tmp/${output_name}_inputs.properties || { echo Generation failed, $dir_tmp/${output_name}_inputs.properties does not exist; return; }
     mkdir -p $dir_res/translation_output
-    cp $dir_tmp/${output_name}.java $dir_tmp/${output_name}.jar $dir_tmp/${output_name}_inputs.properties $dir_tmp/$output_name.graph $dir_res/translation_output
+    cp $dir_tmp/${output_name}.java $dir_tmp/${output_name}.jar $dir_tmp/${output_name}_inputs.properties $dir_tmp/$output_name.graph $dir_tmp/*rules $dir_res/translation_output > /dev/null 2>&1
     mv $dir_res/init.log $dir_res/translation_output/log
     mv $dir_res/init.time.log $dir_res/translation_output/time.log
-    echo ${output_name}
+    echo ${output_name} `echo $dmn_input_files | tr " " "\n" | awk -F/ '{print $NF}'`
 }
 
 function run ()
@@ -354,10 +356,15 @@ EOF
     return $?
 }
 
-#sets nodes, labels, edges, num_nodes, num_edges
+#sets nodes, labels, edges, num_nodes, num_edges and dmns rules
 function load_graph ()
 {
     local graph_file=$1
+    shift 1
+    local dmn_files=$*
+    local t=0
+    local n=0
+    local e=0
     num_nodes=0
     num_edges=0
     for n in $(fgrep "[" $graph_file | awk -F'[' '{print $1}')
@@ -371,18 +378,45 @@ function load_graph ()
 	test "${edges[$e]}" || ((num_edges++))
 	edges[$e]=0
     done
+    if [ $dmn_files ]
+    then
+	for dmn in $dmn_files
+	do
+	    tables=`fgrep -v "# table" ${dmn}.rules | tr -d "#" | awk '{split($0, a, "("); save[a[1]] = $NF}END{for (i in save) print i"_"save[i]}'`
+	    for t in $tables
+	    do
+		tab=`echo $t | awk -F_ '{print $1}'`
+		num=`echo $t | awk -F_ '{print $2}'`
+		num_rules[$tab]=$num
+		((all_num_rules += num + 1))
+		for ((i = 0; i <= num; i++))
+		do
+		    hit_rules[$tab","$i]=0
+		done
+	    done
+	done
+    fi
 }
 
 function update_arrays ()
 {
     local trace_file=$1
+    local t=0
+    local e=0
+    local n=0
     for e in $(fgrep " -> " $trace_file | awk -F'"' '{print $2","$4}')
     do
 	((edges[$e]++))
     done
-    for n in $(fgrep -v " -> " $trace_file | awk -F'[' '{print $1}')
+    for n in $(fgrep -v " -> " $trace_file | fgrep -v "#DMN hit" | awk -F'[' '{print $1}')
     do
 	((nodes[$n]++))
+    done
+    for t in $(fgrep "#DMN hit" $trace_file | tr -d "[]" | awk '{split($3, a, "("); print a[1]"_"$NF}')
+    do
+	tab=`echo $t | awk -F_ '{print $1}'`
+	num=`echo $t | awk -F_ '{print $2}'`
+	((hit_rules[$tab","$num]++))
     done
 }
 
@@ -391,6 +425,7 @@ function update_coverage ()
     local dir_res=$1
     local num_nodes=$2
     local num_edges=$3
+    local all_num_rules=$4
     for n in ${!nodes[*]}
     do
 	echo $n:" "${nodes[$n]}
@@ -399,22 +434,37 @@ function update_coverage ()
     do
 	echo $e:" "${edges[$e]}
     done > $dir_res/edges_coverage.txt
+    for r in ${!hit_rules[*]}
+    do
+	echo $r:" "${hit_rules[$r]}
+    done > $dir_res/rules_coverage.txt
     cov_n=`grep ": 0" $dir_res/nodes_coverage.txt | wc -l | awk '{printf("%lf", (1 - $1/'$num_nodes'));}'`
     cov_e=`grep ": 0" $dir_res/edges_coverage.txt | wc -l | awk '{printf("%lf", (1 - $1/'$num_edges'));}'`
     echo $cov_n | awk '{printf("\nOverall coverage: %.3lf%%\n", 100*$1);}' >> $dir_res/nodes_coverage.txt
     echo $cov_e | awk '{printf("\nOverall coverage: %.3lf%%\n", 100*$1);}' >> $dir_res/edges_coverage.txt
-    echo $cov_n $cov_e
+    if [ $all_num_rules -gt 0 ]
+    then
+	cov_r=`grep ": 0" $dir_res/rules_coverage.txt | wc -l | awk '{printf("%lf", (1 - $1/'$all_num_rules'));}'`
+	echo $cov_r | awk '{printf("\nOverall coverage: %.3lf%%\n", 100*$1);}' >> $dir_res/rules_coverage.txt
+    fi
+    echo $cov_n $cov_e $cov_r
 }
 
-bpmn=`init_all`
-(echo $bpmn | awk '{exit (NF >= 2)}') || { echo "$bpmn"; exit; }
+init_res=`init_all`
+(echo $init_res | awk '{exit (index($0, "Generation failed,") == 1)}') || { echo "$init_res"; exit; }
+# (echo $init_res | awk '{exit (NF >= 2)}') || { echo "$init_res"; exit; }
+bpmn=`echo $init_res | awk '{print $1}'`
+dmns=`echo $init_res | tr " " "\n" | awk 'FNR > 1{print "'$dir_tmp'/"$1}'`
 test $only_gen_java -eq 1 && { echo Source Java files generated, exiting; exit; }
 prop_file=$dir_tmp/${bpmn}_inputs.properties
 #echo BPMN and prop: $bpmn $prop_file
 declare -A nodes
 declare -A labels
 declare -A edges
-load_graph $dir_tmp/$bpmn.graph
+declare -A num_rules
+declare -A hit_rules
+all_num_rules=0
+load_graph $dir_tmp/$bpmn.graph $dmns
 if [ $N -eq 0 ]
 then
     M=`python3 << EOF
@@ -441,7 +491,7 @@ do
 	last_res=0 #impossible to know...
     fi
     update_arrays $dir_res/logs/$t/$bpmn.trace
-    covs=`update_coverage $dir_res $num_nodes $num_edges`
+    covs=`update_coverage $dir_res $num_nodes $num_edges $all_num_rules`
     if [ "$stop_type" == "errors" ]
     then
 	if [ -f $dir_res/logs/$t/${bpmn}_outputs.properties ]
@@ -469,18 +519,31 @@ do
 	    echo $last_res | { awk '{printf("Warning: execution '$dir_res/logs/$t' failed %s\n", $1 == 124? "for timeout" : "with exit code"$1)}'; final_res=1; }
 	    ((num_not_compl++))
 	fi
-	if [ "$stop_type" == "both_coverage" ]
+	#errors, any_coverage, nodes_coverage, edges_coverage, rules_coverage, nodes_edges_coverage, edges_rules_coverage, nodes_rules_coverage, all_coverage, nostop
+	if [ "$stop_type" == "all_coverage" ]
+	then
+	    (echo $covs | awk '{exit ($1 >= '$nodes_coverage' && $2 >= '$edges_coverage' && (NF == 3? $3 >= '$rules_coverage' : 1));}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
+	elif [ "$stop_type" == "nodes_edges_coverage" ]
 	then
 	    (echo $covs | awk '{exit ($1 >= '$nodes_coverage' && $2 >= '$edges_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
+	elif [ "$stop_type" == "edges_rules_coverage" ]
+	then
+	    (echo $covs | awk '{exit ($2 >= '$edges_coverage' && (NF == 3? $3 >= '$rules_coverage' : 1));}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
+	elif [ "$stop_type" == "nodes_rules_coverage" ]
+	then
+	    (echo $covs | awk '{exit ($1 >= '$nodes_coverage' && (NF == 3? $3 >= '$rules_coverage' : 1));}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	elif [ "$stop_type" == "any_coverage" ]
 	then
-	    (echo $covs | awk '{ exit ($1 >= '$nodes_coverage' || $2 >= '$edges_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
+	    (echo $covs | awk '{ exit ($1 >= '$nodes_coverage' || $2 >= '$edges_coverage' || (NF == 3? $3 >= '$rules_coverage' : 0));}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	elif [ "$stop_type" == "nodes_coverage" ]
 	then
 	    (echo $covs | awk '{ exit ($1 >= '$nodes_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	elif [ "$stop_type" == "edges_coverage" ]
 	then
 	    (echo $covs | awk '{ exit ($2 >= '$edges_coverage');}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
+	elif [ "$stop_type" == "rules_coverage" ]
+	then
+	    (echo $covs | awk '{ exit ((NF == 3? $3 >= '$rules_coverage' : 1));}') || { echo Exiting because coverage $stop_type is enough; final_res=2; break; }
 	    #missing case is nostop...
 	fi
     fi
