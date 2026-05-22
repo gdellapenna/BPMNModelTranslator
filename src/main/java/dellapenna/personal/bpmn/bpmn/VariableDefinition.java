@@ -26,9 +26,10 @@ public class VariableDefinition {
         private Set<String> cases = null;
         private List<String> expressions = null;
         private Double min = null;
-        boolean minExclusive = false;
+        private boolean minExclusive = false;
         private Double max = null;
-        boolean maxExclusive = false;
+        private boolean maxExclusive = false;
+        private String typeHint = "";
 
         public Set<String> getCases() {
             return cases;
@@ -95,6 +96,14 @@ public class VariableDefinition {
             this.maxExclusive = maxExclusive;
         }
 
+        public String getTypeHint() {
+            return typeHint;
+        }
+
+        public void setTypeHint(String typeHint) {
+            this.typeHint = typeHint;
+        }
+
         @Override
         public String toString() {
             String result = "";
@@ -111,9 +120,14 @@ public class VariableDefinition {
                 result += (!result.isBlank() ? " / " : "") + "MIN: " + min + " " + (minExclusive ? "EXCLUSIVE" : "INCLUSIVE");
             } else if (max != null) {
                 result += (!result.isBlank() ? " / " : "") + "MAX: " + max + " " + (maxExclusive ? "EXCLUSIVE" : "INCLUSIVE");
+            } else if (typeHint != null && typeHint.equals("number")) {
+                result += (!result.isBlank() ? " / " : "") + "BALL(0)";
             }
             if (expressions != null && !expressions.isEmpty()) {
                 result += (!result.isBlank() ? " / " : "") + "UNHANDLED: " + String.join(",", expressions);
+            }
+            if (typeHint != null && !typeHint.isBlank() && !typeHint.equals("UNKNOWN")) {
+                result += (!result.isBlank() ? " / " : "") + "TYPE: " + typeHint;
             }
             if (result.isBlank()) {
                 result = "UNHANDLED";
