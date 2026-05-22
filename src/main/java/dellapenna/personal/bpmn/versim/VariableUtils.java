@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import org.camunda.feel.syntaxtree.ConstNumber;
 import org.camunda.feel.syntaxtree.ConstRangeBoundary;
 import org.camunda.feel.syntaxtree.ConstString;
@@ -42,7 +43,9 @@ public class VariableUtils {
     FeelTranslator<String> ft = new ToJavaFeelTranslator();
 
     public void decodeDMNVariableCostraint(String condition_expression, VariableDefinition.VariableBounds b) throws FeelTranslatorException {
-        if (!condition_expression.isBlank()) {
+         if (condition_expression.startsWith("#TYPE:")) {
+            b.setTypeHint(condition_expression.substring(6).trim());
+        } else if (!condition_expression.isBlank()) {
             Exp exp = ft.parse(condition_expression);
             switch (exp) {
                 case ConstString texp ->
@@ -190,8 +193,11 @@ public class VariableUtils {
     public List<String> extractDMNConstraints(DMNDecodedModel<String>[] dmns, String table_id, String input_name) {
         DMNDecodedTable<String> table = Arrays.stream(dmns).flatMap(dmn -> dmn.tables().values().stream()).filter(t -> t.id().equals(table_id)).findFirst().orElse(null);
         if (table != null) {
-            return table.rules().stream()
-                    .flatMap(r -> r.conditions().stream()).filter(c -> c.inputExpression().equals(input_name)).map(c -> c.sourceTestExpression()).toList();
+            String dmn_declared_type = table.inputs().stream().filter(i -> i.getKey().equals(input_name)).map(i -> i.getValue()).findFirst().orElse("UNKNOWN");
+            return Stream.concat(
+                    table.rules().stream().flatMap(r -> r.conditions().stream()).filter(c -> c.inputExpression().equals(input_name)).map(c -> c.sourceTestExpression()),
+                    Stream.of("#TYPE:" + dmn_declared_type)
+            ).toList();            
         } else {
             return Collections.EMPTY_LIST;
         }
