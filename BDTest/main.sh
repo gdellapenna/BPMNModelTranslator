@@ -378,7 +378,7 @@ function load_graph ()
 	test "${edges[$e]}" || ((num_edges++))
 	edges[$e]=0
     done
-    if [ $dmn_files ]
+    if [ "$dmn_files" ]
     then
 	for dmn in $dmn_files
 	do
