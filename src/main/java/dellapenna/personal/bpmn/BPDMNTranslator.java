@@ -244,6 +244,19 @@ public class BPDMNTranslator {
                 value = v.getBounds().getCases().toArray(new String[0])[0];
             } else if (v.getBounds().getMin() != null) {
                 value = String.valueOf(v.getBounds().getMin() + (v.getBounds().isMinExclusive() ? 1 : 0));
+            } else {
+                switch (v.getBounds().getTypeHint()) {
+                    case "number":
+                        value = "0";
+                        break;
+                    case "string":
+                        value = "string";
+                        break;
+                    case "boolean":
+                        value = "true";
+                        break;
+                }
+
             }
             result += v.getName() + "=" + value + "\n#" + v.getBounds() + "\n";
         }
