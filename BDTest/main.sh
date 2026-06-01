@@ -30,7 +30,7 @@ echo $*
 
 function usage ()
 {
-    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-S] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-z min_int] [-Z max_int] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-V override_vars_file] [-l list_num_vals] [-O other_opts_compiler] [-o other_opts_exec] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_int def: '$min_int_def'\n\tmax_int def: '$max_int_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, nodes_coverage, edges_coverage, rules_coverage, nodes_edges_coverage, edges_rules_coverage, nodes_rules_coverage, all_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, nodes_coverage, nodes_edges_coverage, nodes_rules_coverage, all_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, edges_coverage, nodes_edges_coverage, edges_rules_coverage, all_coverage): '$edges_coverage_def'\n\trules_coverage def (only if -s any_coverage, rules_coverage, edges_rules_coverage, nodes_rules_coverage, all_coverage): '$rules_coverage_def'\n\tlist_num_vals def (n:var_1:k_1:....:var_m:k_m means list of size n for all vars, k_i for var_i only): '$list_num_vals_def'\n\tother_opts_compiler def: '$other_opts_compiler'\n\tother_opts_exec def: '$other_opts_exec'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.md), continue from that point\n\tIf -S is given, also add information on resources usage in logs\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n\toverride_vars_file must be of the same format of inputs.properties file\n\tin other_opts_compiler and other_opts_exec, replace spaces with colons :\n\nAll input files must be in the directory chosen for the results\n\n\n", $1);}'
+    echo $0 | awk '{printf("Usage: %s [-C] [-v] [-S] [-e eps] [-d delta] [-N num_tests] [-m min_float] [-M max_float] [-z min_int] [-Z max_int] [-E min_eps] [-t timeout] [-s stop_type] [-n nodes_coverage] [-c edges_coverage] [-r rules_coverage] [-V override_vars_file] [-l list_num_vals] [-O other_opts_compiler] [-o other_opts_exec] [-h] input_bpmn [input_dmns]\n\n\n\tnum_test def: '$N_def'\n\teps def (only considered if num_test=0): '$epsilon_def'\n\tdelta def (only considered if num_test=0): '$delta_def'\n\tmin_int def: '$min_int_def'\n\tmax_int def: '$max_int_def'\n\tmin_float def: '$min_float_def'\n\tmax_float def: '$max_float_def'\n\tmin_eps def: '$min_eps_def'\n\ttimeout def: '$int_timeout_def'\n\tstop_type def (admissible values: errors, any_coverage, nodes_coverage, edges_coverage, rules_coverage, nodes_edges_coverage, edges_rules_coverage, nodes_rules_coverage, all_coverage, nostop): '$stop_type_def'\n\tnodes_coverage def (only if -s any_coverage, nodes_coverage, nodes_edges_coverage, nodes_rules_coverage, all_coverage): '$nodes_coverage_def'\n\tedges_coverage def (only if -s any_coverage, edges_coverage, nodes_edges_coverage, edges_rules_coverage, all_coverage): '$edges_coverage_def'\n\trules_coverage def (only if -s any_coverage, rules_coverage, edges_rules_coverage, nodes_rules_coverage, all_coverage): '$rules_coverage_def'\n\tlist_num_vals def (n:var_1:k_1:....:var_m:k_m means list of size n for all vars, k_i for var_i only): '$list_num_vals_def'\n\tother_opts_compiler def: '$other_opts_compiler'\n\tother_opts_exec def: '$other_opts_exec'\n\tIf -C is given and results are already present in the directory chosen for the results (see README.md), continue from that point\n\tIf -S is given, also add information on resources usage in logs\n\tIf -v is given, verification is not performed, i.e., the tool only generates the java source files\n\toverride_vars_file must be of the same format of inputs.properties file\n\tin other_opts_compiler and other_opts_exec, replace spaces with colons :\n\nAll input files must be in the directory chosen for the results\n\n\n", $1);}'
     exit 1
 }
 
@@ -44,6 +44,7 @@ min_eps=$min_eps_def
 int_timeout=$int_timeout_def
 nodes_coverage=$nodes_coverage_def
 edges_coverage=$edges_coverage_def
+rules_coverage=$rules_coverage_def
 stop_type=$stop_type_def
 continue_from_before=$continue_from_before_def
 stats_print=$stats_print_def
@@ -54,7 +55,7 @@ other_opts_cmp=$other_opts_cmp_def
 other_opts_exec=$other_opts_exec_def
 list_num_vals=$list_num_vals_def
 h=0
-while getopts :hSCvN:e:d:m:M:E:t:D:T:s:n:c:V:o:O:z:Z:l: OPT
+while getopts :hSCvN:e:d:m:M:E:t:D:T:s:n:c:V:o:O:z:Z:l:r: OPT
 do
   case "$OPT" in
     C)
@@ -104,6 +105,9 @@ do
       ;;
     c)
       nodes_coverage=$OPTARG
+      ;;
+    r)
+      rules_coverage=$OPTARG
       ;;
     V)
       override_vars=$OPTARG
@@ -558,4 +562,4 @@ then
 else
     echo Result is: FAIL
 fi
-echo $num_succ $num_fail $num_not_compl | awk '{printf("Detail:\n\t%d success (%.2lf%%)\n\t%d failed (%.2lf%%)\n\t%d aborted (%.2lf%%)\n", $1, $1/($1 + $2 + $3), $2, $2/($1 + $2 + $3), $3, $3/($1 + $2 + $3))}'
+echo $num_succ $num_fail $num_not_compl | awk '{printf("Detail:\n\t%d success (%.2lf%%)\n\t%d failed (%.2lf%%)\n\t%d aborted (%.2lf%%)\n", $1, 100*$1/($1 + $2 + $3), $2, 100*$2/($1 + $2 + $3), $3, 100*$3/($1 + $2 + $3))}'
