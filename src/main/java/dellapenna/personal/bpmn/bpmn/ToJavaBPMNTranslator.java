@@ -1,12 +1,12 @@
 package dellapenna.personal.bpmn.bpmn;
 
-import dellapenna.personal.bpmn.exec.BPMNExecProcessUtils;
 import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.BOUNDARYWATCHER;
 import static dellapenna.personal.bpmn.exec.BPMNExecProcessUtils.ProcessStatus.BoundaryRole.NORMAL;
 import dellapenna.personal.bpmn.versim.Assertion;
 import dellapenna.personal.bpmn.feel.FeelTranslationInfo;
 import dellapenna.personal.bpmn.feel.FeelTranslatorException;
 import dellapenna.personal.bpmn.feel.ToJavaFeelTranslator;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +20,7 @@ import org.camunda.bpm.model.bpmn.instance.ExclusiveGateway;
 import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.Gateway;
 import org.camunda.bpm.model.bpmn.instance.InclusiveGateway;
+import org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent;
 import org.camunda.bpm.model.bpmn.instance.ManualTask;
 import org.camunda.bpm.model.bpmn.instance.MessageEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.ParallelGateway;
@@ -27,8 +28,10 @@ import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
 import org.camunda.bpm.model.bpmn.instance.ScriptTask;
 import org.camunda.bpm.model.bpmn.instance.SendTask;
 import org.camunda.bpm.model.bpmn.instance.ServiceTask;
+import org.camunda.bpm.model.bpmn.instance.SignalEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.StartEvent;
 import org.camunda.bpm.model.bpmn.instance.Task;
+import org.camunda.bpm.model.bpmn.instance.TimerEventDefinition;
 import org.camunda.bpm.model.bpmn.instance.UserTask;
 import org.camunda.bpm.model.xml.instance.ModelElementInstance;
 
@@ -185,6 +188,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                 "End Event";
             case StartEvent t ->
                 "Start Event";
+            case IntermediateCatchEvent t ->
+                "Intermediate catch event";
             case InclusiveGateway t ->
                 "Inclusive" + (t.getOutgoing().size() == 1 ? " Joining" : "") + " Gateway";
             case ExclusiveGateway t ->
@@ -612,6 +617,85 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
+    //OTHER EVENTS HELPERS
+    private Code generateMessageEventCatchCode(BPMNDecodedProcess p, MessageEventDefinition me, BPMNTranslationInfo info, boolean live, String action) throws BpmnTranslatorException {
+        Code code = new Code();
+        String channel_name = me.getMessage().getExtensionElements().getUniqueChildElementByNameNs(ZEEBENS, "subscription").getAttributeValue("correlationKey").substring(1);
+        String message_name = me.getMessage().getName();
+
+        //live wait mode (if using this event in parallel with others) MUST BE COMPLETED!
+        code.append("Message_" + message_name + " receivedMessage;");
+        if (!message_name.equalsIgnoreCase("passthrough")) {
+            MessageDefinition message = p.registerProcessMessage(message_name);
+            code.append(generateDebugOutputStament("\t RECEIVING message on channel " + channel_name));
+            String check_source = "receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\""
+                    + ((!live) ? ");" : ",50,false);");
+            code.append("try { " + check_source + "} catch (InterruptedException ex)  {receivedMessage=null; Thread.currentThread().interrupt();}");
+            if (action != null) {
+                code.append("if (receivedMessage != null)" + action); //DOES NOT WORK FOR BOUNDARY (live) MODE... MUST EXIT ALSO IF isInterrupted
+            }
+        } else {
+            code.append(generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel_name));
+        }
+
+        return code;
+    }
+
+    private Code generateTimerEventCatchCode(BPMNDecodedProcess p, TimerEventDefinition te, BPMNTranslationInfo info, boolean live, String action) throws BpmnTranslatorException {
+        Code code = new Code();
+        if (te.getTimeDuration() != null) {
+            long waitTime = Duration.parse(te.getTimeDuration().getTextContent()).toMillis();
+            if (!live) {
+                code.append("try { Thread.sleep(" + waitTime + "); } catch (InterruptedException ex)  {Thread.currentThread().interrupt();}");
+            } else {
+                //live wait mode (if using this event in parallel with others)... 
+                //TO BE REWRITTEN (while loop should not be here and timer init sould be at the beginning of the multiple check block)
+                code.append("long enter_time = System.currentTimeMillis()");
+                code.append("while (!Thread.currentThread().isInterrupted()) {if (System.currentTimeMillis() - enter_time >= " + waitTime + ") break; }");
+            }
+        } else {
+            throw new BpmnTranslatorException("Cannot translate a timer event of this type");
+        }
+        code.append(generateDebugOutputStament("\t TIMER HIT"));
+        return code;
+    }
+
+// TO BE COMPLETED    
+//    private Code generateSignalEventCatchCode(BPMNDecodedProcess p, SignalEventDefinition ts, BPMNTranslationInfo info, boolean live) throws BpmnTranslatorException {
+//        Code code = new Code();
+//        String signal_name = ts.getSignal().getName();
+//        if (!signal_name.equalsIgnoreCase("passthrough")) {
+//            SignalDefinition signal = p.registerProcessSignal(signal_name);
+//            code.append(generateDebugOutputStament("\t CHECKING for signal " + signal_name));
+//            if (!live) {
+//                code.append("try {" + EXECUTILEXPRESSION + ".checkSignal(s,\"" + signal_name + "\"); } catch (InterruptedException ex)  {Thread.currentThread().interrupt();}");
+//            } else {
+//                code.append("try {" + EXECUTILEXPRESSION + ".checkSignal(s,\"" + signal_name + "\",50,false); } catch (InterruptedException ex)  {Thread.currentThread().interrupt();}");
+//            }
+//        } else {
+//            code.append(generateDebugOutputStament("\t ASSUMING signal " + signal_name));
+//        }
+//        return code;
+//    }
+    //INTERMEDIATE CATCH EVENTS
+    @Override
+    protected Code generateIntermediateCatchEventCode(BPMNDecodedProcess p, IntermediateCatchEvent t, BPMNTranslationInfo info) throws BpmnTranslatorException {
+        Code code = new Code<String>(generateCommonNodeEntryStaments(t, info));
+
+        EventDefinition e = t.getEventDefinitions().iterator().next(); //should be only one!
+        if (e instanceof MessageEventDefinition me) {
+            code.append(generateMessageEventCatchCode(p, me, info, false,null));
+        } else if (e instanceof TimerEventDefinition te) {
+            code.append(generateTimerEventCatchCode(p, te, info, false, null));
+        } else if (e != null) {
+            throw new BpmnTranslatorException("Cannot translate event of type " + e.getClass().getName());
+        } else {
+            throw new BpmnTranslatorException("Cannot translate catch event without events");
+        }
+        code.append(generateCommonNodeExitStatements(t, info));
+        return code;
+    }
+
     //BOUNDARY EVENTS    
     @Override
     public Code generateBoundaryDispatcherCode(BPMNDecodedProcess p, FlowNode ownerNode, BPMNTranslationInfo info) {
@@ -684,8 +768,10 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateParallelJoiningGatewayCode(BPMNDecodedProcess p, ParallelGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
         Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
-        code.append(generateTransitionDescriptionStaments(g, joinedflow, info));
         p.registerDecodedEdge(g, joinedflow);
+
+        code.append(generateTransitionDescriptionStaments(g, joinedflow, info));
+
         code.append("//JOINS: " + g.getIncoming().stream().map(s -> s.getSource().getId()).collect(Collectors.joining(",")));
         code.append(EXECUTILEXPRESSION + ".join(s,\"" + g.getId() + "\", " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
 
@@ -697,8 +783,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateInclusiveJoiningGatewayCode(BPMNDecodedProcess p, InclusiveGateway g, FlowNode joinedflow, BPMNTranslationInfo info) throws BpmnTranslatorException, FeelTranslatorException {
         Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
-        code.append(generateTransitionDescriptionStaments(g, joinedflow, info));
         p.registerDecodedEdge(g, joinedflow);
+        code.append(generateTransitionDescriptionStaments(g, joinedflow, info));
         code.append("//JOINS: " + g.getIncoming().stream().map(s -> s.getSource().getId()).collect(Collectors.joining(",")));
         code.append(EXECUTILEXPRESSION + ".join(s,\"" + g.getId() + "\", " + ("this::" + sanitizeName(p.getFlowName(joinedflow))) + ")");
 
@@ -722,8 +808,9 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
         String[] branch_functions = new String[splitFlows.size()];
         for (int o = 0; o < splitFlows.size(); ++o) {
-            code.append(generateTransitionDescriptionStaments(g, splitFlows.get(o).firstStep(), info));
             p.registerDecodedEdge(g, splitFlows.get(o).firstStep());
+
+            code.append(generateTransitionDescriptionStaments(g, splitFlows.get(o).firstStep(), info));
             branch_functions[o] = "this::" + sanitizeName(p.getFlowName(splitFlows.get(o).firstStep()));
         }
         code.append("//FORKS: " + splitFlows.stream().map(s -> s.firstStep().getId()).collect(Collectors.joining(",")));
@@ -812,6 +899,36 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         return code;
     }
 
+//    private Code generateEventWatchLoopCode(BPMNDecodedProcess p, BPMNTranslationInfo info) {
+//        Code code = new Code<String>();
+//        
+//        //        code.append("long gw_enter_time = System.currentTimeMillis()");
+    ////        code.append("while (true) {");
+////
+////        /////LOOP SUI splitFlows, verificando che inizino con un intermediateCatchEvent da cui preleviamo i dati per generare una della seguenti varianti di codice...
+////        //per messaggi
+////        code.append(generateDebugOutputStament("\t CHECKING for message on channel " + channel_name));
+////        if (!message_name.equalsIgnoreCase("passthrough")) {
+////            code.append("Message_" + message_name + " receivedMessage = (" + "Message_" + message_name + ")" + EXECUTILEXPRESSION + ".receiveMessage(s,\"" + channel_name + "\",50,false)");
+////            code.append("if (receivedMessage != null)");
+////        } else {
+////            code.append(generateDebugOutputStament("\t ASSUMING RECEPTION of message on channel " + channel_name));
+////        }
+////        code.append("{ chiamata_next(); break; }");
+////
+////        //per i signal
+////        code.append(generateDebugOutputStament("\t CHECKING for signal " + signal_name));
+////        code.append("if (" + EXECUTILEXPRESSION + ".checkSignal(s,\"" + signal_name + "\",50,false) { chiamata_next(); break; }");
+////
+////        //per i timer
+////        code.append(generateDebugOutputStament("\t CHECKING for timeout " + timeout_name));
+////        code.append("if (System.currentTimeMillis() - gw_enter_time >= timeout_milliseconds) { chiamata_next(); break; }");
+////
+////        code.append("}");
+//        
+//        return code;
+//    }
+    
     @Override
     public Code generateEventGatewayCode(BPMNDecodedProcess p, EventBasedGateway g, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -848,13 +965,24 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     @Override
     public Code generateTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info) {
         Code code = new Code<String>();
-
+        /*
         p.registerDecodedEdge(current, next);
         String transition_code
                 = generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
                 + sanitizeName(p.getFlowName(next)) + "(s.withCurrent(\"" + current.getId() + "\"));";
 
         code.append("if (!Thread.currentThread().isInterrupted()) {" + transition_code + "}");
+         */
+
+        p.registerDecodedEdge(current, next);
+        code.set(
+                generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
+                + EXECUTILEXPRESSION + ".goTo(s,"
+                + "\"" + current.getId() + "\","
+                + "\"" + next.getId() + "\","
+                + "this::" + sanitizeName(p.getFlowName(next)) + ","
+                + ((info != null && info.isDebug()) ? "true" : "false") + ");"
+        );
         return code;
     }
 

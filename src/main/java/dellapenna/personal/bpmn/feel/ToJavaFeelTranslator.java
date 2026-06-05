@@ -3,6 +3,7 @@ package dellapenna.personal.bpmn.feel;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -10,6 +11,10 @@ import java.util.stream.Collectors;
  * @author Giuseppe Della Penna
  */
 public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
+
+    private String castToContext(String a) {
+        return "BPMNExecTypeUtils.tocontext(" + a + ")";
+    }
 
     private String castToNumber(String a) {
         return "BPMNExecTypeUtils.tonumber(" + a + ")";
@@ -180,6 +185,17 @@ public class ToJavaFeelTranslator extends AbstractFeelTranslator<String> {
         }
         return result;
         //return names.stream().map(p -> (!generateGetters || excludeGetters.contains(p)) ? p : ("get" + p.substring(0, 1).toUpperCase() + p.substring(1) + "()")).collect(Collectors.joining("."));
+
+        //andrebbe fatto per tutti gli i>0, quindi maxGettersLevel dovrebbe essere sempre 1!
+        //i getter valgono solo per le variabili di base
+        //ma per le strutture esplicite come quelle ritornate dalla DMN? Usiamo mappe anche in quel caso?
+//        for (int i = 0; i < names.size(); ++i) {
+//            if (i == 0) {
+//                result = (excludeGetters.contains(names.get(i)) ? names.get(i) : ("get" + names.get(i).substring(0, 1).toUpperCase() + names.get(i).substring(1) + "(s," + (generateReadNextGetters ? "true" : "false") + ")"));
+//            } else {
+//                result = "castToContext(" + result + ").get(" + names.get(i) + ")";
+//            }
+//        }
     }
 
     @Override

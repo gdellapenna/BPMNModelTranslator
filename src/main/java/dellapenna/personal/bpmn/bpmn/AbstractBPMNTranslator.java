@@ -24,6 +24,7 @@ import org.camunda.bpm.model.bpmn.instance.FlowNode;
 import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.Gateway;
 import org.camunda.bpm.model.bpmn.instance.InclusiveGateway;
+import org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent;
 import org.camunda.bpm.model.bpmn.instance.ManualTask;
 import org.camunda.bpm.model.bpmn.instance.ParallelGateway;
 import org.camunda.bpm.model.bpmn.instance.ReceiveTask;
@@ -169,9 +170,8 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
 //                n = virtualGateway;
 //            }
 
-            
-            List<BPMNDecodedBoundaryFlow>  boundaryFlows  = decodeBoundaryEvents(p, current, info);
-            
+            List<BPMNDecodedBoundaryFlow> boundaryFlows = decodeBoundaryEvents(p, current, info);
+
             if (!boundaryFlows.isEmpty()) {
                 for (BPMNDecodedBoundaryFlow bf : boundaryFlows) {
                     flows_to_translate.addFirst(bf.firstStep()); //schedule flow for decoding
@@ -194,7 +194,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             if (!boundaryFlows.isEmpty()) {
                 code.append(generateBoundaryNormalCompletionCode(p, current, code, boundaryFlows, info));
             }
-            
+
             //link to next step/node
             FlowNode next = decoded_node.nextStep();
             if (next != null) {
@@ -290,6 +290,9 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             }
             case org.camunda.bpm.model.bpmn.instance.EndEvent t -> {
                 code = generateEndEventCode(p, t, info);
+            }
+            case org.camunda.bpm.model.bpmn.instance.IntermediateCatchEvent t -> {
+                code = generateIntermediateCatchEventCode(p, t, info);
             }
             default -> {
                 throw new BpmnTranslatorException("Cannot translate event node of type " + n.getClass().getName());
@@ -399,6 +402,8 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     protected abstract Code generateEndEventCode(BPMNDecodedProcess p, EndEvent t, BPMNTranslationInfo info) throws BpmnTranslatorException;
 
     protected abstract Code generateStartEventCode(BPMNDecodedProcess p, StartEvent t, BPMNTranslationInfo info) throws BpmnTranslatorException;
+
+    protected abstract Code generateIntermediateCatchEventCode(BPMNDecodedProcess p, IntermediateCatchEvent t, BPMNTranslationInfo info) throws BpmnTranslatorException;
 
     protected abstract Code generateBoundaryEventsCode(BPMNDecodedProcess p, FlowNode ownerNode, List<BPMNDecodedBoundaryFlow> boundaryFlows, BPMNTranslationInfo info);
 
