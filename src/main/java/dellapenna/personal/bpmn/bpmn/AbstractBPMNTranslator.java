@@ -177,10 +177,10 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
                     flows_to_translate.addFirst(bf.firstStep()); //schedule flow for decoding
                 }
                 Code boundaryWatcherCode = generateBoundaryEventsCode(p, current, boundaryFlows, info);
-                p.registerNodeProcedure(current, boundaryWatcherCode, BOUNDARYWATCHER.toString());
+                p.registerNodeFunction(current, boundaryWatcherCode, BOUNDARYWATCHER.toString());
 
                 Code boundaryDispatcherCode = generateBoundaryDispatcherCode(p, current, info);
-                p.registerNodeProcedure(current, boundaryDispatcherCode, DISPATCHER.toString());
+                p.registerNodeFunction(current, boundaryDispatcherCode, DISPATCHER.toString());
             }
             //
 
@@ -188,7 +188,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             BPMNDecodedNode decoded_node = decodeNode(p, current, info);
             code.append(decoded_node.code());
             generated_flows.add(current);
-            p.registerNodeProcedure(current, code, (!boundaryFlows.isEmpty() ? NORMAL.toString() : ""));
+            p.registerNodeFunction(current, code, (!boundaryFlows.isEmpty() ? NORMAL.toString() : ""));
 
             //add bounded activity extra code
             if (!boundaryFlows.isEmpty()) {

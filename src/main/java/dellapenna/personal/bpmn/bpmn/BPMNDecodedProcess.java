@@ -192,11 +192,11 @@ public class BPMNDecodedProcess {
         return registerFunction(name, code, parameters, "void", type);
     }
 
-    public FunctionDefinition registerNodeProcedure(FlowNode node, Code code) {
-        return registerNodeProcedure(node, code, "");
+    public FunctionDefinition registerNodeFunction(FlowNode node, Code code) {
+        return registerNodeFunction(node, code, "");
     }
 
-    public FunctionDefinition registerNodeProcedure(FlowNode node, Code code, String variantName) {
+    public FunctionDefinition registerNodeFunction(FlowNode node, Code code, String variantName) {
         NodeProcedureType type = switch (node) {
             case Gateway g ->
                 NodeProcedureType.GATEWAY;
@@ -208,7 +208,7 @@ public class BPMNDecodedProcess {
                 NodeProcedureType.FLOW;
         };
         //TODO should be independent from ToJavaBPMNTranslator
-        FunctionDefinition p = registerProcedure(getFlowName(node, variantName), code, Map.of("s", ToJavaBPMNTranslator.EXECUTILEXPRESSION + ".ProcessStatus"), type);
+        FunctionDefinition p = registerFunction(getFlowName(node, variantName), code, Map.of("s", ToJavaBPMNTranslator.EXECUTILEXPRESSION + ".ProcessStatus"), ToJavaBPMNTranslator.EXECUTILEXPRESSION +".ActivityResult", type);
         registerDecodedNode(node, p);
         return p;
 

@@ -1,5 +1,6 @@
 package dellapenna.personal.bpmn.exec;
 
+import dellapenna.personal.util.Pair;
 import java.io.FileNotFoundException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -167,11 +168,6 @@ public class BPMNExecProcessUtils {
         try {
             traceChannel = new java.io.PrintStream(name + ".trace");
         } catch (FileNotFoundException ex) {
-
-        
-    
-
-    ///
         }
     }
 
@@ -179,11 +175,6 @@ public class BPMNExecProcessUtils {
         try {
             resultChannel = new java.io.PrintStream(name + ".result");
         } catch (FileNotFoundException ex) {
-
-        
-    
-
-    ///
         }
     }
 
@@ -191,11 +182,6 @@ public class BPMNExecProcessUtils {
         try {
             debugChannel = new java.io.PrintStream(name + ".debug");
         } catch (FileNotFoundException ex) {
-
-        
-    
-
-    ///
         }
     }
 
@@ -234,6 +220,30 @@ public class BPMNExecProcessUtils {
             //
         }
     }
+
+    /////////////////
+    
+    @FunctionalInterface
+    public static interface Activity {
+
+        ActivityResult perform(ProcessStatus s);
+    }
+
+    public static record ActivityResult(Activity nextActivity, ProcessStatus nextStatus) {
+
+    }
+
+    ;
+
+    public static ProcessStatus execLoop(Activity first, ProcessStatus s) {
+        ActivityResult current = new ActivityResult(first, s);
+        while (current.nextActivity() != null) {
+            current = current.nextActivity().perform(current.nextStatus());
+        }
+        return s;
+    }
+
+    /////////////////
 
     public static void sendMessage(ProcessStatus s, String channel, Message message) {
         if (!massage_channels.containsKey(channel)) {
@@ -405,14 +415,18 @@ public class BPMNExecProcessUtils {
         }
     }
 
-    public static void goTo(ProcessStatus s, String currentNodeId, String nextNodeId, Consumer<ProcessStatus> nextNodeProc, boolean debug) {
-        if (!Thread.currentThread().isInterrupted()) {
-//            if (debug) {
-//                BPMNExecProcessUtils.logTransition(currentNodeId, nextNodeId);
-//            }
-            nextNodeProc.accept(s.withCurrent(currentNodeId));
-        }
+    public static ActivityResult buildActivityResult(ProcessStatus s, String currentNodeId, String nextNodeId, Activity next) {
+        return new ActivityResult(next, s.withCurrent(currentNodeId));
     }
+
+//    public static void goTo(ProcessStatus s, String currentNodeId, String nextNodeId, Consumer<ProcessStatus> nextNodeProc, boolean debug) {
+//        if (!Thread.currentThread().isInterrupted()) {
+    ////            if (debug) {
+////                BPMNExecProcessUtils.logTransition(currentNodeId, nextNodeId);
+////            }
+//            nextNodeProc.accept(s.withCurrent(currentNodeId));
+//        }
+//    }
 
     public static void fork(ProcessStatus s, String gatewayId, Consumer<ProcessStatus>... branches) {
         String source_parallel_gateway_id = gatewayId;
@@ -543,10 +557,6 @@ public class BPMNExecProcessUtils {
 
     public static void logTransition(String source, String target) {
         traceChannel.println("\"" + source + "\" -> \"" + target + "\"");
-    }
-
-    public static void logDMNRuleHit(String table_id, String rule_id, int index) {
-        traceChannel.println("#DMN hit " + table_id + "(" + rule_id + ")" + " [" + index + "]");
     }
 
     public static void logCurrentNode(String id, String description) {

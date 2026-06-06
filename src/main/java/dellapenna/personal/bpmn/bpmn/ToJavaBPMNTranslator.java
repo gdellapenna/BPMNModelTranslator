@@ -602,8 +602,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         if (isSuccess) {
             code.append(EXECUTILEXPRESSION + ".success(s)");
         }
-        code.append(generateCommonNodeExitStatements(t, info));
 
+        code.append(generateTransitionCode(p, t, null, info));
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
@@ -684,7 +684,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
 
         EventDefinition e = t.getEventDefinitions().iterator().next(); //should be only one!
         if (e instanceof MessageEventDefinition me) {
-            code.append(generateMessageEventCatchCode(p, me, info, false,null));
+            code.append(generateMessageEventCatchCode(p, me, info, false, null));
         } else if (e instanceof TimerEventDefinition te) {
             code.append(generateTimerEventCatchCode(p, te, info, false, null));
         } else if (e != null) {
@@ -850,7 +850,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         code.append("if (enabledBranches.isEmpty()) "
                 + ((default_branch != null)
                         ? "{ enabledBranches.add(" + "this::" + sanitizeName(p.getFlowName(default_branch.firstStep())) + "); }"
-                        : "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); }")
+                        : "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); " + generateTransitionCode(p, g, null, info) + " }")
         );
         code.append(EXECUTILEXPRESSION + ".fork(s,\"" + g.getId() + "\",enabledBranches.toArray(java.util.function.Consumer[]::new))");
         code.append(EXECUTILEXPRESSION + ".stopThread()");
@@ -888,7 +888,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             Code splitCode = generateTransitionCode(p, g, default_branch.firstStep(), info);
             source += "{" + generateCodeSource(splitCode) + "}";
         } else {
-            source += "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); }";
+            source += "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); return null; }";
 
         }
 
@@ -974,15 +974,22 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         code.append("if (!Thread.currentThread().isInterrupted()) {" + transition_code + "}");
          */
 
-        p.registerDecodedEdge(current, next);
-        code.set(
-                generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
-                + EXECUTILEXPRESSION + ".goTo(s,"
-                + "\"" + current.getId() + "\","
-                + "\"" + next.getId() + "\","
-                + "this::" + sanitizeName(p.getFlowName(next)) + ","
-                + ((info != null && info.isDebug()) ? "true" : "false") + ");"
-        );
+        if (next != null) {
+            p.registerDecodedEdge(current, next);
+            code.set(generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
+                    + "return " + EXECUTILEXPRESSION + ".buildActivityResult(s,"
+                    + "\"" + current.getId() + "\","
+                    + "\"" + next.getId() + "\","
+                    + "this::" + sanitizeName(p.getFlowName(next))
+                    + ");"
+            );
+        } else {
+            code.set("return " + EXECUTILEXPRESSION + ".buildActivityResult(s,"
+                    + "\"" + current.getId() + "\","
+                    + "null,null"
+                    + ");"
+            );
+        }
         return code;
     }
 
