@@ -284,7 +284,7 @@ public class BPMNExecProcessUtils {
         }*/
     }
 
-    public static void executeProcess(String name, Runnable init, Consumer<ProcessStatus> start) {
+    public static void executeProcess(String name, Runnable init, Activity start) {
         process_name = name;
         ProcessStatus s = new ProcessStatus();
         if (init != null) {
@@ -329,11 +329,11 @@ public class BPMNExecProcessUtils {
         closeChannels();
     }
 
-    public static void startThread(Consumer<ProcessStatus> branch, ProcessStatus s) {
+    public static void startThread(Activity branch, ProcessStatus s) {
         startThread(branch, s, s.branchID);
     }
 
-    public static void startThread(Consumer<ProcessStatus> branch, ProcessStatus s, String threadID) {
+    public static void startThread(Activity branch, ProcessStatus s, String threadID) {
         synchronized (BPMNExecProcessUtils.class) {
 //            if (futureRegistry.containsKey(threadID)) {
 //                System.out.print("thread " + threadID + " not starting since is has been already started or cancelled");
@@ -342,14 +342,15 @@ public class BPMNExecProcessUtils {
             active_threads_count++;
             //active_threads_count.notifyAll();
             if (executor != null) {
-                Future thread = executor.submit(() -> branch.accept(s));
+                //Future thread = executor.submit(() -> branch.accept(s));
+                Future thread = executor.submit(() -> execLoop(branch, s));
                 //debugOutput(s, "\t STARTING THREAD " + threadID);
                 //System.out.println("\t STARTING THREAD " + threadID);
                 synchronized (BPMNExecProcessUtils.class) {
                     futureRegistry.put(threadID, thread);
                 }
             } else {
-                branch.accept(s);
+                branch.perform(s);
             }
         }
     }
@@ -428,7 +429,7 @@ public class BPMNExecProcessUtils {
 //        }
 //    }
 
-    public static void fork(ProcessStatus s, String gatewayId, Consumer<ProcessStatus>... branches) {
+    public static void fork(ProcessStatus s, String gatewayId, Activity... branches) {
         String source_parallel_gateway_id = gatewayId;
         String parallel_id = s.branchID + "|" + source_parallel_gateway_id + "|" + getRandomID();
         if (!parallels.containsKey(parallel_id)) {
@@ -447,13 +448,13 @@ public class BPMNExecProcessUtils {
         }
         for (int i = 0; i < branches.length; ++i) {
             debugOutput(s, "\t FORKING BRANCH %s FROM ACTIVITY %s", branch_ids[i], parallel_id);
-            final Consumer<ProcessStatus> branch = branches[i];
+            final Activity branch = branches[i];
             final String branch_id = branch_ids[i];
             startThread(branch, s.withBranchAndcurrent(branch_id, source_parallel_gateway_id));
         }
     }
 
-    public static void join(ProcessStatus s, String gatewayId, Consumer<ProcessStatus> join_branch) {
+    public static void join(ProcessStatus s, String gatewayId, Activity join_branch) {
         String branch_id = s.branchID;
         int delimiter_pos = branch_id.lastIndexOf("|");
         String parallel_id = branch_id.substring(0, delimiter_pos);
@@ -482,7 +483,7 @@ public class BPMNExecProcessUtils {
         }
     }
 
-    public static void forkBoundary(BPMNExecProcessUtils.ProcessStatus s, String taskid, Consumer<BPMNExecProcessUtils.ProcessStatus> normalflow, Consumer<BPMNExecProcessUtils.ProcessStatus> boundaryflow) {
+    public static void forkBoundary(BPMNExecProcessUtils.ProcessStatus s, String taskid, Activity normalflow, Activity boundaryflow) {
         synchronized (BPMNExecProcessUtils.class) {
             debugOutput(s, "\t STARTING " + taskid + " BOUNDARY EVENT HANDLER");
             String boundaryWatchID = taskid + "_B_" + getRandomID();

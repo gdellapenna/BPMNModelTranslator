@@ -366,7 +366,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
     //generate the common code for all the joining gateways
     private Code generateJoiningGatewayCode(BPMNDecodedProcess p, Gateway g, FlowNode j, BPMNTranslationInfo info) throws FeelTranslatorException {
         Code code = new Code<String>(generateCommonNodeEntryStaments(g, info));
-        code.append(generateTransitionCode(p, g, j, info));
+        //code.append(generateTransitionCode(p, g, j, info));
         code.append(generateCommonNodeExitStatements(g, info));
         return code;
     }
@@ -603,7 +603,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             code.append(EXECUTILEXPRESSION + ".success(s)");
         }
 
-        code.append(generateTransitionCode(p, t, null, info));
+        //code.append(generateTransitionCode(p, t, null, info));
         code.append(generateCommonNodeExitStatements(t, info));
         return code;
     }
@@ -760,7 +760,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         String guarded_source = "try{\n " + generateCodeSource(code) + "} catch (Exception e) {"
                 + "if (e instanceof InterruptedException)  Thread.currentThread().interrupt();"
                 + "else throw (e instanceof RuntimeException re ? re : new RuntimeException(e));"
-                + "}";
+                + "}; return null";
         code.set(guarded_source);
     }
 
@@ -850,7 +850,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         code.append("if (enabledBranches.isEmpty()) "
                 + ((default_branch != null)
                         ? "{ enabledBranches.add(" + "this::" + sanitizeName(p.getFlowName(default_branch.firstStep())) + "); }"
-                        : "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); " + generateTransitionCode(p, g, null, info) + " }")
+                        : "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); " /*+ generateTransitionCode(p, g, null, info) + " }"*/)
         );
         code.append(EXECUTILEXPRESSION + ".fork(s,\"" + g.getId() + "\",enabledBranches.toArray(java.util.function.Consumer[]::new))");
         code.append(EXECUTILEXPRESSION + ".stopThread()");
@@ -888,7 +888,8 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
             Code splitCode = generateTransitionCode(p, g, default_branch.firstStep(), info);
             source += "{" + generateCodeSource(splitCode) + "}";
         } else {
-            source += "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); return null; }";
+            //source += "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); return null; }";
+            source += "{ " + EXECUTILEXPRESSION + ".noDefaultCaseError(s); }";
 
         }
 
@@ -974,7 +975,7 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
         code.append("if (!Thread.currentThread().isInterrupted()) {" + transition_code + "}");
          */
 
-        if (next != null) {
+        //if (next != null) {
             p.registerDecodedEdge(current, next);
             code.set(generateCodeSource(generateTransitionDescriptionStaments(current, next, info))
                     + "return " + EXECUTILEXPRESSION + ".buildActivityResult(s,"
@@ -983,13 +984,25 @@ public class ToJavaBPMNTranslator extends AbstractBPMNTranslator<String> {
                     + "this::" + sanitizeName(p.getFlowName(next))
                     + ");"
             );
-        } else {
+//        } else {
+//            code.set("return " + EXECUTILEXPRESSION + ".buildActivityResult(s,"
+//                    + "\"" + current.getId() + "\","
+//                    + "null,null"
+//                    + ");"
+//            );
+//        }
+        return code;
+    }
+    
+    //generates the code for a transition
+    @Override
+    public Code generateNoTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info) {
+        Code code = new Code<String>();
             code.set("return " + EXECUTILEXPRESSION + ".buildActivityResult(s,"
                     + "\"" + current.getId() + "\","
                     + "null,null"
-                    + ");"
-            );
-        }
+                    + ")"
+            );        
         return code;
     }
 

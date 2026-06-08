@@ -177,9 +177,11 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
                     flows_to_translate.addFirst(bf.firstStep()); //schedule flow for decoding
                 }
                 Code boundaryWatcherCode = generateBoundaryEventsCode(p, current, boundaryFlows, info);
+                boundaryWatcherCode.append(generateNoTransitionCode(p, current, null, info));
                 p.registerNodeFunction(current, boundaryWatcherCode, BOUNDARYWATCHER.toString());
 
                 Code boundaryDispatcherCode = generateBoundaryDispatcherCode(p, current, info);
+                boundaryDispatcherCode.append(generateNoTransitionCode(p, current, null, info));
                 p.registerNodeFunction(current, boundaryDispatcherCode, DISPATCHER.toString());
             }
             //
@@ -199,6 +201,8 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             FlowNode next = decoded_node.nextStep();
             if (next != null) {
                 code.append(generateTransitionCode(p, current, next, info));
+            } else {
+                code.append(generateNoTransitionCode(p, current, null, info));
             }
 
             //manupulate final code in case of bounded activity
@@ -256,7 +260,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
 
         switch (n) {
             case org.camunda.bpm.model.bpmn.instance.ExclusiveGateway t -> {
-                return new BPMNDecodedNode(generateExclusiveJoiningGatewayCode(p, t, joiningStep, info), null);
+                return new BPMNDecodedNode(generateExclusiveJoiningGatewayCode(p, t, joiningStep, info), joiningStep);
             }
             case org.camunda.bpm.model.bpmn.instance.InclusiveGateway t -> {
                 return new BPMNDecodedNode(generateInclusiveJoiningGatewayCode(p, t, joiningStep, info), null);
@@ -366,6 +370,8 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     // Generate code for specific BPMN nodes
     //////////////////
     protected abstract Code generateTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info);
+    
+    protected abstract Code generateNoTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info);
 
     protected abstract Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
 
