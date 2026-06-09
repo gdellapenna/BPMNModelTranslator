@@ -237,7 +237,7 @@ public class BPMNExecProcessUtils {
 
     public static ProcessStatus execLoop(Activity first, ProcessStatus s) {
         ActivityResult current = new ActivityResult(first, s);
-        while (current.nextActivity() != null) {
+        while (!Thread.currentThread().isInterrupted() && current.nextActivity() != null) {
             current = current.nextActivity().perform(current.nextStatus());
         }
         return s;

@@ -177,18 +177,20 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
                     flows_to_translate.addFirst(bf.firstStep()); //schedule flow for decoding
                 }
                 Code boundaryWatcherCode = generateBoundaryEventsCode(p, current, boundaryFlows, info);
-                boundaryWatcherCode.append(generateNoTransitionCode(p, current, null, info));
+                boundaryWatcherCode.append(generateNoTransitionCode(p, current, info));
                 p.registerNodeFunction(current, boundaryWatcherCode, BOUNDARYWATCHER.toString());
 
                 Code boundaryDispatcherCode = generateBoundaryDispatcherCode(p, current, info);
-                boundaryDispatcherCode.append(generateNoTransitionCode(p, current, null, info));
+                boundaryDispatcherCode.append(generateNoTransitionCode(p, current, info));
                 p.registerNodeFunction(current, boundaryDispatcherCode, DISPATCHER.toString());
             }
             //
 
-            Code code = new Code<T>();
             BPMNDecodedNode decoded_node = decodeNode(p, current, info);
+            //Code code = new Code<T>();
+            Code code = new Code<T>(generateCommonNodeEntryStaments(current, info));
             code.append(decoded_node.code());
+            code.append(generateCommonNodeExitStatements(current, info));
             generated_flows.add(current);
             p.registerNodeFunction(current, code, (!boundaryFlows.isEmpty() ? NORMAL.toString() : ""));
 
@@ -202,7 +204,7 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
             if (next != null) {
                 code.append(generateTransitionCode(p, current, next, info));
             } else {
-                code.append(generateNoTransitionCode(p, current, null, info));
+                code.append(generateNoTransitionCode(p, current, info));
             }
 
             //manupulate final code in case of bounded activity
@@ -369,9 +371,14 @@ public abstract class AbstractBPMNTranslator<T> implements BPMNTranslator<T> {
     //////////////////
     // Generate code for specific BPMN nodes
     //////////////////
+
+    protected abstract Code generateCommonNodeEntryStaments(FlowNode current, BPMNTranslationInfo info);
+
+    protected abstract Code generateCommonNodeExitStatements(FlowNode current, BPMNTranslationInfo info);
+
     protected abstract Code generateTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info);
-    
-    protected abstract Code generateNoTransitionCode(BPMNDecodedProcess p, FlowNode current, FlowNode next, BPMNTranslationInfo info);
+
+    protected abstract Code generateNoTransitionCode(BPMNDecodedProcess p, FlowNode current, BPMNTranslationInfo info);
 
     protected abstract Code generateParallelGatewayCode(BPMNDecodedProcess p, ParallelGateway n, List<BPMNDecodedConditionalFlow> splitFlows, BPMNTranslationInfo info) throws FeelTranslatorException, BpmnTranslatorException;
 
